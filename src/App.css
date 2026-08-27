@@ -296,4 +296,82 @@ input::placeholder {
   color: #ff6b6b;
   font-size: 14px;
   margin: 10px 0;
+}.game-card {
+  text-align: center;
+}
+
+.game-progress {
+  margin: 25px 0;
+  text-align: left;
+}
+
+.progress-title {
+  color: #aaa;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #292929;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #ffffff;
+  border-radius: 10px;
+}
+
+.game-card-area {
+  margin: 25px 0;
+}
+
+.card-question {
+  background: #292929;
+  border-radius: 20px;
+  padding: 30px 20px;
+}
+
+.card-question span {
+  font-size: 55px;
+}
+
+.card-question h2 {
+  color: white;
+  font-size: 21px;
+  margin: 15px 0 8px;
+}
+
+.card-question p {
+  color: #999;
+  font-size: 14px;
+  margin: 0;
+}
+
+.game-info {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.game-info div {
+  background: #292929;
+  border-radius: 12px;
+  padding: 12px 5px;
+}
+
+.game-info span {
+  display: block;
+  color: #888;
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.game-info strong {
+  color: white;
+  font-size: 18px;
 }

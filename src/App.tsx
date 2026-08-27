@@ -3,7 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { io } from "socket.io-client";
 import "./App.css";
 
-type Screen = "home" | "settings" | "join" | "lobby";
+type Screen = "home" | "settings" | "join" | "lobby" | "game";
 
 type Player = {
   id: string;
@@ -11,7 +11,7 @@ type Player = {
   isHost: boolean;
 };
 
-const socket = io("http://192.168.1.63:3001", {
+const socket = io("https://bussen-server.onrender.com", {
   autoConnect: false,
 });
 
@@ -33,13 +33,9 @@ function App() {
   const [isHost, setIsHost] = useState(false);
 
   useEffect(() => {
-    const params = new URLSearchParams(
-      window.location.search
-    );
+    const params = new URLSearchParams(window.location.search);
 
-    const roomFromUrl = params
-      .get("room")
-      ?.toUpperCase();
+    const roomFromUrl = params.get("room")?.toUpperCase();
 
     if (roomFromUrl && roomFromUrl.length === 5) {
       setJoinCode(roomFromUrl);
@@ -56,7 +52,7 @@ function App() {
     );
 
     socket.on("game-started", () => {
-      alert("Het spel gaat beginnen!");
+      setScreen("game");
     });
 
     socket.on("room-closed", () => {
@@ -102,21 +98,12 @@ function App() {
         message?: string;
       }) => {
         if (!response.success) {
-          alert(
-            response.message ||
-              "Er ging iets mis."
-          );
+          alert(response.message || "Er ging iets mis.");
           return;
         }
 
-        setRoomCode(
-          response.roomCode || ""
-        );
-
-        setPlayerNames(
-          response.players || []
-        );
-
+        setRoomCode(response.roomCode || "");
+        setPlayerNames(response.players || []);
         setIsHost(true);
         setScreen("lobby");
       }
@@ -125,23 +112,17 @@ function App() {
 
   function joinRoom() {
     const name = playerName.trim();
-    const code = joinCode
-      .trim()
-      .toUpperCase();
+    const code = joinCode.trim().toUpperCase();
 
     setJoinError("");
 
     if (!name) {
-      setJoinError(
-        "Vul eerst je naam in."
-      );
+      setJoinError("Vul eerst je naam in.");
       return;
     }
 
     if (code.length !== 5) {
-      setJoinError(
-        "Een kamercode bestaat uit 5 tekens."
-      );
+      setJoinError("Een kamercode bestaat uit 5 tekens.");
       return;
     }
 
@@ -163,35 +144,23 @@ function App() {
       }) => {
         if (!response.success) {
           setJoinError(
-            response.message ||
-              "Er ging iets mis."
+            response.message || "Er ging iets mis."
           );
           return;
         }
 
-        setRoomCode(
-          response.roomCode || code
-        );
-
-        setPlayerNames(
-          response.players || []
-        );
-
+        setRoomCode(response.roomCode || code);
+        setPlayerNames(response.players || []);
         setIsHost(false);
         setScreen("lobby");
       }
     );
   }
 
-  function removePlayer(
-    playerId: string
-  ) {
+  function removePlayer(playerId: string) {
     if (!isHost) return;
 
-    socket.emit(
-      "remove-player",
-      playerId
-    );
+    socket.emit("remove-player", playerId);
   }
 
   function startGame() {
@@ -201,13 +170,110 @@ function App() {
   }
 
   function getJoinUrl() {
-    return `http://192.168.1.63:5173/?room=${roomCode}`;
+    return `https://bussen-app.onrender.com/?room=${roomCode}`;
   }
+
+  /*
+   * ==========================
+   * GAME SCREEN
+   * ==========================
+   */
+
+  if (screen === "game") {
+    return (
+      <main className="app">
+        <section className="card game-card">
+
+          <div className="logo small-logo">
+            🚌
+          </div>
+
+          <h1>
+            Tijd om te spelen!
+          </h1>
+
+          <p className="subtitle">
+            De busrit gaat beginnen...
+          </p>
+
+          <div className="game-progress">
+            <div className="progress-title">
+              Rij 1 van {rows}
+            </div>
+
+            <div className="progress-bar">
+              <div
+                className="progress-fill"
+                style={{
+                  width: `${(1 / rows) * 100}%`,
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="game-card-area">
+
+            <div className="card-question">
+              <span>❓</span>
+
+              <h2>
+                Welke kaart ligt hier?
+              </h2>
+
+              <p>
+                Kies een kaart en ontdek
+                of je goed zit.
+              </p>
+            </div>
+
+          </div>
+
+          <div className="game-info">
+
+            <div>
+              <span>Spelers</span>
+              <strong>{playerNames.length}</strong>
+            </div>
+
+            <div>
+              <span>Rij</span>
+              <strong>1 / {rows}</strong>
+            </div>
+
+            <div>
+              <span>Kaarten</span>
+              <strong>{decks}</strong>
+            </div>
+
+          </div>
+
+          <button
+            className="start-button"
+            onClick={() => {
+              alert(
+                "De kaartlogica komt hier!"
+              );
+            }}
+          >
+            Kaart spelen 🃏
+          </button>
+
+        </section>
+      </main>
+    );
+  }
+
+  /*
+   * ==========================
+   * LOBBY
+   * ==========================
+   */
 
   if (screen === "lobby") {
     return (
       <main className="app">
         <section className="card lobby-card">
+
           <div className="logo small-logo">
             🚌
           </div>
@@ -221,6 +287,7 @@ function App() {
           </p>
 
           <div className="qr-placeholder">
+
             {roomCode ? (
               <QRCodeSVG
                 value={getJoinUrl()}
@@ -236,9 +303,11 @@ function App() {
             <p>
               SCAN OM MEE TE DOEN
             </p>
+
           </div>
 
           <div className="room-code">
+
             <span>
               Kamercode
             </span>
@@ -246,57 +315,63 @@ function App() {
             <strong>
               {roomCode}
             </strong>
+
           </div>
 
           <div className="players-header">
+
             <h2>
-              Spelers (
-              {playerNames.length}/
-              {players})
+              Spelers ({playerNames.length}/{players})
             </h2>
+
           </div>
 
           <div className="player-list">
-            {playerNames.map(
-              (player) => (
-                <div
-                  className="player"
-                  key={player.id}
-                >
-                  <div className="player-avatar">
-                    {player.name.charAt(
-                      0
-                    )}
-                  </div>
 
-                  <span>
-                    {player.name}
+            {playerNames.map((player) => (
+
+              <div
+                className="player"
+                key={player.id}
+              >
+
+                <div className="player-avatar">
+                  {player.name.charAt(0)}
+                </div>
+
+                <span>
+                  {player.name}
+                </span>
+
+                {player.isHost ? (
+
+                  <span className="host-label">
+                    HOST
                   </span>
 
-                  {player.isHost ? (
-                    <span className="host-label">
-                      HOST
-                    </span>
-                  ) : (
-                    isHost && (
-                      <button
-                        className="remove-player"
-                        onClick={() =>
-                          removePlayer(
-                            player.id
-                          )
-                        }
-                      >
-                        ×
-                      </button>
-                    )
-                  )}
-                </div>
-              )
-            )}
+                ) : (
+
+                  isHost && (
+                    <button
+                      className="remove-player"
+                      onClick={() =>
+                        removePlayer(player.id)
+                      }
+                    >
+                      ×
+                    </button>
+                  )
+
+                )}
+
+              </div>
+
+            ))}
+
           </div>
 
           {isHost ? (
+
             <button
               className="start-button"
               disabled={
@@ -304,41 +379,52 @@ function App() {
               }
               onClick={startGame}
             >
-              {playerNames.length <
-              2
+              {playerNames.length < 2
                 ? "Wacht op spelers..."
                 : "Spel starten 🚌"}
             </button>
+
           ) : (
+
             <div className="waiting-message">
               <p>
                 Wachten tot de host
                 het spel start...
               </p>
             </div>
+
           )}
 
           {isHost && (
+
             <button
               className="back-button lobby-back"
               onClick={() =>
-                setScreen(
-                  "settings"
-                )
+                setScreen("settings")
               }
             >
               ← Instellingen aanpassen
             </button>
+
           )}
+
         </section>
       </main>
     );
   }
 
+  /*
+   * ==========================
+   * JOIN
+   * ==========================
+   */
+
   if (screen === "join") {
     return (
       <main className="app">
+
         <section className="card">
+
           <button
             className="back-button"
             onClick={() => {
@@ -362,6 +448,7 @@ function App() {
           </p>
 
           <div className="setting">
+
             <label>
               Jouw naam
             </label>
@@ -377,9 +464,11 @@ function App() {
               }
               maxLength={15}
             />
+
           </div>
 
           <div className="setting">
+
             <label>
               Kamercode
             </label>
@@ -401,6 +490,7 @@ function App() {
               }
               maxLength={5}
             />
+
           </div>
 
           {joinError && (
@@ -415,15 +505,25 @@ function App() {
           >
             Meedoen 🚌
           </button>
+
         </section>
+
       </main>
     );
   }
 
+  /*
+   * ==========================
+   * SETTINGS
+   * ==========================
+   */
+
   if (screen === "settings") {
     return (
       <main className="app">
+
         <section className="card settings-card">
+
           <button
             className="back-button"
             onClick={() =>
@@ -446,11 +546,13 @@ function App() {
           </p>
 
           <div className="setting">
+
             <label>
               Aantal spelers
             </label>
 
             <div className="counter">
+
               <button
                 onClick={() =>
                   setPlayers(
@@ -480,17 +582,22 @@ function App() {
               >
                 +
               </button>
+
             </div>
+
           </div>
 
           <div className="setting">
+
             <label>
               Aantal rijen
             </label>
 
             <div className="options">
+
               {[3, 4, 5].map(
                 (number) => (
+
                   <button
                     key={number}
                     className={
@@ -504,19 +611,25 @@ function App() {
                   >
                     {number}
                   </button>
+
                 )
               )}
+
             </div>
+
           </div>
 
           <div className="setting">
+
             <label>
               Kaartspellen
             </label>
 
             <div className="options">
+
               {[1, 2].map(
                 (number) => (
+
                   <button
                     key={number}
                     className={
@@ -530,17 +643,22 @@ function App() {
                   >
                     {number} 🃏
                   </button>
+
                 )
               )}
+
             </div>
+
           </div>
 
           <div className="setting">
+
             <label>
               Checkpoints in de bus
             </label>
 
             <div className="options">
+
               <button
                 className={
                   !checkpoints
@@ -548,9 +666,7 @@ function App() {
                     : ""
                 }
                 onClick={() =>
-                  setCheckpoints(
-                    false
-                  )
+                  setCheckpoints(false)
                 }
               >
                 Uit
@@ -563,17 +679,18 @@ function App() {
                     : ""
                 }
                 onClick={() =>
-                  setCheckpoints(
-                    true
-                  )
+                  setCheckpoints(true)
                 }
               >
                 Aan
               </button>
+
             </div>
+
           </div>
 
           <div className="game-summary">
+
             <strong>
               Jullie spel
             </strong>
@@ -590,6 +707,7 @@ function App() {
                 ? "aan"
                 : "uit"}
             </p>
+
           </div>
 
           <button
@@ -598,14 +716,24 @@ function App() {
           >
             Spel starten 🚌
           </button>
+
         </section>
+
       </main>
     );
   }
 
+  /*
+   * ==========================
+   * HOME
+   * ==========================
+   */
+
   return (
     <main className="app">
+
       <section className="card">
+
         <div className="logo">
           🚌
         </div>
@@ -621,9 +749,7 @@ function App() {
 
         <button
           onClick={() =>
-            setScreen(
-              "settings"
-            )
+            setScreen("settings")
           }
         >
           Nieuw spel
@@ -644,7 +770,9 @@ function App() {
         <button className="secondary">
           Spelregels
         </button>
+
       </section>
+
     </main>
   );
 }
