@@ -1,0 +1,299 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #111;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  background: #1d1d1d;
+  padding: 40px 30px;
+  border-radius: 24px;
+}
+
+.logo {
+  font-size: 70px;
+  margin-bottom: 10px;
+}
+
+.small-logo {
+  font-size: 50px;
+  margin-top: 5px;
+}
+
+h1 {
+  margin: 0;
+  color: white;
+  font-size: 46px;
+}
+
+.subtitle {
+  color: #aaa;
+  font-size: 18px;
+  margin: 12px 0 35px;
+}
+
+.card > button:not(.back-button) {
+  width: 100%;
+  border-radius: 14px;
+  padding: 16px;
+  margin-top: 12px;
+  font-size: 18px;
+  font-weight: bold;
+  background: white;
+  color: #111;
+}
+
+.secondary {
+  background: #333 !important;
+  color: white !important;
+}
+
+.settings-card {
+  text-align: left;
+}
+
+.settings-card h1,
+.settings-card .subtitle,
+.settings-card .logo {
+  text-align: center;
+}
+
+.back-button {
+  background: transparent;
+  color: #aaa;
+  font-size: 16px;
+  padding: 0;
+}
+
+.setting {
+  margin-top: 28px;
+}
+
+.setting label {
+  display: block;
+  color: white;
+  font-size: 17px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.counter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #292929;
+  border-radius: 14px;
+  padding: 6px;
+}
+
+.counter button {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: #3a3a3a;
+  color: white;
+  font-size: 26px;
+}
+
+.counter span {
+  color: white;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.options {
+  display: flex;
+  gap: 8px;
+}
+
+.options button {
+  flex: 1;
+  padding: 14px 8px;
+  border-radius: 12px;
+  background: #292929;
+  color: #aaa;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.options button.selected {
+  background: white;
+  color: #111;
+}
+
+.game-summary {
+  margin-top: 30px;
+  padding: 16px;
+  border-radius: 14px;
+  background: #292929;
+  color: white;
+}
+
+.game-summary p {
+  margin: 6px 0 0;
+  color: #aaa;
+  font-size: 14px;
+}
+
+.start-button {
+  width: 100%;
+  margin-top: 18px;
+  padding: 17px;
+  border-radius: 14px;
+  background: white;
+  color: #111;
+  font-size: 18px;
+  font-weight: bold;
+}.lobby-card {
+  text-align: center;
+}
+
+.qr-placeholder {
+  width: 190px;
+  height: 190px;
+  margin: 25px auto 20px;
+  background: white;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-pattern {
+  font-size: 100px;
+  color: #111;
+  line-height: 1;
+}
+
+.qr-placeholder p {
+  margin: 5px 0 0;
+  color: #111;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.room-code {
+  background: #292929;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 25px;
+}
+
+.room-code span {
+  display: block;
+  color: #888;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.room-code strong {
+  color: white;
+  font-size: 30px;
+  letter-spacing: 5px;
+}
+
+.players-header {
+  text-align: left;
+}
+
+.players-header h2 {
+  color: white;
+  font-size: 18px;
+  margin: 0 0 10px;
+}
+
+.player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.player {
+  display: flex;
+  align-items: center;
+  background: #292929;
+  border-radius: 12px;
+  padding: 10px;
+  color: white;
+}
+
+.player-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: white;
+  color: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.host-label {
+  margin-left: auto;
+  color: #888;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.remove-player {
+  margin-left: auto;
+  background: transparent;
+  color: #888;
+  font-size: 22px;
+  padding: 5px 10px;
+}
+
+.start-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lobby-back {
+  display: block;
+  margin: 20px auto 0;
+}input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 12px;
+  background: #292929;
+  color: white;
+  font-size: 16px;
+  outline: none;
+}
+
+input::placeholder {
+  color: #777;
+}
+
+.join-error {
+  color: #ff6b6b;
+  font-size: 14px;
+  margin: 10px 0;
+}
