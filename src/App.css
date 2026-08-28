@@ -4,122 +4,166 @@
 
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #111;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  background: #f3f5f7;
+  color: #17202a;
+}
+
+button,
+input {
+  font: inherit;
 }
 
 button {
-  border: none;
   cursor: pointer;
-  font-family: inherit;
 }
 
 .app {
   min-height: 100vh;
+  padding: 24px;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
 }
 
 .card {
   width: 100%;
-  max-width: 420px;
-  text-align: center;
-  background: #1d1d1d;
-  padding: 40px 30px;
-  border-radius: 24px;
+  max-width: 520px;
+  background: white;
+  border-radius: 28px;
+  padding: 32px;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.08);
 }
 
 .logo {
-  font-size: 70px;
-  margin-bottom: 10px;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f2f4;
+  font-size: 38px;
 }
 
 .small-logo {
-  font-size: 50px;
-  margin-top: 5px;
+  width: 58px;
+  height: 58px;
+  font-size: 30px;
+  margin-bottom: 14px;
 }
 
 h1 {
   margin: 0;
-  color: white;
-  font-size: 46px;
+  text-align: center;
+  font-size: 32px;
+  line-height: 1.1;
+}
+
+h2 {
+  margin: 0;
 }
 
 .subtitle {
-  color: #aaa;
-  font-size: 18px;
-  margin: 12px 0 35px;
+  margin: 10px 0 28px;
+  text-align: center;
+  color: #68727d;
+  line-height: 1.5;
 }
 
-.card > button:not(.back-button) {
+.card > button:not(
+  .back-button
+):not(.remove-player) {
   width: 100%;
-  border-radius: 14px;
-  padding: 16px;
+  border: 0;
+  border-radius: 15px;
+  padding: 15px 18px;
   margin-top: 12px;
-  font-size: 18px;
-  font-weight: bold;
-  background: white;
-  color: #111;
+  background: #111827;
+  color: white;
+  font-weight: 700;
+  transition:
+    transform 0.15s,
+    opacity 0.15s;
+}
+
+.card > button:hover {
+  transform: translateY(-1px);
+}
+
+.card > button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .secondary {
-  background: #333 !important;
-  color: white !important;
-}
-
-.settings-card {
-  text-align: left;
-}
-
-.settings-card h1,
-.settings-card .subtitle,
-.settings-card .logo {
-  text-align: center;
+  background: #edf0f3 !important;
+  color: #17202a !important;
 }
 
 .back-button {
+  border: 0;
   background: transparent;
-  color: #aaa;
-  font-size: 16px;
   padding: 0;
+  color: #59636e;
+  font-weight: 600;
+  margin-bottom: 22px;
 }
 
 .setting {
-  margin-top: 28px;
+  margin-bottom: 22px;
 }
 
 .setting label {
   display: block;
-  color: white;
-  font-size: 17px;
-  font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 9px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.setting input {
+  width: 100%;
+  border: 1px solid #dce1e6;
+  border-radius: 13px;
+  padding: 14px;
+  outline: none;
+  background: #fafbfc;
+}
+
+.setting input:focus {
+  border-color: #111827;
 }
 
 .counter {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #292929;
+  background: #f4f5f6;
   border-radius: 14px;
   padding: 6px;
 }
 
 .counter button {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
-  background: #3a3a3a;
-  color: white;
-  font-size: 26px;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 11px;
+  background: white;
+  font-size: 24px;
 }
 
 .counter span {
-  color: white;
-  font-size: 22px;
-  font-weight: bold;
+  font-size: 20px;
+  font-weight: 800;
 }
 
 .options {
@@ -129,99 +173,78 @@ h1 {
 
 .options button {
   flex: 1;
-  padding: 14px 8px;
+  border: 1px solid #dce1e6;
+  background: #f7f8f9;
   border-radius: 12px;
-  background: #292929;
-  color: #aaa;
-  font-size: 16px;
-  font-weight: bold;
+  padding: 12px;
+  font-weight: 700;
 }
 
 .options button.selected {
-  background: white;
-  color: #111;
+  background: #111827;
+  color: white;
+  border-color: #111827;
 }
 
 .game-summary {
-  margin-top: 30px;
+  margin-top: 25px;
   padding: 16px;
-  border-radius: 14px;
-  background: #292929;
-  color: white;
+  border-radius: 15px;
+  background: #f5f6f7;
 }
 
 .game-summary p {
-  margin: 6px 0 0;
-  color: #aaa;
+  margin: 5px 0 0;
+  color: #68727d;
   font-size: 14px;
+  line-height: 1.5;
 }
 
-.start-button {
-  width: 100%;
-  margin-top: 18px;
-  padding: 17px;
-  border-radius: 14px;
-  background: white;
-  color: #111;
-  font-size: 18px;
-  font-weight: bold;
-}.lobby-card {
-  text-align: center;
-}
+/* LOBBY */
 
 .qr-placeholder {
-  width: 190px;
-  height: 190px;
-  margin: 25px auto 20px;
-  background: white;
-  border-radius: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-}
-
-.qr-pattern {
-  font-size: 100px;
-  color: #111;
-  line-height: 1;
+  gap: 12px;
+  margin: 20px 0;
 }
 
 .qr-placeholder p {
-  margin: 5px 0 0;
-  color: #111;
+  margin: 0;
   font-size: 11px;
-  font-weight: bold;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #7a838c;
 }
 
 .room-code {
-  background: #292929;
-  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 14px;
-  margin-bottom: 25px;
+  border-radius: 15px;
+  background: #f4f5f6;
+  margin-bottom: 24px;
 }
 
 .room-code span {
-  display: block;
-  color: #888;
-  font-size: 13px;
-  margin-bottom: 4px;
+  font-size: 12px;
+  color: #737d87;
 }
 
 .room-code strong {
-  color: white;
-  font-size: 30px;
-  letter-spacing: 5px;
+  margin-top: 3px;
+  font-size: 28px;
+  letter-spacing: 0.12em;
 }
 
 .players-header {
-  text-align: left;
+  margin-bottom: 10px;
 }
 
 .players-header h2 {
-  color: white;
   font-size: 18px;
-  margin: 0 0 10px;
 }
 
 .player-list {
@@ -233,145 +256,491 @@ h1 {
 .player {
   display: flex;
   align-items: center;
-  background: #292929;
-  border-radius: 12px;
-  padding: 10px;
-  color: white;
+  gap: 12px;
+  padding: 11px;
+  border-radius: 14px;
+  background: #f6f7f8;
 }
 
 .player-avatar {
   width: 38px;
   height: 38px;
+  flex-shrink: 0;
   border-radius: 50%;
-  background: white;
-  color: #111;
+  background: #dfe3e7;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  margin-right: 10px;
+  font-weight: 800;
 }
 
 .host-label {
   margin-left: auto;
-  color: #888;
-  font-size: 11px;
-  font-weight: bold;
+  font-size: 10px;
+  font-weight: 800;
+  color: #6e7781;
 }
 
 .remove-player {
   margin-left: auto;
-  background: transparent;
-  color: #888;
-  font-size: 22px;
-  padding: 5px 10px;
-}
-
-.start-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: #e7eaed;
+  font-size: 20px;
 }
 
 .lobby-back {
   display: block;
-  margin: 20px auto 0;
-}input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 14px;
-  margin-top: 8px;
-  border: none;
-  border-radius: 12px;
-  background: #292929;
-  color: white;
-  font-size: 16px;
-  outline: none;
+  margin: 18px auto 0;
 }
 
-input::placeholder {
-  color: #777;
+/* GAME */
+
+.game-card {
+  max-width: 620px;
 }
 
-.join-error {
-  color: #ff6b6b;
-  font-size: 14px;
-  margin: 10px 0;
-}.game-card {
-  text-align: center;
+.game-top {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
 }
 
-.game-progress {
-  margin: 25px 0;
-  text-align: left;
-}
-
-.progress-title {
-  color: #aaa;
-  font-size: 13px;
-  margin-bottom: 8px;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 8px;
-  background: #292929;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: #ffffff;
-  border-radius: 10px;
-}
-
-.game-card-area {
-  margin: 25px 0;
-}
-
-.card-question {
-  background: #292929;
-  border-radius: 20px;
-  padding: 30px 20px;
-}
-
-.card-question span {
-  font-size: 55px;
-}
-
-.card-question h2 {
-  color: white;
-  font-size: 21px;
-  margin: 15px 0 8px;
-}
-
-.card-question p {
-  color: #999;
-  font-size: 14px;
+.game-top .small-logo {
   margin: 0;
+  flex-shrink: 0;
+}
+
+.game-top h1 {
+  text-align: left;
+  font-size: 25px;
+}
+
+.game-top .subtitle {
+  text-align: left;
+  margin: 5px 0 0;
+  font-size: 14px;
+}
+
+.step-progress {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+  margin-bottom: 18px;
+}
+
+.step {
+  padding: 9px 4px;
+  text-align: center;
+  border-radius: 12px;
+  background: #f0f2f4;
+  color: #8a929a;
+}
+
+.step span {
+  display: block;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.step small {
+  display: block;
+  margin-top: 3px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.step.active {
+  background: #111827;
+  color: white;
+}
+
+.step.completed {
+  background: #e4e7ea;
+  color: #29313a;
 }
 
 .game-info {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.game-info div {
-  background: #292929;
-  border-radius: 12px;
-  padding: 12px 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 13px 15px;
+  border-radius: 14px;
+  background: #f5f6f7;
+  margin-bottom: 15px;
 }
 
 .game-info span {
-  display: block;
-  color: #888;
-  font-size: 11px;
-  margin-bottom: 4px;
+  font-size: 13px;
+  color: #747e87;
 }
 
 .game-info strong {
+  font-size: 14px;
+}
+
+.turn-message {
+  text-align: center;
+  padding: 14px 10px 18px;
+}
+
+.turn-message strong {
+  font-size: 20px;
+}
+
+.turn-message p {
+  margin: 5px 0 0;
+  color: #69737d;
+  line-height: 1.4;
+}
+
+.my-cards {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.section-title h2 {
+  font-size: 17px;
+}
+
+.section-title span {
+  font-size: 13px;
+  color: #7a838c;
+}
+
+.cards-row {
+  display: flex;
+  gap: 8px;
+}
+
+.playing-card,
+.empty-card {
+  flex: 1;
+  min-width: 0;
+  aspect-ratio: 0.72;
+  border-radius: 13px;
+}
+
+.playing-card {
+  background: white;
+  border: 1px solid #dce1e6;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.07);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.playing-card.rood {
+  color: #d52d2d;
+}
+
+.playing-card.zwart {
+  color: #17202a;
+}
+
+.card-value {
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.card-symbol {
+  font-size: 27px;
+  line-height: 1;
+  margin-top: 4px;
+}
+
+.empty-card {
+  border: 2px dashed #dfe3e7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c4c9ce;
+  font-weight: 800;
+}
+
+.start-button {
+  width: 100%;
+  border: 0;
+  border-radius: 15px;
+  padding: 15px;
+  background: #111827;
   color: white;
+  font-weight: 800;
+}
+
+.big-button {
+  font-size: 17px;
+  margin-top: 5px;
+}
+
+.guess-area {
+  text-align: center;
+  padding: 12px 0 8px;
+}
+
+.hidden-card {
+  width: 72px;
+  height: 96px;
+  margin: 0 auto 14px;
+  border-radius: 12px;
+  background: #202731;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 800;
+  box-shadow:
+    0 5px 15px rgba(0, 0, 0, 0.14);
+}
+
+.hidden-card.large {
+  width: 88px;
+  height: 120px;
+  font-size: 38px;
+}
+
+.guess-area h2 {
   font-size: 18px;
+  margin-bottom: 14px;
+}
+
+.guess-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.guess-grid.two {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.guess-grid button {
+  border: 1px solid #dce1e6;
+  border-radius: 13px;
+  background: #f7f8f9;
+  padding: 14px 8px;
+  font-weight: 800;
+}
+
+.guess-grid button:hover {
+  background: #eceff1;
+}
+
+.result-area {
+  display: flex;
+  gap: 15px;
+  padding: 17px;
+  border-radius: 18px;
+  margin-bottom: 20px;
+}
+
+.result-area.correct {
+  background: #edf8f0;
+}
+
+.result-area.wrong {
+  background: #fff0f0;
+}
+
+.result-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 900;
+  background: white;
+}
+
+.result-content {
+  flex: 1;
+}
+
+.result-content h2 {
+  font-size: 19px;
+  margin-bottom: 8px;
+}
+
+.result-content p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #626c75;
+}
+
+.revealed-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 10px;
+  margin-bottom: 5px;
+  border-radius: 9px;
+  background: white;
+  font-weight: 800;
+}
+
+.revealed-card strong.rood {
+  color: #d52d2d;
+}
+
+.revealed-card strong.zwart {
+  color: #17202a;
+}
+
+.drink-message {
+  margin-top: 10px !important;
+  padding: 9px;
+  border-radius: 10px;
+  background: white;
+  font-size: 14px !important;
+  font-weight: 700;
+}
+
+.drink-message.success {
+  color: #26733b;
+}
+
+.next-countdown {
+  margin-top: 10px;
+  font-size: 11px;
+  color: #8a929a;
+}
+
+.game-waiting {
+  margin: 5px 0 20px;
+  padding: 20px;
+  border-radius: 16px;
+  background: #f6f7f8;
+}
+
+.game-waiting .hidden-card {
+  margin-bottom: 10px;
+}
+
+.game-players {
+  margin-top: 25px;
+}
+
+.game-player {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px;
+  border-radius: 13px;
+  margin-top: 7px;
+  background: #f6f7f8;
+  border: 1px solid transparent;
+}
+
+.game-player.active {
+  border-color: #cfd4d9;
+  background: #f1f3f5;
+}
+
+.player-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.player-info span {
+  display: block;
+  font-weight: 700;
+}
+
+.player-info small {
+  display: block;
+  margin-top: 2px;
+  font-size: 9px;
+  font-weight: 800;
+  color: #737d87;
+}
+
+.card-count {
+  font-size: 13px;
+  color: #69737d;
+}
+
+.finished-message {
+  text-align: center;
+  padding: 25px 15px;
+  border-radius: 18px;
+  background: #f4f5f6;
+  margin-bottom: 20px;
+}
+
+.finished-message > div {
+  font-size: 38px;
+}
+
+.finished-message h2 {
+  margin-top: 8px;
+  font-size: 20px;
+}
+
+.finished-message p {
+  margin-bottom: 0;
+  color: #707982;
+}
+
+.waiting-message {
+  text-align: center;
+  color: #6d7780;
+  padding: 15px;
+}
+
+.join-error {
+  margin: -5px 0 14px;
+  padding: 11px;
+  border-radius: 11px;
+  background: #fff0f0;
+  color: #a32626;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .app {
+    padding: 12px;
+    align-items: flex-start;
+  }
+
+  .card {
+    margin-top: 8px;
+    padding: 22px;
+    border-radius: 22px;
+  }
+
+  .game-card {
+    padding: 18px;
+  }
+
+  h1 {
+    font-size: 28px;
+  }
+
+  .game-top h1 {
+    font-size: 22px;
+  }
+
+  .guess-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .step small {
+    font-size: 8px;
+  }
 }
