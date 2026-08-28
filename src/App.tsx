@@ -34,6 +34,7 @@ type GuessResult = {
   guess: string;
   correct: boolean;
   drinks: number;
+  isDisco?: boolean;
 };
 
 type GameState = {
@@ -182,9 +183,7 @@ function App() {
       );
 
       /*
-       * =========================
        * RESULTAAT VAN SERVER
-       * =========================
        */
 
       if (
@@ -197,25 +196,9 @@ function App() {
       }
 
       /*
-       * =========================
-       * RESULTAAT OPRUIMEN
-       * =========================
-       *
-       * Als resultShowing false is,
-       * mag het oude resultaat weg.
-       *
-       * MAAR:
-       *
-       * We verwijderen hier NIET
-       * automatisch drawnCard.
-       *
-       * Tijdens het raden is:
-       *
-       * waitingForGuess = true
-       * resultShowing = false
-       *
-       * De kaart moet dan juist
-       * zichtbaar blijven.
+       * Resultaat alleen opruimen
+       * als de server zegt dat het
+       * resultaatscherm klaar is.
        */
 
       if (
@@ -226,17 +209,9 @@ function App() {
       }
 
       /*
-       * =========================
-       * KAART OPRUIMEN
-       * =========================
-       *
-       * Alleen wanneer:
-       *
-       * - er GEEN gok meer bezig is
-       * - er GEEN resultaat zichtbaar is
-       *
-       * Dan weten we zeker dat er een
-       * nieuwe beurt gestart is.
+       * Getrokken kaart alleen
+       * opruimen bij een echte
+       * nieuwe beurt.
        */
 
       if (
@@ -247,12 +222,6 @@ function App() {
         setIsDrawing(false);
       }
     }
-
-    /*
-     * =========================
-     * KAART ONTVANGEN
-     * =========================
-     */
 
     function handleCardDrawn({
       card,
@@ -271,12 +240,6 @@ function App() {
       setIsDrawing(false);
     }
 
-    /*
-     * =========================
-     * RESULTAAT ONTVANGEN
-     * =========================
-     */
-
     function handleGuessResult(
       result: GuessResult
     ) {
@@ -286,11 +249,6 @@ function App() {
       );
 
       setGuessResult(result);
-
-      /*
-       * De kaart zit nu in het
-       * resultaatscherm.
-       */
 
       setDrawnCard(null);
 
@@ -409,12 +367,6 @@ function App() {
    * =========================
    * COUNTDOWN
    * =========================
-   *
-   * De server bepaalt wanneer
-   * daadwerkelijk wordt doorgeschakeld.
-   *
-   * Deze countdown is alleen de
-   * zichtbare 3-2-1.
    */
 
   useEffect(() => {
@@ -423,11 +375,6 @@ function App() {
 
       return;
     }
-
-    /*
-     * Exacte servertijd gebruiken
-     * wanneer beschikbaar.
-     */
 
     if (
       gameState?.resultEndsAt
@@ -472,10 +419,6 @@ function App() {
         );
       };
     }
-
-    /*
-     * Fallback.
-     */
 
     setCountdown(3);
 
@@ -901,47 +844,74 @@ function App() {
       gameState.currentStep ===
       3
     ) {
-      return "Raad welk figuur de kaart heeft.";
+      return "Raad het figuur van de kaart, of kies Disco als je denkt dat je met deze kaart alle vier de figuren compleet hebt.";
     }
 
     return "";
   }
 
+  /*
+   * =========================
+   * FIGUUR + DISCO
+   * =========================
+   */
+
   function renderSuitButtons() {
     return (
-      <div className="guess-grid">
-        <button
-          onClick={() =>
-            makeGuess("harten")
-          }
-        >
-          ♥ Harten
-        </button>
+      <>
+        <div className="guess-grid">
+          <button
+            onClick={() =>
+              makeGuess(
+                "harten"
+              )
+            }
+          >
+            ♥ Harten
+          </button>
+
+          <button
+            onClick={() =>
+              makeGuess(
+                "ruiten"
+              )
+            }
+          >
+            ♦ Ruiten
+          </button>
+
+          <button
+            onClick={() =>
+              makeGuess(
+                "klaveren"
+              )
+            }
+          >
+            ♣ Klaveren
+          </button>
+
+          <button
+            onClick={() =>
+              makeGuess(
+                "schoppen"
+              )
+            }
+          >
+            ♠ Schoppen
+          </button>
+        </div>
 
         <button
+          className="start-button big-button"
           onClick={() =>
-            makeGuess("ruiten")
+            makeGuess(
+              "disco"
+            )
           }
         >
-          ♦ Ruiten
+          🪩 Disco
         </button>
-
-        <button
-          onClick={() =>
-            makeGuess("klaveren")
-          }
-        >
-          ♣ Klaveren
-        </button>
-
-        <button
-          onClick={() =>
-            makeGuess("schoppen")
-          }
-        >
-          ♠ Schoppen
-        </button>
-      </div>
+      </>
     );
   }
 
@@ -978,11 +948,6 @@ function App() {
       myPlayer?.cards ||
       [];
 
-    /*
-     * Server-state heeft voorrang.
-     * Los guess-result event is backup.
-     */
-
     const result =
       gameState?.result ||
       guessResult;
@@ -990,6 +955,44 @@ function App() {
     const isMyResult =
       result?.playerId ===
       socket.id;
+
+    /*
+     * =========================
+     * DISCO RESULTAAT
+     * =========================
+     */
+
+    const isDiscoSuccess =
+      Boolean(
+        result?.isDisco &&
+          result.correct
+      );
+
+    /*
+     * Normale fout:
+     * alleen degene die gokte drinkt.
+     *
+     * Goede Disco:
+     * iedereen BEHALVE degene
+     * die Disco had drinkt.
+     */
+
+    const shouldDrink =
+      Boolean(
+        result &&
+          (
+            (
+              isDiscoSuccess &&
+              result.playerId !==
+                socket.id
+            ) ||
+            (
+              !isDiscoSuccess &&
+              isMyResult &&
+              !result.correct
+            )
+          )
+      );
 
     return (
       <main className="app">
@@ -1074,7 +1077,9 @@ function App() {
             ) : result ? (
               <>
                 <strong>
-                  {result.playerName} heeft gespeeld
+                  {isDiscoSuccess
+                    ? "🪩 DISCO!"
+                    : `${result.playerName} heeft gespeeld`}
                 </strong>
 
                 <p>
@@ -1169,16 +1174,20 @@ function App() {
               }
             >
               <div className="result-icon">
-                {result.correct
-                  ? "✓"
-                  : "✕"}
+                {isDiscoSuccess
+                  ? "🪩"
+                  : result.correct
+                    ? "✓"
+                    : "✕"}
               </div>
 
               <div className="result-content">
                 <h2>
-                  {result.correct
-                    ? "Goed!"
-                    : "Fout!"}
+                  {isDiscoSuccess
+                    ? "DISCO!"
+                    : result.correct
+                      ? "Goed!"
+                      : "Fout!"}
                 </h2>
 
                 <div className="revealed-card">
@@ -1205,7 +1214,9 @@ function App() {
                 <p>
                   {result.playerName} koos{" "}
                   <strong>
-                    {result.guess}
+                    {result.isDisco
+                      ? "Disco 🪩"
+                      : result.guess}
                   </strong>
                   .
                 </p>
@@ -1226,14 +1237,22 @@ function App() {
                 </p>
 
                 {/*
-                 * Alleen speler zelf
-                 * ziet drinken.
+                 * =========================
+                 * DISCO GOED
+                 * =========================
                  */}
 
-                {isMyResult &&
-                  !result.correct && (
+                {isDiscoSuccess &&
+                  isMyResult && (
+                    <div className="drink-message success">
+                      🪩 Disco! Iedereen behalve jij neemt 1 slok!
+                    </div>
+                  )}
+
+                {isDiscoSuccess &&
+                  shouldDrink && (
                     <div className="drink-message">
-                      🥃 Neem{" "}
+                      🪩 Disco! Neem{" "}
                       <strong>
                         1 slok
                       </strong>
@@ -1241,10 +1260,35 @@ function App() {
                     </div>
                   )}
 
-                {isMyResult &&
+                {/*
+                 * =========================
+                 * NORMALE GOK GOED
+                 * =========================
+                 */}
+
+                {!result.isDisco &&
+                  isMyResult &&
                   result.correct && (
                     <div className="drink-message success">
                       Geen slok!
+                    </div>
+                  )}
+
+                {/*
+                 * =========================
+                 * NORMALE GOK FOUT
+                 * OF DISCO FOUT
+                 * =========================
+                 */}
+
+                {!isDiscoSuccess &&
+                  shouldDrink && (
+                    <div className="drink-message">
+                      🥃 Neem{" "}
+                      <strong>
+                        1 slok
+                      </strong>
+                      !
                     </div>
                   )}
 
