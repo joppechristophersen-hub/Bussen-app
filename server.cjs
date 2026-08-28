@@ -49,6 +49,36 @@ const VALUES = [
   { value: 14, name: "Aas" },
 ];
 
+function createDeck(numberOfDecks = 1) {
+  const deck = [];
+
+  for (
+    let deckNumber = 0;
+    deckNumber < numberOfDecks;
+    deckNumber++
+  ) {
+    for (const suit of SUITS) {
+      for (const cardValue of VALUES) {
+        deck.push({
+          id:
+            `${deckNumber}-${suit.name}-${cardValue.value}-` +
+            Math.random()
+              .toString(36)
+              .substring(2, 9),
+
+          suit: suit.name,
+          symbol: suit.symbol,
+          value: cardValue.value,
+          name: cardValue.name,
+          color: suit.color,
+        });
+      }
+    }
+  }
+
+  return shuffle(deck);
+}
+
 function shuffle(array) {
   const shuffled = [...array];
 
@@ -70,40 +100,6 @@ function shuffle(array) {
   return shuffled;
 }
 
-function createDeck(numberOfDecks = 1) {
-  const deck = [];
-
-  for (
-    let deckNumber = 0;
-    deckNumber < numberOfDecks;
-    deckNumber++
-  ) {
-    for (const suit of SUITS) {
-      for (const cardValue of VALUES) {
-        deck.push({
-          id:
-            `${deckNumber}-${suit.name}-${cardValue.value}-` +
-            Math.random()
-              .toString(36)
-              .substring(2, 9),
-
-          suit: suit.name,
-
-          symbol: suit.symbol,
-
-          value: cardValue.value,
-
-          name: cardValue.name,
-
-          color: suit.color,
-        });
-      }
-    }
-  }
-
-  return shuffle(deck);
-}
-
 function createRoomCode() {
   const characters =
     "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -114,8 +110,7 @@ function createRoomCode() {
     code +=
       characters[
         Math.floor(
-          Math.random() *
-            characters.length
+          Math.random() * characters.length
         )
       ];
   }
@@ -139,16 +134,25 @@ function getCurrentPlayer(room) {
   ];
 }
 
-function publicGameState(room) {
+/*
+ * Iedere speler krijgt alleen zijn eigen kaarten.
+ * Van andere spelers zien we alleen het aantal kaarten.
+ */
+function createGameState(room, viewerId) {
   return {
-    players: room.players.map(
-      (player) => ({
-        id: player.id,
-        name: player.name,
-        isHost: player.isHost,
-        cards: player.cards || [],
-      })
-    ),
+    players: room.players.map((player) => ({
+      id: player.id,
+      name: player.name,
+      isHost: player.isHost,
+
+      cards:
+        player.id === viewerId
+          ? player.cards || []
+          : undefined,
+
+      cardCount:
+        player.cards?.length || 0,
+    })),
 
     currentPlayerIndex:
       room.game.currentPlayerIndex,
@@ -158,9 +162,6 @@ function publicGameState(room) {
 
     currentCard:
       room.game.currentCard,
-
-    revealedCards:
-      room.game.revealedCards,
 
     gameStarted:
       room.game.started,
@@ -178,14 +179,28 @@ function sendGameState(roomCode) {
 
   if (!room) return;
 
-  io.to(roomCode).emit(
-    "game-state",
-    publicGameState(room)
-  );
+  for (const player of room.players) {
+    io.to(player.id).emit(
+      "game-state",
+      createGameState(
+        room,
+        player.id
+      )
+    );
+  }
 }
 
+/*
+ * Controleert de gok van de speler.
+ *
+ * Stap 0 = kleur
+ * Stap 1 = hoger/lager
+ * Stap 2 = binnen/buiten
+ * Stap 3 = figuur
+ */
 function checkGuess(
   room,
+  player,
   guess,
   drawnCard
 ) {
@@ -193,8 +208,7 @@ function checkGuess(
     room.game.currentStep;
 
   /*
-   * STAP 1
-   * Kleur
+   * STAP 1 - KLEUR
    */
   if (step === 0) {
     return (
@@ -203,28 +217,27 @@ function checkGuess(
   }
 
   /*
-   * STAP 2
-   * Hoger / lager
+   * STAP 2 - HOGER / LAGER
    */
   if (step === 1) {
-    const previousCard =
-      room.game.revealedCards[0];
+    const firstCard =
+      player.cards[0];
 
-    if (!previousCard) {
+    if (!firstCard) {
       return false;
     }
 
     if (guess === "hoger") {
       return (
         drawnCard.value >
-        previousCard.value
+        firstCard.value
       );
     }
 
     if (guess === "lager") {
       return (
         drawnCard.value <
-        previousCard.value
+        firstCard.value
       );
     }
 
@@ -232,20 +245,14 @@ function checkGuess(
   }
 
   /*
-   * STAP 3
-   * Binnen / buiten
-   *
-   * Gelijk is geen normale keuze.
-   * Als de kaart gelijk is aan één
-   * van de eerdere kaarten, is de
-   * gok dus fout.
+   * STAP 3 - BINNEN / BUITEN
    */
   if (step === 2) {
     const firstCard =
-      room.game.revealedCards[0];
+      player.cards[0];
 
     const secondCard =
-      room.game.revealedCards[1];
+      player.cards[1];
 
     if (
       !firstCard ||
@@ -264,17 +271,29 @@ function checkGuess(
       secondCard.value
     );
 
+    /*
+     * Binnen:
+     * strikt tussen de twee kaarten.
+     */
     if (guess === "binnen") {
       return (
-        drawnCard.value > lowest &&
-        drawnCard.value < highest
+        drawnCard.value >
+          lowest &&
+        drawnCard.value <
+          highest
       );
     }
 
+    /*
+     * Buiten:
+     * lager dan beide of hoger dan beide.
+     */
     if (guess === "buiten") {
       return (
-        drawnCard.value < lowest ||
-        drawnCard.value > highest
+        drawnCard.value <
+          lowest ||
+        drawnCard.value >
+          highest
       );
     }
 
@@ -282,8 +301,7 @@ function checkGuess(
   }
 
   /*
-   * STAP 4
-   * Figuur
+   * STAP 4 - FIGUUR
    */
   if (step === 3) {
     return (
@@ -315,20 +333,6 @@ io.on("connection", (socket) => {
       },
       callback
     ) => {
-      const name =
-        String(playerName || "")
-          .trim();
-
-      if (!name) {
-        callback({
-          success: false,
-          message:
-            "Vul eerst je naam in.",
-        });
-
-        return;
-      }
-
       const roomCode =
         getUniqueRoomCode();
 
@@ -357,12 +361,15 @@ io.on("connection", (socket) => {
       rooms[roomCode] = {
         hostId: socket.id,
 
-        settings: safeSettings,
+        settings:
+          safeSettings,
 
         players: [
           {
             id: socket.id,
-            name,
+            name:
+              playerName ||
+              "Host",
             isHost: true,
             cards: [],
           },
@@ -374,14 +381,12 @@ io.on("connection", (socket) => {
           started: false,
 
           /*
-           * currentPlayerIndex:
-           * welke speler is aan de beurt
+           * Dit is de speler binnen
+           * de huidige stap.
            */
           currentPlayerIndex: 0,
 
           /*
-           * currentStep:
-           *
            * 0 = kleur
            * 1 = hoger/lager
            * 2 = binnen/buiten
@@ -391,15 +396,13 @@ io.on("connection", (socket) => {
 
           currentCard: null,
 
-          /*
-           * Kaarten die binnen de
-           * huidige stap al zijn
-           * geopend.
-           */
-          revealedCards: [],
-
           waitingForGuess: false,
 
+          /*
+           * Tijdens deze 3 seconden
+           * kan niemand de volgende
+           * kaart trekken.
+           */
           showingResult: false,
         },
       };
@@ -412,14 +415,12 @@ io.on("connection", (socket) => {
       callback({
         success: true,
         roomCode,
-
         players:
-          rooms[roomCode]
-            .players,
+          rooms[roomCode].players,
       });
 
       console.log(
-        `Kamer ${roomCode} aangemaakt door ${name}`
+        `Kamer ${roomCode} aangemaakt door ${playerName}`
       );
     }
   );
@@ -444,10 +445,6 @@ io.on("connection", (socket) => {
           .trim()
           .toUpperCase();
 
-      const name =
-        String(playerName || "")
-          .trim();
-
       const room =
         rooms[normalizedCode];
 
@@ -456,16 +453,6 @@ io.on("connection", (socket) => {
           success: false,
           message:
             "Kamer bestaat niet.",
-        });
-
-        return;
-      }
-
-      if (!name) {
-        callback({
-          success: false,
-          message:
-            "Vul eerst je naam in.",
         });
 
         return;
@@ -496,14 +483,21 @@ io.on("connection", (socket) => {
 
       const player = {
         id: socket.id,
-        name,
+
+        name:
+          playerName ||
+          "Speler",
+
         isHost: false,
+
         cards: [],
       };
 
       room.players.push(player);
 
-      socket.join(normalizedCode);
+      socket.join(
+        normalizedCode
+      );
 
       socket.roomCode =
         normalizedCode;
@@ -526,7 +520,7 @@ io.on("connection", (socket) => {
       );
 
       console.log(
-        `${name} is bij kamer ${normalizedCode} gekomen`
+        `${player.name} is bij kamer ${normalizedCode} gekomen`
       );
     }
   );
@@ -557,7 +551,8 @@ io.on("connection", (socket) => {
 
       const player =
         room.players.find(
-          (p) => p.id === playerId
+          (p) =>
+            p.id === playerId
         );
 
       if (
@@ -629,16 +624,17 @@ io.on("connection", (socket) => {
         started: true,
 
         /*
-         * We beginnen bij speler 1
-         * en stap 1.
+         * We beginnen bij speler 1.
          */
         currentPlayerIndex: 0,
 
+        /*
+         * Iedereen begint bij
+         * stap 1 = kleur.
+         */
         currentStep: 0,
 
         currentCard: null,
-
-        revealedCards: [],
 
         waitingForGuess: false,
 
@@ -649,7 +645,9 @@ io.on("connection", (socket) => {
         "game-started"
       );
 
-      sendGameState(roomCode);
+      sendGameState(
+        roomCode
+      );
 
       console.log(
         `Spel gestart in kamer ${roomCode}`
@@ -674,20 +672,8 @@ io.on("connection", (socket) => {
 
       if (!room) return;
 
-      if (!room.game.started) {
-        return;
-      }
-
-      const currentPlayer =
-        getCurrentPlayer(room);
-
-      if (!currentPlayer) {
-        return;
-      }
-
       if (
-        currentPlayer.id !==
-        socket.id
+        !room.game.started
       ) {
         return;
       }
@@ -704,6 +690,28 @@ io.on("connection", (socket) => {
         return;
       }
 
+      const currentPlayer =
+        getCurrentPlayer(room);
+
+      if (!currentPlayer) {
+        return;
+      }
+
+      /*
+       * Alleen de speler die nu
+       * aan de beurt is mag trekken.
+       */
+      if (
+        currentPlayer.id !==
+        socket.id
+      ) {
+        return;
+      }
+
+      /*
+       * Wanneer de stock leeg is,
+       * maken we een nieuwe.
+       */
       if (
         room.deck.length === 0
       ) {
@@ -724,6 +732,10 @@ io.on("connection", (socket) => {
       room.game.waitingForGuess =
         true;
 
+      /*
+       * Alleen de speler die aan
+       * de beurt is krijgt de kaart.
+       */
       io.to(socket.id).emit(
         "card-drawn",
         {
@@ -737,7 +749,20 @@ io.on("connection", (socket) => {
         }
       );
 
-      sendGameState(roomCode);
+      /*
+       * Andere spelers weten alleen
+       * dat er een gok gemaakt wordt.
+       */
+      io.to(roomCode).emit(
+        "player-drawing",
+        {
+          playerId:
+            socket.id,
+
+          step:
+            room.game.currentStep,
+        }
+      );
 
       console.log(
         `${currentPlayer.name} heeft een kaart getrokken`
@@ -762,7 +787,9 @@ io.on("connection", (socket) => {
 
       if (!room) return;
 
-      if (!room.game.started) {
+      if (
+        !room.game.started
+      ) {
         return;
       }
 
@@ -785,6 +812,10 @@ io.on("connection", (socket) => {
         return;
       }
 
+      /*
+       * Alleen de speler aan de
+       * beurt mag gokken.
+       */
       if (
         currentPlayer.id !==
         socket.id
@@ -805,6 +836,7 @@ io.on("connection", (socket) => {
       const correct =
         checkGuess(
           room,
+          currentPlayer,
           normalizedGuess,
           card
         );
@@ -817,51 +849,35 @@ io.on("connection", (socket) => {
         card
       );
 
-      /*
-       * Kaart bewaren zodat de
-       * volgende stap ermee kan
-       * rekenen.
-       *
-       * Bij stap 0:
-       * eerste kaart.
-       *
-       * Bij stap 1:
-       * tweede kaart.
-       *
-       * Bij stap 2:
-       * derde kaart.
-       *
-       * Bij stap 3:
-       * vierde kaart.
-       */
-      room.game.revealedCards.push(
-        card
-      );
-
-      const finishedPlayer =
-        currentPlayer;
-
       const finishedStep =
         room.game.currentStep;
 
+      /*
+       * Kaart en gok opruimen.
+       */
       room.game.currentCard =
         null;
 
       room.game.waitingForGuess =
         false;
 
+      /*
+       * Resultaatmodus aan.
+       */
       room.game.showingResult =
         true;
 
       /*
-       * Iedereen krijgt het
-       * resultaat te zien.
+       * Resultaat naar iedereen.
        */
       io.to(roomCode).emit(
         "guess-result",
         {
           playerId:
-            finishedPlayer.id,
+            currentPlayer.id,
+
+          playerName:
+            currentPlayer.name,
 
           step:
             finishedStep,
@@ -874,128 +890,153 @@ io.on("connection", (socket) => {
           correct,
 
           cards:
-            finishedPlayer.cards,
+            currentPlayer.cards,
+
+          drinks:
+            correct ? 0 : 1,
         }
-      );
-
-      sendGameState(roomCode);
-
-      console.log(
-        `${finishedPlayer.name}: stap ${finishedStep + 1}, ${correct ? "goed" : "fout"}`
       );
 
       /*
-       * RESULTAAT 3 SECONDEN TONEN
+       * Meteen de nieuwe kaarten
+       * naar de betreffende speler sturen.
+       */
+      sendGameState(
+        roomCode
+      );
+
+      console.log(
+        `${currentPlayer.name}: stap ${finishedStep + 1}, gok ${normalizedGuess}, ${
+          correct
+            ? "goed"
+            : "fout"
+        }`
+      );
+
+      /*
+       * =========================
+       * 3 SECONDEN WACHTEN
+       * =========================
+       *
+       * Niemand gaat verder voordat
+       * deze 3 seconden voorbij zijn.
        */
       setTimeout(() => {
-        const currentRoom =
+        const activeRoom =
           rooms[roomCode];
 
-        if (!currentRoom) {
-          return;
-        }
+        if (!activeRoom) return;
 
         /*
-         * Alleen doorgaan als dit
-         * nog steeds hetzelfde
-         * resultaat is.
+         * Controleer opnieuw of het
+         * spel nog actief is.
          */
         if (
-          !currentRoom.game
-            .showingResult
+          !activeRoom.game.started
         ) {
           return;
         }
 
-        currentRoom.game
-          .showingResult = false;
+        /*
+         * Resultaatvenster sluiten.
+         */
+        activeRoom.game.showingResult =
+          false;
 
         /*
-         * =====================
+         * =========================
          * VOLGENDE SPELER
-         * =====================
-         *
-         * Eerst alle spelers
-         * dezelfde stap laten doen.
+         * =========================
          */
 
+        activeRoom.game.currentPlayerIndex += 1;
+
+        /*
+         * Als niet iedereen deze stap
+         * heeft gedaan, blijft dezelfde
+         * stap actief.
+         */
         if (
-          currentRoom.game
-            .currentPlayerIndex <
-          currentRoom.players.length - 1
+          activeRoom.game.currentPlayerIndex <
+          activeRoom.players.length
         ) {
-          /*
-           * Er zijn nog spelers
-           * over in deze stap.
-           */
-          currentRoom.game
-            .currentPlayerIndex += 1;
-        } else {
-          /*
-           * Iedereen heeft deze
-           * stap gehad.
-           */
+          sendGameState(
+            roomCode
+          );
 
-          if (
-            currentRoom.game
-              .currentStep < 3
-          ) {
-            /*
-             * Naar de volgende stap.
-             */
-            currentRoom.game
-              .currentStep += 1;
+          io.to(roomCode).emit(
+            "turn-advanced"
+          );
 
-            /*
-             * We beginnen weer bij
-             * de eerste speler.
-             */
-            currentRoom.game
-              .currentPlayerIndex = 0;
-
-            /*
-             * De kaarten uit de
-             * vorige stap blijven
-             * beschikbaar.
-             *
-             * De volgorde is:
-             *
-             * stap 1 -> kaart 1
-             * stap 2 -> kaart 2
-             * stap 3 -> kaart 3
-             * stap 4 -> kaart 4
-             *
-             * Daarom moeten we hier
-             * NIET alles leegmaken.
-             */
-          } else {
-            /*
-             * Iedereen heeft alle
-             * vier kaarten.
-             *
-             * Dit is het einde van
-             * de eerste kaartfase.
-             */
-            currentRoom.game
-              .currentPlayerIndex = 0;
-
-            io.to(roomCode).emit(
-              "four-cards-complete"
-            );
-          }
+          return;
         }
 
         /*
-         * Reset de tijdelijke kaarten
-         * van de huidige gok.
+         * =========================
+         * IEDEREEN HEEFT DEZE STAP GEDAAN
+         * =========================
          */
-        currentRoom.game
-          .currentCard = null;
 
-        currentRoom.game
-          .waitingForGuess = false;
+        activeRoom.game.currentPlayerIndex =
+          0;
 
-        sendGameState(roomCode);
+        activeRoom.game.currentStep +=
+          1;
+
+        /*
+         * Alle 4 stappen klaar.
+         *
+         * Dan hebben alle spelers
+         * hun vier kaarten.
+         */
+        if (
+          activeRoom.game.currentStep >=
+          4
+        ) {
+          activeRoom.game.currentStep =
+            0;
+
+          io.to(roomCode).emit(
+            "four-cards-complete"
+          );
+
+          /*
+           * Voorlopig begint daarna
+           * weer een nieuwe ronde.
+           */
+          sendGameState(
+            roomCode
+          );
+
+          io.to(roomCode).emit(
+            "turn-advanced"
+          );
+
+          console.log(
+            `Iedere speler heeft 4 kaarten in kamer ${roomCode}`
+          );
+
+          return;
+        }
+
+        /*
+         * Nieuwe stap voor iedereen.
+         */
+        sendGameState(
+          roomCode
+        );
+
+        io.to(roomCode).emit(
+          "step-advanced",
+          {
+            step:
+              activeRoom.game.currentStep,
+          }
+        );
+
+        console.log(
+          `Nieuwe stap ${activeRoom.game.currentStep + 1} in kamer ${roomCode}`
+        );
       }, 3000);
     }
   );
@@ -1028,8 +1069,7 @@ io.on("connection", (socket) => {
         rooms[roomCode];
 
       /*
-       * Host weg =
-       * hele kamer sluiten.
+       * Host weg = kamer sluiten.
        */
       if (
         room.hostId ===
@@ -1049,7 +1089,7 @@ io.on("connection", (socket) => {
       }
 
       /*
-       * Gewone speler weg.
+       * Gewone speler verwijderen.
        */
       room.players =
         room.players.filter(
@@ -1065,13 +1105,15 @@ io.on("connection", (socket) => {
         return;
       }
 
+      /*
+       * Index veilig houden.
+       */
       if (
-        room.game
-          .currentPlayerIndex >=
+        room.game.currentPlayerIndex >=
         room.players.length
       ) {
-        room.game
-          .currentPlayerIndex = 0;
+        room.game.currentPlayerIndex =
+          0;
       }
 
       io.to(roomCode).emit(
@@ -1079,8 +1121,12 @@ io.on("connection", (socket) => {
         room.players
       );
 
-      if (room.game.started) {
-        sendGameState(roomCode);
+      if (
+        room.game.started
+      ) {
+        sendGameState(
+          roomCode
+        );
       }
     }
   );
