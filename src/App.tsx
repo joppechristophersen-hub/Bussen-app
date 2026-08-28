@@ -103,6 +103,9 @@ function App() {
   const [isDrawing, setIsDrawing] =
     useState(false);
 
+  const [countdown, setCountdown] =
+    useState(3);
+
   /*
    * =========================
    * QR CODE
@@ -131,6 +134,37 @@ function App() {
 
   /*
    * =========================
+   * RESULT COUNTDOWN
+   * =========================
+   */
+
+  useEffect(() => {
+    if (!guessResult) {
+      setCountdown(3);
+      return;
+    }
+
+    setCountdown(3);
+
+    const interval =
+      window.setInterval(() => {
+        setCountdown((current) => {
+          if (current <= 1) {
+            window.clearInterval(interval);
+            return 0;
+          }
+
+          return current - 1;
+        });
+      }, 1000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [guessResult]);
+
+  /*
+   * =========================
    * SOCKET EVENTS
    * =========================
    */
@@ -152,6 +186,7 @@ function App() {
       () => {
         setDrawnCard(null);
         setGuessResult(null);
+        setIsDrawing(false);
         setScreen("game");
       }
     );
@@ -160,9 +195,25 @@ function App() {
       "game-state",
       (state: GameState) => {
         setGameState(state);
+
         setPlayerNames(
           state.players
         );
+
+        /*
+         * De server stuurt na de
+         * RESULT_DELAY een nieuwe
+         * game-state.
+         *
+         * resultShowing wordt dan false.
+         * Het oude resultaat moet op dat
+         * moment van het scherm verdwijnen.
+         */
+        if (!state.resultShowing) {
+          setGuessResult(null);
+          setDrawnCard(null);
+          setIsDrawing(false);
+        }
       }
     );
 
@@ -189,6 +240,7 @@ function App() {
         setGuessResult(result);
         setDrawnCard(null);
         setIsDrawing(false);
+        setCountdown(3);
       }
     );
 
@@ -197,6 +249,7 @@ function App() {
       () => {
         setGuessResult(null);
         setDrawnCard(null);
+        setIsDrawing(false);
       }
     );
 
@@ -264,6 +317,7 @@ function App() {
     setGameState(null);
     setDrawnCard(null);
     setGuessResult(null);
+    setIsDrawing(false);
     setScreen("home");
   }
 
@@ -912,8 +966,15 @@ function App() {
                 )}
 
                 <div className="next-countdown">
-                  Volgende speler over 3
-                  seconden...
+                  Volgende speler over{" "}
+                  <strong>
+                    {countdown}
+                  </strong>{" "}
+                  seconde
+                  {countdown === 1
+                    ? ""
+                    : "n"}
+                  ...
                 </div>
               </div>
             </div>

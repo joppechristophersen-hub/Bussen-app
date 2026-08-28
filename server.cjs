@@ -86,13 +86,9 @@ function createDeck(numberOfDecks = 1) {
               .substring(2, 9),
 
           suit: suit.name,
-
           symbol: suit.symbol,
-
           value: cardValue.value,
-
           name: cardValue.name,
-
           color: suit.color,
         });
       }
@@ -141,10 +137,6 @@ function getCardText(card) {
   return `${card.name} ${card.symbol}`;
 }
 
-/*
- * We sturen alleen de noodzakelijke
- * spelinformatie naar de clients.
- */
 function publicGameState(room) {
   return {
     players: room.players.map(
@@ -152,7 +144,6 @@ function publicGameState(room) {
         id: player.id,
         name: player.name,
         isHost: player.isHost,
-
         cards: player.cards || [],
       })
     ),
@@ -189,20 +180,11 @@ function sendGameState(roomCode) {
 }
 
 /*
- * Controleert de gok.
- *
- * Stap 0:
- * kleur
- *
- * Stap 1:
- * hoger / lager
- *
- * Stap 2:
- * binnen / buiten
- *
- * Stap 3:
- * figuur
+ * =========================
+ * GOK CONTROLEREN
+ * =========================
  */
+
 function checkGuess(
   room,
   player,
@@ -223,9 +205,6 @@ function checkGuess(
 
   /*
    * STAP 2 - HOGER / LAGER
-   *
-   * Gelijk is hier GEEN geldige
-   * keuze en telt dus als fout.
    */
   if (step === 1) {
     const firstCard =
@@ -254,9 +233,6 @@ function checkGuess(
 
   /*
    * STAP 3 - BINNEN / BUITEN
-   *
-   * Gelijk wordt niet als normale
-   * keuze aangeboden.
    */
   if (step === 2) {
     const firstCard =
@@ -302,10 +278,6 @@ function checkGuess(
       );
     }
 
-    /*
-     * Een kaart gelijk aan één van
-     * de twee kaarten is automatisch fout.
-     */
     return false;
   }
 
@@ -321,10 +293,26 @@ function checkGuess(
   return false;
 }
 
+/*
+ * =========================
+ * VOLGENDE BEURT
+ * =========================
+ */
+
 function advanceTurn(roomCode) {
   const room = rooms[roomCode];
 
   if (!room) return;
+
+  /*
+   * Controle:
+   * als er om wat voor reden dan ook
+   * geen resultaat meer actief is,
+   * hoeft deze timer niets meer te doen.
+   */
+  if (!room.game.resultShowing) {
+    return;
+  }
 
   /*
    * Resultaat is voorbij.
@@ -334,10 +322,6 @@ function advanceTurn(roomCode) {
 
   /*
    * Nog een speler in deze stap?
-   *
-   * Dan blijft de stap hetzelfde
-   * en gaat de beurt naar de volgende
-   * speler.
    */
   if (
     room.game.currentPlayerIndex <
@@ -352,13 +336,20 @@ function advanceTurn(roomCode) {
 
     sendGameState(roomCode);
 
+    console.log(
+      `Kamer ${roomCode}: beurt naar ${
+        getCurrentPlayer(room)?.name ||
+        "volgende speler"
+      }`
+    );
+
     return;
   }
 
   /*
    * Iedereen heeft deze stap gedaan.
    *
-   * Nu naar de volgende stap.
+   * Ga naar de volgende stap.
    */
   room.game.currentPlayerIndex = 0;
 
@@ -408,6 +399,7 @@ io.on("connection", (socket) => {
    * KAMER MAKEN
    * =========================
    */
+
   socket.on(
     "create-room",
     (
@@ -506,6 +498,7 @@ io.on("connection", (socket) => {
    * KAMER JOINEN
    * =========================
    */
+
   socket.on(
     "join-room",
     (
@@ -605,6 +598,7 @@ io.on("connection", (socket) => {
    * SPELER VERWIJDEREN
    * =========================
    */
+
   socket.on(
     "remove-player",
     (playerId) => {
@@ -658,6 +652,7 @@ io.on("connection", (socket) => {
    * SPEL STARTEN
    * =========================
    */
+
   socket.on(
     "start-game",
     () => {
@@ -726,6 +721,7 @@ io.on("connection", (socket) => {
    * KAART TREKKEN
    * =========================
    */
+
   socket.on(
     "draw-card",
     () => {
@@ -813,6 +809,7 @@ io.on("connection", (socket) => {
    * GOK DOEN
    * =========================
    */
+
   socket.on(
     "guess-card",
     ({ guess }) => {
@@ -834,6 +831,12 @@ io.on("connection", (socket) => {
 
       if (
         !room.game.waitingForGuess
+      ) {
+        return;
+      }
+
+      if (
+        room.game.resultShowing
       ) {
         return;
       }
@@ -891,8 +894,7 @@ io.on("connection", (socket) => {
         null;
 
       /*
-       * Resultaat blijft voor
-       * iedereen 3 seconden zichtbaar.
+       * Resultaat naar alle spelers.
        */
       io.to(roomCode).emit(
         "guess-result",
@@ -932,8 +934,8 @@ io.on("connection", (socket) => {
       );
 
       /*
-       * PAS NA 3 SECONDEN
-       * gaat het spel verder.
+       * Na precies 3 seconden
+       * wordt de beurt doorgeschoven.
        */
       setTimeout(() => {
         advanceTurn(roomCode);
@@ -946,6 +948,7 @@ io.on("connection", (socket) => {
    * DISCONNECT
    * =========================
    */
+
   socket.on(
     "disconnect",
     () => {
