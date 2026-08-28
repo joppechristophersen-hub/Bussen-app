@@ -10,56 +10,9 @@ const io = new Server(PORT, {
 
 const rooms = {};
 
-const suits = ["♥", "♦", "♣", "♠"];
-
-function createDeck(numberOfDecks = 1) {
-  const deck = [];
-
-  const values = [
-    { name: "2", value: 2 },
-    { name: "3", value: 3 },
-    { name: "4", value: 4 },
-    { name: "5", value: 5 },
-    { name: "6", value: 6 },
-    { name: "7", value: 7 },
-    { name: "8", value: 8 },
-    { name: "9", value: 9 },
-    { name: "10", value: 10 },
-    { name: "J", value: 11 },
-    { name: "Q", value: 12 },
-    { name: "K", value: 13 },
-    { name: "A", value: 14 },
-  ];
-
-  for (let d = 0; d < numberOfDecks; d++) {
-    for (const suit of suits) {
-      for (const card of values) {
-        deck.push({
-          id: `${d}-${suit}-${card.name}-${Math.random()}`,
-          suit,
-          value: card.value,
-          name: card.name,
-          color:
-            suit === "♥" || suit === "♦"
-              ? "rood"
-              : "zwart",
-        });
-      }
-    }
-  }
-
-  return deck;
-}
-
-function shuffleDeck(deck) {
-  for (let i = deck.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-
-    [deck[i], deck[j]] = [deck[j], deck[i]];
-  }
-
-  return deck;
-}
+/* =========================
+   KAMERCODE
+========================= */
 
 function createRoomCode() {
   const characters =
@@ -70,7 +23,9 @@ function createRoomCode() {
   for (let i = 0; i < 5; i++) {
     code +=
       characters[
-        Math.floor(Math.random() * characters.length)
+        Math.floor(
+          Math.random() * characters.length
+        )
       ];
   }
 
@@ -87,18 +42,130 @@ function getUniqueRoomCode() {
   return code;
 }
 
-function broadcastGameState(roomCode) {
+/* =========================
+   KAARTEN
+========================= */
+
+const suits = [
+  {
+    name: "harten",
+    symbol: "♥",
+    color: "rood",
+  },
+  {
+    name: "ruiten",
+    symbol: "♦",
+    color: "rood",
+  },
+  {
+    name: "klaveren",
+    symbol: "♣",
+    color: "zwart",
+  },
+  {
+    name: "schoppen",
+    symbol: "♠",
+    color: "zwart",
+  },
+];
+
+const cardNames = {
+  1: "Aas",
+  2: "2",
+  3: "3",
+  4: "4",
+  5: "5",
+  6: "6",
+  7: "7",
+  8: "8",
+  9: "9",
+  10: "10",
+  11: "Boer",
+  12: "Vrouw",
+  13: "Koning",
+};
+
+function createDeck(numberOfDecks = 1) {
+  const deck = [];
+
+  for (
+    let deckNumber = 0;
+    deckNumber < numberOfDecks;
+    deckNumber++
+  ) {
+    suits.forEach((suit) => {
+      for (let value = 1; value <= 13; value++) {
+        deck.push({
+          id: `${deckNumber}-${suit.name}-${value}-${Math.random()}`,
+          suit: suit.name,
+          symbol: suit.symbol,
+          value,
+          name: cardNames[value],
+          color: suit.color,
+        });
+      }
+    });
+  }
+
+  return deck;
+}
+
+function shuffle(deck) {
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(
+      Math.random() * (i + 1)
+    );
+
+    [deck[i], deck[j]] = [
+      deck[j],
+      deck[i],
+    ];
+  }
+
+  return deck;
+}
+
+/* =========================
+   GAME STATE
+========================= */
+
+function createGameState(room) {
+  return {
+    players: room.players.map((player) => ({
+      id: player.id,
+      name: player.name,
+      isHost: player.isHost,
+      cards: [],
+    })),
+
+    currentPlayerIndex: 0,
+
+    currentStep: 0,
+
+    currentCard: null,
+
+    lastGuess: null,
+
+    lastResult: null,
+
+    phase: "cards",
+  };
+}
+
+function sendGameState(roomCode) {
   const room = rooms[roomCode];
 
-  if (!room) return;
+  if (!room || !room.game) return;
 
-  io.to(roomCode).emit("game-state", {
-    players: room.players,
-    currentPlayerIndex: room.currentPlayerIndex,
-    currentStep: room.currentStep,
-    currentCard: room.currentCard,
-  });
+  io.to(roomCode).emit(
+    "game-state",
+    room.game
+  );
 }
+
+/* =========================
+   SOCKET.IO
+========================= */
 
 io.on("connection", (socket) => {
   console.log(
@@ -106,20 +173,38 @@ io.on("connection", (socket) => {
     socket.id
   );
 
+  /* =========================
+     KAMER MAKEN
+  ========================= */
+
   socket.on(
     "create-room",
-    ({ playerName, settings }, callback) => {
-      const roomCode = getUniqueRoomCode();
+    (
+      {
+        playerName,
+        settings,
+      },
+      callback
+    ) => {
+      const roomCode =
+        getUniqueRoomCode();
 
       rooms[roomCode] = {
         hostId: socket.id,
 
         settings: {
-          players: settings?.players || 4,
-          rows: settings?.rows || 4,
-          decks: settings?.decks || 1,
+          players:
+            settings?.players || 4,
+
+          rows:
+            settings?.rows || 4,
+
+          decks:
+            settings?.decks || 1,
+
           checkpoints:
-            settings?.checkpoints || false,
+            settings?.checkpoints ||
+            false,
         },
 
         players: [
@@ -127,24 +212,21 @@ io.on("connection", (socket) => {
             id: socket.id,
             name: playerName,
             isHost: true,
-            cards: [],
           },
         ],
 
-        deck: [],
-        currentPlayerIndex: 0,
-        currentStep: 0,
-        currentCard: null,
-        gameStarted: false,
+        game: null,
       };
 
       socket.join(roomCode);
+
       socket.roomCode = roomCode;
 
       callback({
         success: true,
         roomCode,
-        players: rooms[roomCode].players,
+        players:
+          rooms[roomCode].players,
       });
 
       console.log(
@@ -153,24 +235,36 @@ io.on("connection", (socket) => {
     }
   );
 
+  /* =========================
+     KAMER JOINEN
+  ========================= */
+
   socket.on(
     "join-room",
-    ({ roomCode, playerName }, callback) => {
-      const room = rooms[roomCode];
+    (
+      { roomCode, playerName },
+      callback
+    ) => {
+      const room =
+        rooms[roomCode];
 
       if (!room) {
         callback({
           success: false,
-          message: "Kamer bestaat niet.",
+          message:
+            "Kamer bestaat niet.",
         });
 
         return;
       }
 
-      if (room.gameStarted) {
+      if (
+        room.game
+      ) {
         callback({
           success: false,
-          message: "Dit spel is al begonnen.",
+          message:
+            "Het spel is al gestart.",
         });
 
         return;
@@ -182,7 +276,8 @@ io.on("connection", (socket) => {
       ) {
         callback({
           success: false,
-          message: "Deze kamer zit vol.",
+          message:
+            "Deze kamer zit vol.",
         });
 
         return;
@@ -192,18 +287,19 @@ io.on("connection", (socket) => {
         id: socket.id,
         name: playerName,
         isHost: false,
-        cards: [],
       };
 
       room.players.push(player);
 
       socket.join(roomCode);
+
       socket.roomCode = roomCode;
 
       callback({
         success: true,
         roomCode,
-        players: room.players,
+        players:
+          room.players,
       });
 
       io.to(roomCode).emit(
@@ -217,25 +313,44 @@ io.on("connection", (socket) => {
     }
   );
 
+  /* =========================
+     SPELER VERWIJDEREN
+  ========================= */
+
   socket.on(
     "remove-player",
     (playerId) => {
-      const roomCode = socket.roomCode;
-      const room = rooms[roomCode];
+      const roomCode =
+        socket.roomCode;
+
+      const room =
+        rooms[roomCode];
 
       if (!room) return;
 
-      if (room.hostId !== socket.id) return;
+      if (
+        room.hostId !== socket.id
+      ) {
+        return;
+      }
 
-      const player = room.players.find(
-        (p) => p.id === playerId
-      );
+      const player =
+        room.players.find(
+          (p) =>
+            p.id === playerId
+        );
 
-      if (!player || player.isHost) return;
+      if (
+        !player ||
+        player.isHost
+      ) {
+        return;
+      }
 
       room.players =
         room.players.filter(
-          (p) => p.id !== playerId
+          (p) =>
+            p.id !== playerId
         );
 
       io.to(playerId).emit(
@@ -253,252 +368,479 @@ io.on("connection", (socket) => {
     }
   );
 
-  socket.on("start-game", () => {
-    const roomCode = socket.roomCode;
-    const room = rooms[roomCode];
-
-    if (!room) return;
-
-    if (room.hostId !== socket.id) return;
-
-    if (room.players.length < 2) return;
-
-    room.deck = shuffleDeck(
-      createDeck(room.settings.decks)
-    );
-
-    room.currentPlayerIndex = 0;
-    room.currentStep = 0;
-    room.currentCard = null;
-    room.gameStarted = true;
-
-    room.players.forEach((player) => {
-      player.cards = [];
-    });
-
-    io.to(roomCode).emit(
-      "game-started"
-    );
-
-    broadcastGameState(roomCode);
-
-    console.log(
-      `Spel gestart in kamer ${roomCode}`
-    );
-  });
+  /* =========================
+     SPEL STARTEN
+  ========================= */
 
   socket.on(
-    "draw-card",
+    "start-game",
     () => {
-      const roomCode = socket.roomCode;
-      const room = rooms[roomCode];
+      const roomCode =
+        socket.roomCode;
+
+      const room =
+        rooms[roomCode];
 
       if (!room) return;
 
-      if (!room.gameStarted) return;
-
-      const player =
-        room.players[
-          room.currentPlayerIndex
-        ];
-
-      if (!player) return;
-
-      if (player.id !== socket.id) return;
-
-      if (room.currentStep > 3) return;
-
-      if (room.deck.length === 0) {
-        room.deck = shuffleDeck(
-          createDeck(room.settings.decks)
-        );
+      if (
+        room.hostId !== socket.id
+      ) {
+        return;
       }
 
-      const card = room.deck.pop();
+      if (
+        room.players.length < 2
+      ) {
+        return;
+      }
 
-      room.currentCard = card;
+      /*
+       * Nieuwe kaartstapel
+       */
+
+      const deck = shuffle(
+        createDeck(
+          room.settings.decks
+        )
+      );
+
+      room.deck = deck;
+
+      /*
+       * Game state maken
+       */
+
+      room.game =
+        createGameState(room);
+
+      /*
+       * Stuur spel gestart
+       */
 
       io.to(roomCode).emit(
-        "card-drawn",
-        {
-          playerId: player.id,
-          step: room.currentStep,
-          card,
-        }
+        "game-started"
+      );
+
+      sendGameState(roomCode);
+
+      console.log(
+        `Spel gestart in kamer ${roomCode}`
       );
     }
   );
 
+  /* =========================
+     KAART TREKKEN
+  ========================= */
+
+  socket.on(
+    "draw-card",
+    () => {
+      const roomCode =
+        socket.roomCode;
+
+      const room =
+        rooms[roomCode];
+
+      if (
+        !room ||
+        !room.game
+      ) {
+        return;
+      }
+
+      const game =
+        room.game;
+
+      const currentPlayer =
+        game.players[
+          game.currentPlayerIndex
+        ];
+
+      /*
+       * Alleen speler die aan de beurt
+       * is mag trekken.
+       */
+
+      if (
+        !currentPlayer ||
+        currentPlayer.id !==
+          socket.id
+      ) {
+        return;
+      }
+
+      /*
+       * Er mag maar één kaart
+       * tegelijk open zijn.
+       */
+
+      if (game.currentCard) {
+        return;
+      }
+
+      const card =
+        room.deck.pop();
+
+      if (!card) {
+        io.to(roomCode).emit(
+          "game-error",
+          "De kaarten zijn op."
+        );
+
+        return;
+      }
+
+      game.currentCard = card;
+
+      io.to(roomCode).emit(
+        "card-drawn",
+        {
+          playerId:
+            currentPlayer.id,
+
+          step:
+            game.currentStep,
+
+          card,
+        }
+      );
+
+      sendGameState(roomCode);
+    }
+  );
+
+  /* =========================
+     GOK CONTROLEREN
+  ========================= */
+
   socket.on(
     "guess-card",
     ({ guess }) => {
-      const roomCode = socket.roomCode;
-      const room = rooms[roomCode];
+      const roomCode =
+        socket.roomCode;
 
-      if (!room) return;
+      const room =
+        rooms[roomCode];
 
-      if (!room.gameStarted) return;
+      if (
+        !room ||
+        !room.game
+      ) {
+        return;
+      }
 
-      const player =
-        room.players[
-          room.currentPlayerIndex
+      const game =
+        room.game;
+
+      const currentPlayer =
+        game.players[
+          game.currentPlayerIndex
         ];
 
-      if (!player) return;
+      if (
+        !currentPlayer ||
+        currentPlayer.id !==
+          socket.id
+      ) {
+        return;
+      }
 
-      if (player.id !== socket.id) return;
-
-      const card = room.currentCard;
+      const card =
+        game.currentCard;
 
       if (!card) return;
 
       let correct = false;
 
-      if (room.currentStep === 0) {
+      /* =====================
+         STAP 1
+         KLEUR
+      ===================== */
+
+      if (
+        game.currentStep === 0
+      ) {
         correct =
           guess === card.color;
       }
 
-      if (room.currentStep === 1) {
+      /* =====================
+         STAP 2
+         HOGER / LAGER
+      ===================== */
+
+      if (
+        game.currentStep === 1
+      ) {
         const firstCard =
-          player.cards[0];
+          currentPlayer.cards[0];
 
         if (!firstCard) return;
 
-        if (guess === "hoger") {
+        if (
+          guess === "hoger"
+        ) {
           correct =
             card.value >
             firstCard.value;
         }
 
-        if (guess === "lager") {
+        if (
+          guess === "lager"
+        ) {
           correct =
             card.value <
             firstCard.value;
         }
+
+        /*
+         * Gelijke waarde =
+         * automatisch fout.
+         */
       }
 
-      if (room.currentStep === 2) {
+      /* =====================
+         STAP 3
+         BINNEN / BUITEN
+      ===================== */
+
+      if (
+        game.currentStep === 2
+      ) {
         const firstCard =
-          player.cards[0];
+          currentPlayer.cards[0];
 
         const secondCard =
-          player.cards[1];
+          currentPlayer.cards[1];
 
-        if (!firstCard || !secondCard) {
+        if (
+          !firstCard ||
+          !secondCard
+        ) {
           return;
         }
 
-        const low = Math.min(
-          firstCard.value,
-          secondCard.value
-        );
+        const lowest =
+          Math.min(
+            firstCard.value,
+            secondCard.value
+          );
 
-        const high = Math.max(
-          firstCard.value,
-          secondCard.value
-        );
+        const highest =
+          Math.max(
+            firstCard.value,
+            secondCard.value
+          );
 
-        if (guess === "binnen") {
-          correct =
-            card.value > low &&
-            card.value < high;
+        const inside =
+          card.value >
+            lowest &&
+          card.value <
+            highest;
+
+        if (
+          guess === "binnen"
+        ) {
+          correct = inside;
         }
 
-        if (guess === "buiten") {
-          correct =
-            card.value < low ||
-            card.value > high;
+        if (
+          guess === "buiten"
+        ) {
+          correct = !inside;
         }
       }
 
-      if (room.currentStep === 3) {
+      /* =====================
+         STAP 4
+         FIGUUR
+      ===================== */
+
+      if (
+        game.currentStep === 3
+      ) {
         correct =
           guess === card.suit;
       }
 
-      if (correct) {
-        player.cards.push(card);
-      }
+      /*
+       * Kaart toevoegen aan speler
+       */
+
+      currentPlayer.cards.push(
+        card
+      );
+
+      /*
+       * Resultaat bewaren
+       */
+
+      game.lastGuess =
+        guess;
+
+      game.lastResult = {
+        correct,
+        drinks: correct ? 0 : 1,
+        playerId:
+          currentPlayer.id,
+        card,
+      };
+
+      /*
+       * Kaart niet langer
+       * actief als huidige kaart
+       */
+
+      game.currentCard =
+        null;
+
+      /*
+       * Resultaat naar alle spelers
+       */
 
       io.to(roomCode).emit(
         "guess-result",
         {
-          playerId: player.id,
-          step: room.currentStep,
+          playerId:
+            currentPlayer.id,
+
+          step:
+            game.currentStep,
+
           card,
+
           guess,
+
           correct,
-          cards: player.cards,
+
+          cards:
+            currentPlayer.cards,
+
+          drinks:
+            correct ? 0 : 1,
         }
       );
 
-      room.currentCard = null;
+      /*
+       * Vierde kaart klaar?
+       */
 
-      if (correct) {
-        room.currentStep++;
+      if (
+        game.currentStep >= 3
+      ) {
+        /*
+         * Volgende speler
+         */
 
-        if (room.currentStep >= 4) {
-          room.currentStep = 0;
+        game.currentStep = 0;
 
-          room.currentPlayerIndex++;
+        game.currentPlayerIndex =
+          (game.currentPlayerIndex +
+            1) %
+          game.players.length;
+      } else {
+        /*
+         * Volgende stap voor
+         * dezelfde speler
+         */
 
-          if (
-            room.currentPlayerIndex >=
-            room.players.length
-          ) {
-            room.currentPlayerIndex = 0;
-          }
-        }
+        game.currentStep++;
       }
 
-      broadcastGameState(roomCode);
+      sendGameState(roomCode);
     }
   );
 
-  socket.on("disconnect", () => {
-    console.log(
-      "Speler disconnected:",
-      socket.id
-    );
+  /* =========================
+     DISCONNECT
+  ========================= */
 
-    const roomCode = socket.roomCode;
-
-    if (
-      !roomCode ||
-      !rooms[roomCode]
-    ) {
-      return;
-    }
-
-    const room = rooms[roomCode];
-
-    room.players =
-      room.players.filter(
-        (player) =>
-          player.id !== socket.id
-      );
-
-    if (room.hostId === socket.id) {
-      io.to(roomCode).emit(
-        "room-closed"
-      );
-
-      delete rooms[roomCode];
-
+  socket.on(
+    "disconnect",
+    () => {
       console.log(
-        `Kamer ${roomCode} gesloten`
+        "Speler disconnected:",
+        socket.id
       );
 
-      return;
-    }
+      const roomCode =
+        socket.roomCode;
 
-    io.to(roomCode).emit(
-      "players-updated",
-      room.players
-    );
-  });
+      if (
+        !roomCode ||
+        !rooms[roomCode]
+      ) {
+        return;
+      }
+
+      const room =
+        rooms[roomCode];
+
+      room.players =
+        room.players.filter(
+          (player) =>
+            player.id !== socket.id
+        );
+
+      /*
+       * Host weg =
+       * hele kamer sluiten
+       */
+
+      if (
+        room.hostId === socket.id
+      ) {
+        io.to(roomCode).emit(
+          "room-closed"
+        );
+
+        delete rooms[roomCode];
+
+        console.log(
+          `Kamer ${roomCode} gesloten`
+        );
+
+        return;
+      }
+
+      /*
+       * Speler weg
+       */
+
+      if (room.game) {
+        room.game.players =
+          room.game.players.filter(
+            (player) =>
+              player.id !==
+              socket.id
+          );
+
+        if (
+          room.game
+            .currentPlayerIndex >=
+          room.game.players.length
+        ) {
+          room.game.currentPlayerIndex = 0;
+        }
+
+        sendGameState(
+          roomCode
+        );
+      } else {
+        io.to(roomCode).emit(
+          "players-updated",
+          room.players
+        );
+      }
+    }
+  );
 });
+
+/* =========================
+   SERVER
+========================= */
 
 console.log(
   `Bussen multiplayer server draait op poort ${PORT}`
