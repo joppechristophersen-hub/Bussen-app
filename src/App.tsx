@@ -103,9 +103,6 @@ function App() {
   const [isDrawing, setIsDrawing] =
     useState(false);
 
-  const [countdown, setCountdown] =
-    useState(3);
-
   /*
    * =========================
    * QR CODE
@@ -131,37 +128,6 @@ function App() {
       setScreen("join");
     }
   }, []);
-
-  /*
-   * =========================
-   * RESULT COUNTDOWN
-   * =========================
-   */
-
-  useEffect(() => {
-    if (!guessResult) {
-      setCountdown(3);
-      return;
-    }
-
-    setCountdown(3);
-
-    const interval =
-      window.setInterval(() => {
-        setCountdown((current) => {
-          if (current <= 1) {
-            window.clearInterval(interval);
-            return 0;
-          }
-
-          return current - 1;
-        });
-      }, 1000);
-
-    return () => {
-      window.clearInterval(interval);
-    };
-  }, [guessResult]);
 
   /*
    * =========================
@@ -195,22 +161,16 @@ function App() {
       "game-state",
       (state: GameState) => {
         setGameState(state);
-
         setPlayerNames(
           state.players
         );
 
         /*
-         * De server stuurt na de
-         * RESULT_DELAY een nieuwe
-         * game-state.
-         *
-         * resultShowing wordt dan false.
-         * Het oude resultaat moet op dat
-         * moment van het scherm verdwijnen.
+         * Alleen oude lokale kaartinformatie
+         * opruimen wanneer er daadwerkelijk
+         * een nieuwe beurt begint.
          */
-        if (!state.resultShowing) {
-          setGuessResult(null);
+        if (!state.waitingForGuess) {
           setDrawnCard(null);
           setIsDrawing(false);
         }
@@ -228,6 +188,11 @@ function App() {
       }) => {
         setDrawnCard(card);
         setIsDrawing(false);
+
+        /*
+         * Zodra een nieuwe kaart wordt getrokken,
+         * verdwijnt het vorige resultaat.
+         */
         setGuessResult(null);
       }
     );
@@ -237,17 +202,19 @@ function App() {
       (
         result: GuessResult
       ) => {
+        /*
+         * Het resultaat krijgt voorrang
+         * boven alle andere game-info.
+         */
         setGuessResult(result);
         setDrawnCard(null);
         setIsDrawing(false);
-        setCountdown(3);
       }
     );
 
     socket.on(
       "four-cards-complete",
       () => {
-        setGuessResult(null);
         setDrawnCard(null);
         setIsDrawing(false);
       }
@@ -800,6 +767,17 @@ function App() {
                   gespeeld.
                 </p>
               </>
+            ) : guessResult ? (
+              <>
+                <strong>
+                  Kaart gespeeld!
+                </strong>
+
+                <p>
+                  Het resultaat wordt
+                  hieronder getoond.
+                </p>
+              </>
             ) : isMyTurn ? (
               <>
                 <strong>
@@ -893,9 +871,7 @@ function App() {
                     ? guessResult.correct
                       ? "Goed!"
                       : "Fout!"
-                    : `${
-                        guessResult.playerName
-                      } had het ${
+                    : `${guessResult.playerName} had het ${
                         guessResult.correct
                           ? "goed"
                           : "fout"
@@ -966,15 +942,8 @@ function App() {
                 )}
 
                 <div className="next-countdown">
-                  Volgende speler over{" "}
-                  <strong>
-                    {countdown}
-                  </strong>{" "}
-                  seconde
-                  {countdown === 1
-                    ? ""
-                    : "n"}
-                  ...
+                  Volgende speler over 3
+                  seconden...
                 </div>
               </div>
             </div>
