@@ -103,6 +103,9 @@ function App() {
   const [isDrawing, setIsDrawing] =
     useState(false);
 
+  const [isPassingTurn, setIsPassingTurn] =
+    useState(false);
+
   /*
    * =========================
    * QR CODE
@@ -136,163 +139,177 @@ function App() {
    */
 
   useEffect(() => {
+    function handlePlayersUpdated(
+      updatedPlayers: Player[]
+    ) {
+      setPlayerNames(
+        updatedPlayers
+      );
+    }
+
+    function handleGameStarted() {
+      setDrawnCard(null);
+      setGuessResult(null);
+      setIsDrawing(false);
+      setIsPassingTurn(false);
+      setScreen("game");
+    }
+
+    function handleGameState(
+      state: GameState
+    ) {
+      setGameState(state);
+
+      setPlayerNames(
+        state.players
+      );
+
+      /*
+       * Alleen bij een echte nieuwe beurt
+       * gaat het oude resultaat weg.
+       */
+      if (
+        !state.resultShowing
+      ) {
+        setGuessResult(null);
+        setDrawnCard(null);
+        setIsDrawing(false);
+        setIsPassingTurn(false);
+      }
+    }
+
+    function handleCardDrawn({
+      card,
+    }: {
+      playerId: string;
+      step: number;
+      card: Card;
+    }) {
+      setDrawnCard(card);
+      setGuessResult(null);
+      setIsDrawing(false);
+      setIsPassingTurn(false);
+    }
+
+    function handleGuessResult(
+      result: GuessResult
+    ) {
+      /*
+       * DIT EVENT IS LEIDEND.
+       *
+       * Server bepaalt goed/fout.
+       */
+      setGuessResult(result);
+
+      setDrawnCard(null);
+
+      setIsDrawing(false);
+
+      setIsPassingTurn(false);
+    }
+
+    function handleFourCardsComplete() {
+      setDrawnCard(null);
+      setGuessResult(null);
+      setIsDrawing(false);
+      setIsPassingTurn(false);
+    }
+
+    function handleRoomClosed() {
+      alert(
+        "De host heeft de kamer gesloten."
+      );
+
+      resetToHome();
+    }
+
+    function handleRemovedFromRoom() {
+      alert(
+        "Je bent uit de kamer verwijderd."
+      );
+
+      resetToHome();
+    }
+
     socket.on(
       "players-updated",
-      (
-        updatedPlayers: Player[]
-      ) => {
-        setPlayerNames(
-          updatedPlayers
-        );
-      }
+      handlePlayersUpdated
     );
 
     socket.on(
       "game-started",
-      () => {
-        setDrawnCard(null);
-        setGuessResult(null);
-        setIsDrawing(false);
-        setScreen("game");
-      }
+      handleGameStarted
     );
 
     socket.on(
       "game-state",
-      (state: GameState) => {
-        setGameState(state);
-        setPlayerNames(
-          state.players
-        );
-
-        /*
-         * Alleen de lokale getrokken kaart
-         * verwijderen wanneer er echt een
-         * nieuwe beurt begint.
-         *
-         * Tijdens een resultaat blijft
-         * guessResult leidend.
-         */
-        if (
-          !state.waitingForGuess &&
-          !state.resultShowing
-        ) {
-          setDrawnCard(null);
-          setIsDrawing(false);
-        }
-
-        /*
-         * Als de server naar een nieuwe speler
-         * is gegaan, moet het oude resultaat
-         * verdwijnen.
-         */
-        if (
-          !state.resultShowing
-        ) {
-          setGuessResult(null);
-        }
-      }
+      handleGameState
     );
 
     socket.on(
       "card-drawn",
-      ({
-        card,
-      }: {
-        playerId: string;
-        step: number;
-        card: Card;
-      }) => {
-        setDrawnCard(card);
-        setIsDrawing(false);
-
-        /*
-         * Nieuwe beurt = oud resultaat weg.
-         */
-        setGuessResult(null);
-      }
+      handleCardDrawn
     );
 
     socket.on(
       "guess-result",
-      (
-        result: GuessResult
-      ) => {
-        /*
-         * Server is de scheidsrechter.
-         *
-         * Het resultaat komt rechtstreeks
-         * van de server en blijft zichtbaar
-         * totdat de huidige speler de beurt
-         * doorgeeft.
-         */
-        setGuessResult(result);
-        setDrawnCard(null);
-        setIsDrawing(false);
-      }
+      handleGuessResult
     );
 
     socket.on(
       "four-cards-complete",
-      () => {
-        setDrawnCard(null);
-        setIsDrawing(false);
-      }
+      handleFourCardsComplete
     );
 
     socket.on(
       "room-closed",
-      () => {
-        alert(
-          "De host heeft de kamer gesloten."
-        );
-
-        resetToHome();
-      }
+      handleRoomClosed
     );
 
     socket.on(
       "removed-from-room",
-      () => {
-        alert(
-          "Je bent uit de kamer verwijderd."
-        );
-
-        resetToHome();
-      }
+      handleRemovedFromRoom
     );
 
     return () => {
       socket.off(
-        "players-updated"
+        "players-updated",
+        handlePlayersUpdated
       );
 
       socket.off(
-        "game-started"
+        "game-started",
+        handleGameStarted
       );
 
       socket.off(
-        "game-state"
+        "game-state",
+        handleGameState
       );
 
       socket.off(
-        "card-drawn"
+        "card-drawn",
+        handleCardDrawn
       );
 
       socket.off(
-        "guess-result"
+        "guess-result",
+        handleGuessResult
       );
 
       socket.off(
-        "four-cards-complete"
+        "four-cards-complete",
+        handleFourCardsComplete
       );
 
       socket.off(
-        "room-closed"
+        "room-closed",
+        handleRoomClosed
       );
 
       socket.off(
-        "removed-from-room"
+        "removed-from-room",
+        handleRemovedFromRoom
       );
     };
   }, []);
@@ -305,14 +322,9 @@ function App() {
     setDrawnCard(null);
     setGuessResult(null);
     setIsDrawing(false);
+    setIsPassingTurn(false);
     setScreen("home");
   }
-
-  /*
-   * =========================
-   * KAMER MAKEN
-   * =========================
-   */
 
   function startLobby() {
     const name =
@@ -322,6 +334,7 @@ function App() {
       alert(
         "Vul eerst je naam in."
       );
+
       return;
     }
 
@@ -370,12 +383,6 @@ function App() {
       }
     );
   }
-
-  /*
-   * =========================
-   * JOINEN
-   * =========================
-   */
 
   function joinRoom() {
     const name =
@@ -444,16 +451,12 @@ function App() {
     );
   }
 
-  /*
-   * =========================
-   * SPELER VERWIJDEREN
-   * =========================
-   */
-
   function removePlayer(
     playerId: string
   ) {
-    if (!isHost) return;
+    if (!isHost) {
+      return;
+    }
 
     socket.emit(
       "remove-player",
@@ -461,38 +464,24 @@ function App() {
     );
   }
 
-  /*
-   * =========================
-   * SPEL STARTEN
-   * =========================
-   */
-
   function startGame() {
-    if (!isHost) return;
-
-    socket.emit("start-game");
-  }
-
-  /*
-   * =========================
-   * KAART TREKKEN
-   * =========================
-   */
-
-  function drawCard() {
-    if (!gameState) return;
-
-    if (
-      gameState.gameFinished
-    ) {
+    if (!isHost) {
       return;
     }
 
-    /*
-     * Tijdens een resultaat mag
-     * niemand een nieuwe kaart trekken.
-     */
+    socket.emit(
+      "start-game"
+    );
+  }
+
+  function drawCard() {
+    if (!gameState) {
+      return;
+    }
+
     if (
+      gameState.gameFinished ||
+      gameState.waitingForGuess ||
       gameState.resultShowing
     ) {
       return;
@@ -507,10 +496,6 @@ function App() {
       return;
     }
 
-    /*
-     * Alleen de huidige speler
-     * mag de kaart trekken.
-     */
     if (
       currentPlayer.id !==
       socket.id
@@ -518,28 +503,19 @@ function App() {
       return;
     }
 
-    if (
-      gameState.waitingForGuess
-    ) {
-      return;
-    }
-
     setIsDrawing(true);
-    setGuessResult(null);
 
-    socket.emit("draw-card");
+    socket.emit(
+      "draw-card"
+    );
   }
-
-  /*
-   * =========================
-   * GOK DOEN
-   * =========================
-   */
 
   function makeGuess(
     guess: string
   ) {
-    if (!gameState) return;
+    if (!gameState) {
+      return;
+    }
 
     const currentPlayer =
       gameState.players[
@@ -569,72 +545,34 @@ function App() {
     );
   }
 
-  /*
-   * =========================
-   * BEURT DOORGEVEN
-   * =========================
-   */
-
   function passTurn() {
-    if (!gameState) return;
-
-    if (
-      gameState.gameFinished
-    ) {
-      return;
-    }
-
     /*
-     * Alleen de speler die nu aan
-     * de beurt is mag de knop gebruiken.
-     */
-    const currentPlayer =
-      gameState.players[
-        gameState.currentPlayerIndex
-      ];
-
-    if (!currentPlayer) {
-      return;
-    }
-
-    if (
-      currentPlayer.id !==
-      socket.id
-    ) {
-      return;
-    }
-
-    /*
-     * Er moet eerst een resultaat
-     * zijn voordat de beurt doorgegeven
-     * mag worden.
+     * Alleen client-knop.
+     *
+     * Server controleert zelf
+     * of de beurt echt door mag.
      */
     if (!guessResult) {
       return;
     }
 
-    /*
-     * Server bepaalt vervolgens
-     * daadwerkelijk de volgende speler.
-     */
-    socket.emit("pass-turn");
-  }
+    if (
+      guessResult.playerId !==
+      socket.id
+    ) {
+      return;
+    }
 
-  /*
-   * =========================
-   * QR URL
-   * =========================
-   */
+    setIsPassingTurn(true);
+
+    socket.emit(
+      "pass-turn"
+    );
+  }
 
   function getJoinUrl() {
     return `${window.location.origin}/?room=${roomCode}`;
   }
-
-  /*
-   * =========================
-   * HULPFUNCTIES
-   * =========================
-   */
 
   const stepNames = [
     "Kleur",
@@ -648,6 +586,11 @@ function App() {
       return "";
     }
 
+    const player =
+      gameState.players[
+        gameState.currentPlayerIndex
+      ];
+
     if (
       gameState.currentStep === 0
     ) {
@@ -657,11 +600,6 @@ function App() {
     if (
       gameState.currentStep === 1
     ) {
-      const player =
-        gameState.players[
-          gameState.currentPlayerIndex
-        ];
-
       const card =
         player?.cards?.[0];
 
@@ -675,18 +613,16 @@ function App() {
     if (
       gameState.currentStep === 2
     ) {
-      const player =
-        gameState.players[
-          gameState.currentPlayerIndex
-        ];
-
       const first =
         player?.cards?.[0];
 
       const second =
         player?.cards?.[1];
 
-      if (first && second) {
+      if (
+        first &&
+        second
+      ) {
         return `Ligt de nieuwe kaart binnen of buiten ${first.name} ${first.symbol} en ${second.name} ${second.symbol}?`;
       }
 
@@ -740,12 +676,6 @@ function App() {
     );
   }
 
-  /*
-   * =========================
-   * GAME SCREEN
-   * =========================
-   */
-
   if (screen === "game") {
     const currentPlayer =
       gameState?.players[
@@ -769,15 +699,19 @@ function App() {
       myPlayer?.cards || [];
 
     /*
-     * Alleen de speler die het resultaat
-     * heeft veroorzaakt krijgt de knop.
+     * BELANGRIJK:
+     *
+     * Niet meer afhankelijk van
+     * gameState.resultShowing.
+     *
+     * Het server-event guess-result
+     * bepaalt rechtstreeks of deze
+     * speler de knop krijgt.
      */
     const canPassTurn =
       !!guessResult &&
       guessResult.playerId ===
-        socket.id &&
-      isMyTurn &&
-      !gameState?.gameFinished;
+        socket.id;
 
     return (
       <main className="app">
@@ -860,7 +794,7 @@ function App() {
             ) : guessResult ? (
               <>
                 <strong>
-                  Kaart gespeeld!
+                  Resultaat
                 </strong>
 
                 <p>
@@ -1005,12 +939,12 @@ function App() {
                   De kaart was{" "}
                   <strong>
                     {
-                      guessResult.card
-                        .name
+                      guessResult
+                        .card.name
                     }{" "}
                     {
-                      guessResult.card
-                        .symbol
+                      guessResult
+                        .card.symbol
                     }
                   </strong>
                   .
@@ -1032,35 +966,30 @@ function App() {
                   </div>
                 )}
 
-                /*
-                 * HANDMATIG DOORGEVEN
-                 *
-                 * Geen timer.
-                 *
-                 * Alleen de speler die net
-                 * gespeeld heeft krijgt deze knop.
-                 */
-                {canPassTurn && (
+                {canPassTurn ? (
                   <button
                     className="start-button big-button"
                     onClick={passTurn}
+                    disabled={
+                      isPassingTurn
+                    }
                   >
-                    Beurt doorgeven →
+                    {isPassingTurn
+                      ? "Beurt doorgeven..."
+                      : "Beurt doorgeven →"}
                   </button>
+                ) : (
+                  <div className="next-countdown">
+                    Wacht tot{" "}
+                    <strong>
+                      {
+                        guessResult
+                          .playerName
+                      }
+                    </strong>{" "}
+                    de beurt doorgeeft.
+                  </div>
                 )}
-
-                {!canPassTurn &&
-                  !gameState?.gameFinished && (
-                    <div className="next-countdown">
-                      Wacht tot{" "}
-                      <strong>
-                        {
-                          guessResult.playerName
-                        }
-                      </strong>{" "}
-                      de beurt doorgeeft.
-                    </div>
-                  )}
               </div>
             </div>
           )}
@@ -1271,12 +1200,6 @@ function App() {
     );
   }
 
-  /*
-   * =========================
-   * LOBBY
-   * =========================
-   */
-
   if (screen === "lobby") {
     return (
       <main className="app">
@@ -1407,12 +1330,6 @@ function App() {
     );
   }
 
-  /*
-   * =========================
-   * JOIN
-   * =========================
-   */
-
   if (screen === "join") {
     return (
       <main className="app">
@@ -1497,12 +1414,6 @@ function App() {
       </main>
     );
   }
-
-  /*
-   * =========================
-   * SETTINGS
-   * =========================
-   */
 
   if (screen === "settings") {
     return (
@@ -1704,12 +1615,6 @@ function App() {
       </main>
     );
   }
-
-  /*
-   * =========================
-   * HOME
-   * =========================
-   */
 
   return (
     <main className="app">
