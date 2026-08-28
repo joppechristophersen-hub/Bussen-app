@@ -34,6 +34,7 @@ type GameState = {
   revealedCards: Card[];
   gameStarted: boolean;
   waitingForGuess: boolean;
+  showingResult: boolean;
 };
 
 type GuessResult = {
@@ -77,6 +78,9 @@ function App() {
   const [playerName, setPlayerName] =
     useState("");
 
+  const [hostName, setHostName] =
+    useState("");
+
   const [joinCode, setJoinCode] =
     useState("");
 
@@ -93,13 +97,15 @@ function App() {
     useState<Card | null>(null);
 
   const [guessResult, setGuessResult] =
-    useState<GuessResult | null>(null);
+    useState<GuessResult | null>(
+      null
+    );
 
   const [isDrawing, setIsDrawing] =
     useState(false);
 
   /*
-   * QR-code
+   * QR-code openen
    */
   useEffect(() => {
     const params =
@@ -108,9 +114,7 @@ function App() {
       );
 
     const roomFromUrl =
-      params
-        .get("room")
-        ?.toUpperCase();
+      params.get("room")?.toUpperCase();
 
     if (
       roomFromUrl &&
@@ -122,14 +126,12 @@ function App() {
   }, []);
 
   /*
-   * SOCKET EVENTS
+   * Socket events
    */
   useEffect(() => {
     socket.on(
       "players-updated",
-      (
-        updatedPlayers: Player[]
-      ) => {
+      (updatedPlayers: Player[]) => {
         setPlayerNames(
           updatedPlayers
         );
@@ -139,33 +141,28 @@ function App() {
     socket.on(
       "game-started",
       () => {
-        setScreen("game");
         setGuessResult(null);
         setDrawnCard(null);
+        setScreen("game");
       }
     );
 
     socket.on(
       "game-state",
-      (
-        state: GameState
-      ) => {
+      (state: GameState) => {
         setGameState(state);
-
         setPlayerNames(
           state.players
         );
 
-        setIsDrawing(false);
-
         /*
-         * Geen kaart aan het
-         * trekken = oude kaart weg.
+         * Als de server naar een
+         * volgende speler gaat,
+         * wissen we het oude
+         * resultaat.
          */
-        if (
-          !state.waitingForGuess
-        ) {
-          setDrawnCard(null);
+        if (!state.showingResult) {
+          setGuessResult(null);
         }
       }
     );
@@ -187,35 +184,17 @@ function App() {
 
     socket.on(
       "guess-result",
-      (
-        result: GuessResult
-      ) => {
+      (result: GuessResult) => {
         setGuessResult(result);
         setDrawnCard(null);
-
-        /*
-         * Resultaat precies
-         * 3 seconden tonen.
-         */
-        setTimeout(() => {
-          setGuessResult(null);
-        }, 3000);
       }
     );
 
     socket.on(
       "four-cards-complete",
       () => {
-        /*
-         * Voorlopig alleen een
-         * melding.
-         *
-         * Hier bouwen we straks
-         * de boomfase in.
-         */
-        alert(
-          "Iedereen heeft 4 kaarten! De boom gaat beginnen."
-        );
+        setGuessResult(null);
+        setDrawnCard(null);
       }
     );
 
@@ -283,13 +262,32 @@ function App() {
     setGameState(null);
     setDrawnCard(null);
     setGuessResult(null);
+    setPlayerName("");
+    setHostName("");
+    setJoinCode("");
+    setJoinError("");
     setScreen("home");
   }
 
   /*
-   * KAMER MAKEN
+   * =========================
+   * NIEUW SPEL
+   * =========================
    */
+
   function startLobby() {
+    const name =
+      hostName.trim();
+
+    if (!name) {
+      setJoinError(
+        "Vul eerst je naam in."
+      );
+      return;
+    }
+
+    setJoinError("");
+
     if (!socket.connected) {
       socket.connect();
     }
@@ -297,7 +295,7 @@ function App() {
     socket.emit(
       "create-room",
       {
-        playerName: "Joppe",
+        playerName: name,
 
         settings: {
           players,
@@ -313,7 +311,7 @@ function App() {
         message?: string;
       }) => {
         if (!response.success) {
-          alert(
+          setJoinError(
             response.message ||
               "Er ging iets mis."
           );
@@ -336,8 +334,11 @@ function App() {
   }
 
   /*
-   * KAMER JOINEN
+   * =========================
+   * JOINEN
+   * =========================
    */
+
   function joinRoom() {
     const name =
       playerName.trim();
@@ -391,8 +392,7 @@ function App() {
         }
 
         setRoomCode(
-          response.roomCode ||
-            code
+          response.roomCode || code
         );
 
         setPlayerNames(
@@ -406,8 +406,11 @@ function App() {
   }
 
   /*
+   * =========================
    * SPELER VERWIJDEREN
+   * =========================
    */
+
   function removePlayer(
     playerId: string
   ) {
@@ -420,41 +423,41 @@ function App() {
   }
 
   /*
+   * =========================
    * SPEL STARTEN
+   * =========================
    */
+
   function startGame() {
     if (!isHost) return;
 
-    socket.emit(
-      "start-game"
-    );
+    socket.emit("start-game");
   }
 
   /*
+   * =========================
    * KAART TREKKEN
+   * =========================
    */
+
   function drawCard() {
     if (!gameState) return;
 
     const currentPlayer =
       gameState.players[
-        gameState
-          .currentPlayerIndex
+        gameState.currentPlayerIndex
       ];
 
-    if (!currentPlayer) {
-      return;
-    }
-
     if (
+      !currentPlayer ||
       currentPlayer.id !==
-      socket.id
+        socket.id
     ) {
       return;
     }
 
     if (
-      gameState.waitingForGuess
+      gameState.showingResult
     ) {
       return;
     }
@@ -462,14 +465,15 @@ function App() {
     setIsDrawing(true);
     setGuessResult(null);
 
-    socket.emit(
-      "draw-card"
-    );
+    socket.emit("draw-card");
   }
 
   /*
+   * =========================
    * GOK DOEN
+   * =========================
    */
+
   function makeGuess(
     guess: string
   ) {
@@ -477,24 +481,18 @@ function App() {
 
     const currentPlayer =
       gameState.players[
-        gameState
-          .currentPlayerIndex
+        gameState.currentPlayerIndex
       ];
 
-    if (!currentPlayer) {
-      return;
-    }
-
     if (
+      !currentPlayer ||
       currentPlayer.id !==
-      socket.id
+        socket.id
     ) {
       return;
     }
 
-    if (!drawnCard) {
-      return;
-    }
+    if (!drawnCard) return;
 
     socket.emit(
       "guess-card",
@@ -505,32 +503,25 @@ function App() {
   }
 
   /*
-   * QR-LINK
+   * =========================
+   * QR URL
+   * =========================
    */
+
   function getJoinUrl() {
     return `${window.location.origin}/?room=${roomCode}`;
   }
 
   /*
-   * KAART WEERGEVEN
-   */
-  function formatCard(
-    card: Card
-  ) {
-    return `${card.name}${card.symbol}`;
-  }
-
-  /*
-   * ==========================
+   * =========================
    * GAME
-   * ==========================
+   * =========================
    */
 
   if (screen === "game") {
     const currentPlayer =
       gameState?.players[
-        gameState
-          .currentPlayerIndex
+        gameState.currentPlayerIndex
       ];
 
     const isMyTurn =
@@ -547,20 +538,16 @@ function App() {
       "Figuur",
     ];
 
-    const previousCards =
-      gameState?.revealedCards ||
-      [];
-
-    const firstCard =
-      previousCards[0];
-
-    const secondCard =
-      previousCards[1];
+    const stepDescriptions = [
+      "Welke kleur heeft de kaart?",
+      "Is de kaart hoger of lager dan je eerste kaart?",
+      "Ligt de kaart binnen of buiten je eerste twee kaarten?",
+      "Welk figuur heeft de kaart?",
+    ];
 
     return (
       <main className="app">
         <section className="card game-card">
-
           <div className="logo small-logo">
             🚌
           </div>
@@ -574,59 +561,22 @@ function App() {
           </p>
 
           <div className="game-progress">
-
             <span>
-              Stap{" "}
-              {currentStep + 1}{" "}
-              van 4
+              Stap {currentStep + 1} van 4
             </span>
 
             <strong>
-              {stepNames[
-                currentStep
-              ]}
+              {stepNames[currentStep]}
             </strong>
-
           </div>
 
-          /*
-           * EERDERE KAARTEN
-           */
-
-          {previousCards.length >
-            0 && (
-            <div className="previous-cards">
-
-              <h3>
-                Jouw kaarten
-              </h3>
-
-              <div className="previous-card-list">
-
-                {previousCards.map(
-                  (card) => (
-                    <div
-                      className="small-card"
-                      key={card.id}
-                    >
-                      {formatCard(
-                        card
-                      )}
-                    </div>
-                  )
-                )}
-
-              </div>
-
-            </div>
-          )}
-
-          /*
-           * BEURT
-           */
+          <p className="subtitle">
+            {stepDescriptions[
+              currentStep
+            ]}
+          </p>
 
           <div className="turn-message">
-
             {isMyTurn ? (
               <>
                 <strong>
@@ -634,9 +584,7 @@ function App() {
                 </strong>
 
                 <p>
-                  {drawnCard
-                    ? "Kies je gok."
-                    : "Speel je volgende kaart."}
+                  Kies je gok.
                 </p>
               </>
             ) : (
@@ -651,16 +599,203 @@ function App() {
                 </p>
               </>
             )}
-
           </div>
 
-          /*
-           * RESULTAAT
-           */
+          {!drawnCard &&
+            !guessResult &&
+            isMyTurn &&
+            !gameState?.showingResult && (
+              <button
+                className="start-button"
+                onClick={drawCard}
+                disabled={isDrawing}
+              >
+                {isDrawing
+                  ? "Kaart pakken..."
+                  : "Kaart spelen 🃏"}
+              </button>
+            )}
+
+          {!drawnCard &&
+            !guessResult &&
+            !isMyTurn && (
+              <div className="waiting-message">
+                <p>
+                  Wacht tot{" "}
+                  <strong>
+                    {currentPlayer?.name}
+                  </strong>{" "}
+                  zijn kaart speelt.
+                </p>
+              </div>
+            )}
+
+          {drawnCard && isMyTurn && (
+            <div className="guess-area">
+              <div className="hidden-card">
+                <span>?</span>
+              </div>
+
+              {currentStep === 0 && (
+                <>
+                  <h2>
+                    Welke kleur?
+                  </h2>
+
+                  <div className="guess-buttons">
+                    <button
+                      className="guess-red"
+                      onClick={() =>
+                        makeGuess(
+                          "rood"
+                        )
+                      }
+                    >
+                      ♥ Rood
+                    </button>
+
+                    <button
+                      className="guess-black"
+                      onClick={() =>
+                        makeGuess(
+                          "zwart"
+                        )
+                      }
+                    >
+                      ♠ Zwart
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {currentStep === 1 && (
+                <>
+                  <h2>
+                    Hoger of lager?
+                  </h2>
+
+                  <div className="guess-buttons">
+                    <button
+                      onClick={() =>
+                        makeGuess(
+                          "hoger"
+                        )
+                      }
+                    >
+                      ⬆ Hoger
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        makeGuess(
+                          "lager"
+                        )
+                      }
+                    >
+                      ⬇ Lager
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {currentStep === 2 && (
+                <>
+                  <h2>
+                    Binnen of buiten?
+                  </h2>
+
+                  <div className="guess-buttons">
+                    <button
+                      onClick={() =>
+                        makeGuess(
+                          "binnen"
+                        )
+                      }
+                    >
+                      ↔ Binnen
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        makeGuess(
+                          "buiten"
+                        )
+                      }
+                    >
+                      ↕ Buiten
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {currentStep === 3 && (
+                <>
+                  <h2>
+                    Welk figuur?
+                  </h2>
+
+                  <div className="guess-buttons">
+                    <button
+                      onClick={() =>
+                        makeGuess(
+                          "harten"
+                        )
+                      }
+                    >
+                      ♥ Harten
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        makeGuess(
+                          "ruiten"
+                        )
+                      }
+                    >
+                      ♦ Ruiten
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        makeGuess(
+                          "klaveren"
+                        )
+                      }
+                    >
+                      ♣ Klaveren
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        makeGuess(
+                          "schoppen"
+                        )
+                      }
+                    >
+                      ♠ Schoppen
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {drawnCard &&
+            !isMyTurn && (
+              <div className="waiting-message">
+                <div className="hidden-card">
+                  <span>?</span>
+                </div>
+
+                <p>
+                  {currentPlayer?.name} maakt
+                  een gok...
+                </p>
+              </div>
+            )}
 
           {guessResult && (
             <div className="result-area">
-
               <div
                 className={
                   guessResult.correct
@@ -673,22 +808,28 @@ function App() {
                   : "❌ Fout!"}
               </div>
 
-              <div className="revealed-result-card">
-                {formatCard(
-                  guessResult.card
-                )}
+              <div className="revealed-card">
+                <strong>
+                  {guessResult.card.name}
+                </strong>
+
+                <span>
+                  {guessResult.card.symbol}
+                </span>
               </div>
 
               <p>
                 De kaart was{" "}
                 <strong>
-                  {formatCard(
+                  {guessResult.card.name}{" "}
+                  {
                     guessResult.card
-                  )}
+                      .symbol
+                  }
                 </strong>
               </p>
 
-              {!guessResult.correct ? (
+              {!guessResult.correct && (
                 <p className="drink-message">
                   Neem{" "}
                   <strong>
@@ -696,356 +837,28 @@ function App() {
                   </strong>
                   !
                 </p>
-              ) : (
+              )}
+
+              {guessResult.correct && (
                 <p>
-                  Goed geraden.
-                  Geen slok!
+                  Goed geraden. Geen
+                  slok!
                 </p>
               )}
 
               <p>
                 Volgende speler...
               </p>
-
             </div>
           )}
-
-          /*
-           * KAART SPELEN
-           */
-
-          {!drawnCard &&
-            !guessResult &&
-            isMyTurn && (
-            <button
-              className="start-button"
-              onClick={drawCard}
-              disabled={isDrawing}
-            >
-              {isDrawing
-                ? "Kaart pakken..."
-                : "Kaart spelen 🃏"}
-            </button>
-          )}
-
-          /*
-           * WACHTEN
-           */
-
-          {!drawnCard &&
-            !guessResult &&
-            !isMyTurn && (
-            <div className="waiting-message">
-
-              <p>
-                Wacht tot{" "}
-                <strong>
-                  {currentPlayer?.name}
-                </strong>{" "}
-                zijn kaart speelt.
-              </p>
-
-            </div>
-          )}
-
-          /*
-           * STAP 1
-           * KLEUR
-           */
-
-          {drawnCard &&
-            isMyTurn &&
-            currentStep === 0 && (
-            <div className="guess-area">
-
-              <div className="hidden-card">
-                <span>?</span>
-              </div>
-
-              <h2>
-                Welke kleur heeft
-                deze kaart?
-              </h2>
-
-              <div className="guess-buttons">
-
-                <button
-                  className="guess-red"
-                  onClick={() =>
-                    makeGuess(
-                      "rood"
-                    )
-                  }
-                >
-                  ♥ Rood
-                </button>
-
-                <button
-                  className="guess-black"
-                  onClick={() =>
-                    makeGuess(
-                      "zwart"
-                    )
-                  }
-                >
-                  ♠ Zwart
-                </button>
-
-              </div>
-
-            </div>
-          )}
-
-          /*
-           * STAP 2
-           * HOGER / LAGER
-           */
-
-          {drawnCard &&
-            isMyTurn &&
-            currentStep === 1 && (
-            <div className="guess-area">
-
-              <div className="hidden-card">
-                <span>?</span>
-              </div>
-
-              <h2>
-                Hoger of lager?
-              </h2>
-
-              {firstCard && (
-                <p>
-                  Je eerste kaart is{" "}
-                  <strong>
-                    {formatCard(
-                      firstCard
-                    )}
-                  </strong>
-                </p>
-              )}
-
-              <div className="guess-buttons">
-
-                <button
-                  className="guess-button"
-                  onClick={() =>
-                    makeGuess(
-                      "hoger"
-                    )
-                  }
-                >
-                  ↑ Hoger
-                </button>
-
-                <button
-                  className="guess-button"
-                  onClick={() =>
-                    makeGuess(
-                      "lager"
-                    )
-                  }
-                >
-                  ↓ Lager
-                </button>
-
-              </div>
-
-            </div>
-          )}
-
-          /*
-           * STAP 3
-           * BINNEN / BUITEN
-           */
-
-          {drawnCard &&
-            isMyTurn &&
-            currentStep === 2 && (
-            <div className="guess-area">
-
-              <div className="hidden-card">
-                <span>?</span>
-              </div>
-
-              <h2>
-                Binnen of buiten?
-              </h2>
-
-              {firstCard &&
-                secondCard && (
-                <p>
-                  Je kaarten zijn{" "}
-                  <strong>
-                    {formatCard(
-                      firstCard
-                    )}
-                  </strong>{" "}
-                  en{" "}
-                  <strong>
-                    {formatCard(
-                      secondCard
-                    )}
-                  </strong>
-                </p>
-              )}
-
-              <p>
-                Gelijk is geen
-                keuze.
-              </p>
-
-              <div className="guess-buttons">
-
-                <button
-                  className="guess-button"
-                  onClick={() =>
-                    makeGuess(
-                      "binnen"
-                    )
-                  }
-                >
-                  ↔ Binnen
-                </button>
-
-                <button
-                  className="guess-button"
-                  onClick={() =>
-                    makeGuess(
-                      "buiten"
-                    )
-                  }
-                >
-                  ↕ Buiten
-                </button>
-
-              </div>
-
-            </div>
-          )}
-
-          /*
-           * STAP 4
-           * FIGUUR
-           */
-
-          {drawnCard &&
-            isMyTurn &&
-            currentStep === 3 && (
-            <div className="guess-area">
-
-              <div className="hidden-card">
-                <span>?</span>
-              </div>
-
-              <h2>
-                Welk figuur?
-              </h2>
-
-              <p>
-                Kies het figuur
-                van de kaart.
-              </p>
-
-              <div className="guess-buttons figure-buttons">
-
-                <button
-                  className="guess-button"
-                  onClick={() =>
-                    makeGuess(
-                      "harten"
-                    )
-                  }
-                >
-                  ♥ Harten
-                </button>
-
-                <button
-                  className="guess-button"
-                  onClick={() =>
-                    makeGuess(
-                      "ruiten"
-                    )
-                  }
-                >
-                  ♦ Ruiten
-                </button>
-
-                <button
-                  className="guess-button"
-                  onClick={() =>
-                    makeGuess(
-                      "klaveren"
-                    )
-                  }
-                >
-                  ♣ Klaveren
-                </button>
-
-                <button
-                  className="guess-button"
-                  onClick={() =>
-                    makeGuess(
-                      "schoppen"
-                    )
-                  }
-                >
-                  ♠ Schoppen
-                </button>
-
-              </div>
-
-              <button
-                className="secondary"
-                onClick={() =>
-                  makeGuess(
-                    "disco"
-                  )
-                }
-              >
-                🪩 Disco
-              </button>
-
-            </div>
-          )}
-
-          /*
-           * ANDERE SPELER IS AAN HET GOKKEN
-           */
-
-          {drawnCard &&
-            !isMyTurn && (
-            <div className="waiting-message">
-
-              <div className="hidden-card">
-                <span>?</span>
-              </div>
-
-              <p>
-                <strong>
-                  {currentPlayer?.name}
-                </strong>{" "}
-                maakt een gok...
-              </p>
-
-            </div>
-          )}
-
-          /*
-           * SPELERS
-           */
 
           <div className="game-players">
-
             <h2>
               Spelers
             </h2>
 
             {gameState?.players.map(
-              (
-                player,
-                index
-              ) => (
+              (player, index) => (
                 <div
                   className={
                     index ===
@@ -1055,7 +868,6 @@ function App() {
                   }
                   key={player.id}
                 >
-
                   <div className="player-avatar">
                     {player.name.charAt(
                       0
@@ -1078,29 +890,25 @@ function App() {
                       0}{" "}
                     🃏
                   </span>
-
                 </div>
               )
             )}
-
           </div>
-
         </section>
       </main>
     );
   }
 
   /*
-   * ==========================
+   * =========================
    * LOBBY
-   * ==========================
+   * =========================
    */
 
   if (screen === "lobby") {
     return (
       <main className="app">
         <section className="card lobby-card">
-
           <div className="logo small-logo">
             🚌
           </div>
@@ -1114,7 +922,6 @@ function App() {
           </p>
 
           <div className="qr-placeholder">
-
             {roomCode ? (
               <QRCodeSVG
                 value={getJoinUrl()}
@@ -1130,11 +937,9 @@ function App() {
             <p>
               SCAN OM MEE TE DOEN
             </p>
-
           </div>
 
           <div className="room-code">
-
             <span>
               Kamercode
             </span>
@@ -1142,28 +947,23 @@ function App() {
             <strong>
               {roomCode}
             </strong>
-
           </div>
 
           <div className="players-header">
-
             <h2>
               Spelers (
               {playerNames.length}/
               {players})
             </h2>
-
           </div>
 
           <div className="player-list">
-
             {playerNames.map(
               (player) => (
                 <div
                   className="player"
                   key={player.id}
                 >
-
                   <div className="player-avatar">
                     {player.name.charAt(
                       0
@@ -1192,24 +992,20 @@ function App() {
                       </button>
                     )
                   )}
-
                 </div>
               )
             )}
-
           </div>
 
           {isHost ? (
             <button
               className="start-button"
               disabled={
-                playerNames.length <
-                2
+                playerNames.length < 2
               }
               onClick={startGame}
             >
-              {playerNames.length <
-              2
+              {playerNames.length < 2
                 ? "Wacht op spelers..."
                 : "Spel starten 🚌"}
             </button>
@@ -1234,23 +1030,21 @@ function App() {
               ← Instellingen aanpassen
             </button>
           )}
-
         </section>
       </main>
     );
   }
 
   /*
-   * ==========================
+   * =========================
    * JOIN
-   * ==========================
+   * =========================
    */
 
   if (screen === "join") {
     return (
       <main className="app">
         <section className="card">
-
           <button
             className="back-button"
             onClick={() => {
@@ -1274,7 +1068,6 @@ function App() {
           </p>
 
           <div className="setting">
-
             <label>
               Jouw naam
             </label>
@@ -1290,11 +1083,9 @@ function App() {
               }
               maxLength={15}
             />
-
           </div>
 
           <div className="setting">
-
             <label>
               Kamercode
             </label>
@@ -1316,7 +1107,6 @@ function App() {
               }
               maxLength={5}
             />
-
           </div>
 
           {joinError && (
@@ -1331,23 +1121,21 @@ function App() {
           >
             Meedoen 🚌
           </button>
-
         </section>
       </main>
     );
   }
 
   /*
-   * ==========================
+   * =========================
    * SETTINGS
-   * ==========================
+   * =========================
    */
 
   if (screen === "settings") {
     return (
       <main className="app">
         <section className="card settings-card">
-
           <button
             className="back-button"
             onClick={() =>
@@ -1370,13 +1158,35 @@ function App() {
           </p>
 
           <div className="setting">
+            <label>
+              Jouw naam
+            </label>
 
+            <input
+              type="text"
+              placeholder="Bijvoorbeeld Joppe"
+              value={hostName}
+              onChange={(event) =>
+                setHostName(
+                  event.target.value
+                )
+              }
+              maxLength={15}
+            />
+          </div>
+
+          {joinError && (
+            <p className="join-error">
+              {joinError}
+            </p>
+          )}
+
+          <div className="setting">
             <label>
               Aantal spelers
             </label>
 
             <div className="counter">
-
               <button
                 onClick={() =>
                   setPlayers(
@@ -1406,19 +1216,15 @@ function App() {
               >
                 +
               </button>
-
             </div>
-
           </div>
 
           <div className="setting">
-
             <label>
               Aantal rijen
             </label>
 
             <div className="options">
-
               {[3, 4, 5].map(
                 (number) => (
                   <button
@@ -1436,19 +1242,15 @@ function App() {
                   </button>
                 )
               )}
-
             </div>
-
           </div>
 
           <div className="setting">
-
             <label>
               Kaartspellen
             </label>
 
             <div className="options">
-
               {[1, 2].map(
                 (number) => (
                   <button
@@ -1466,19 +1268,15 @@ function App() {
                   </button>
                 )
               )}
-
             </div>
-
           </div>
 
           <div className="setting">
-
             <label>
               Checkpoints in de bus
             </label>
 
             <div className="options">
-
               <button
                 className={
                   !checkpoints
@@ -1508,13 +1306,10 @@ function App() {
               >
                 Aan
               </button>
-
             </div>
-
           </div>
 
           <div className="game-summary">
-
             <strong>
               Jullie spel
             </strong>
@@ -1531,7 +1326,6 @@ function App() {
                 ? "aan"
                 : "uit"}
             </p>
-
           </div>
 
           <button
@@ -1540,22 +1334,20 @@ function App() {
           >
             Spel starten 🚌
           </button>
-
         </section>
       </main>
     );
   }
 
   /*
-   * ==========================
+   * =========================
    * HOME
-   * ==========================
+   * =========================
    */
 
   return (
     <main className="app">
       <section className="card">
-
         <div className="logo">
           🚌
         </div>
@@ -1570,11 +1362,11 @@ function App() {
         </p>
 
         <button
-          onClick={() =>
-            setScreen(
-              "settings"
-            )
-          }
+          onClick={() => {
+            setHostName("");
+            setJoinError("");
+            setScreen("settings");
+          }}
         >
           Nieuw spel
         </button>
@@ -1594,7 +1386,6 @@ function App() {
         <button className="secondary">
           Spelregels
         </button>
-
       </section>
     </main>
   );
