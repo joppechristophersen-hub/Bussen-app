@@ -103,9 +103,6 @@ function App() {
   const [isDrawing, setIsDrawing] =
     useState(false);
 
-  const [isPassingTurn, setIsPassingTurn] =
-    useState(false);
-
   /*
    * =========================
    * QR CODE
@@ -156,7 +153,6 @@ function App() {
         setDrawnCard(null);
         setGuessResult(null);
         setIsDrawing(false);
-        setIsPassingTurn(false);
         setScreen("game");
       }
     );
@@ -165,24 +161,35 @@ function App() {
       "game-state",
       (state: GameState) => {
         setGameState(state);
-
         setPlayerNames(
           state.players
         );
 
         /*
-         * Alleen wanneer de server
-         * daadwerkelijk naar een nieuwe
-         * beurt is gegaan, ruimen we
-         * het vorige resultaat op.
+         * Alleen de lokale getrokken kaart
+         * verwijderen wanneer er echt een
+         * nieuwe beurt begint.
+         *
+         * Tijdens een resultaat blijft
+         * guessResult leidend.
+         */
+        if (
+          !state.waitingForGuess &&
+          !state.resultShowing
+        ) {
+          setDrawnCard(null);
+          setIsDrawing(false);
+        }
+
+        /*
+         * Als de server naar een nieuwe speler
+         * is gegaan, moet het oude resultaat
+         * verdwijnen.
          */
         if (
           !state.resultShowing
         ) {
           setGuessResult(null);
-          setDrawnCard(null);
-          setIsDrawing(false);
-          setIsPassingTurn(false);
         }
       }
     );
@@ -197,9 +204,12 @@ function App() {
         card: Card;
       }) => {
         setDrawnCard(card);
-        setGuessResult(null);
         setIsDrawing(false);
-        setIsPassingTurn(false);
+
+        /*
+         * Nieuwe beurt = oud resultaat weg.
+         */
+        setGuessResult(null);
       }
     );
 
@@ -209,15 +219,16 @@ function App() {
         result: GuessResult
       ) => {
         /*
-         * Het resultaat komt van de server.
+         * Server is de scheidsrechter.
+         *
+         * Het resultaat komt rechtstreeks
+         * van de server en blijft zichtbaar
+         * totdat de huidige speler de beurt
+         * doorgeeft.
          */
         setGuessResult(result);
-
         setDrawnCard(null);
-
         setIsDrawing(false);
-
-        setIsPassingTurn(false);
       }
     );
 
@@ -225,9 +236,7 @@ function App() {
       "four-cards-complete",
       () => {
         setDrawnCard(null);
-        setGuessResult(null);
         setIsDrawing(false);
-        setIsPassingTurn(false);
       }
     );
 
@@ -296,7 +305,6 @@ function App() {
     setDrawnCard(null);
     setGuessResult(null);
     setIsDrawing(false);
-    setIsPassingTurn(false);
     setScreen("home");
   }
 
@@ -314,7 +322,6 @@ function App() {
       alert(
         "Vul eerst je naam in."
       );
-
       return;
     }
 
@@ -481,6 +488,10 @@ function App() {
       return;
     }
 
+    /*
+     * Tijdens een resultaat mag
+     * niemand een nieuwe kaart trekken.
+     */
     if (
       gameState.resultShowing
     ) {
@@ -496,6 +507,10 @@ function App() {
       return;
     }
 
+    /*
+     * Alleen de huidige speler
+     * mag de kaart trekken.
+     */
     if (
       currentPlayer.id !==
       socket.id
@@ -510,12 +525,9 @@ function App() {
     }
 
     setIsDrawing(true);
-
     setGuessResult(null);
 
-    socket.emit(
-      "draw-card"
-    );
+    socket.emit("draw-card");
   }
 
   /*
@@ -528,12 +540,6 @@ function App() {
     guess: string
   ) {
     if (!gameState) return;
-
-    if (
-      gameState.resultShowing
-    ) {
-      return;
-    }
 
     const currentPlayer =
       gameState.players[
@@ -578,12 +584,10 @@ function App() {
       return;
     }
 
-    if (
-      !guessResult
-    ) {
-      return;
-    }
-
+    /*
+     * Alleen de speler die nu aan
+     * de beurt is mag de knop gebruiken.
+     */
     const currentPlayer =
       gameState.players[
         gameState.currentPlayerIndex
@@ -593,10 +597,6 @@ function App() {
       return;
     }
 
-    /*
-     * Alleen de speler die net gespeeld
-     * heeft mag op deze knop drukken.
-     */
     if (
       currentPlayer.id !==
       socket.id
@@ -604,22 +604,20 @@ function App() {
       return;
     }
 
-    if (
-      !gameState.resultShowing
-    ) {
+    /*
+     * Er moet eerst een resultaat
+     * zijn voordat de beurt doorgegeven
+     * mag worden.
+     */
+    if (!guessResult) {
       return;
     }
 
-    setIsPassingTurn(true);
-
     /*
-     * De SERVER bepaalt vervolgens
-     * of de beurt daadwerkelijk
-     * doorgaat.
+     * Server bepaalt vervolgens
+     * daadwerkelijk de volgende speler.
      */
-    socket.emit(
-      "pass-turn"
-    );
+    socket.emit("pass-turn");
   }
 
   /*
@@ -688,10 +686,7 @@ function App() {
       const second =
         player?.cards?.[1];
 
-      if (
-        first &&
-        second
-      ) {
+      if (first && second) {
         return `Ligt de nieuwe kaart binnen of buiten ${first.name} ${first.symbol} en ${second.name} ${second.symbol}?`;
       }
 
@@ -767,27 +762,22 @@ function App() {
     const myPlayer =
       gameState?.players.find(
         (player) =>
-          player.id ===
-          socket.id
+          player.id === socket.id
       );
 
     const myCards =
       myPlayer?.cards || [];
 
     /*
-     * Alleen de speler die de gok
-     * heeft gedaan mag de beurt
-     * doorgeven.
+     * Alleen de speler die het resultaat
+     * heeft veroorzaakt krijgt de knop.
      */
     const canPassTurn =
-      Boolean(
-        guessResult &&
-          gameState?.resultShowing &&
-          guessResult.playerId ===
-            socket.id &&
-          currentPlayer?.id ===
-            socket.id
-      );
+      !!guessResult &&
+      guessResult.playerId ===
+        socket.id &&
+      isMyTurn &&
+      !gameState?.gameFinished;
 
     return (
       <main className="app">
@@ -870,13 +860,13 @@ function App() {
             ) : guessResult ? (
               <>
                 <strong>
-                  {guessResult.playerName}{" "}
-                  heeft gespeeld
+                  Kaart gespeeld!
                 </strong>
 
                 <p>
-                  Het resultaat staat
-                  hieronder.
+                  {guessResult.playerName}{" "}
+                  heeft zijn kaart
+                  gespeeld.
                 </p>
               </>
             ) : isMyTurn ? (
@@ -936,8 +926,7 @@ function App() {
                 length:
                   Math.max(
                     0,
-                    4 -
-                      myCards.length
+                    4 - myCards.length
                   ),
               }).map(
                 (_, index) => (
@@ -1016,12 +1005,11 @@ function App() {
                   De kaart was{" "}
                   <strong>
                     {
-                      guessResult
-                        .card.name
+                      guessResult.card
+                        .name
                     }{" "}
                     {
-                      guessResult
-                        .card
+                      guessResult.card
                         .symbol
                     }
                   </strong>
@@ -1044,32 +1032,35 @@ function App() {
                   </div>
                 )}
 
-                {canPassTurn ? (
+                /*
+                 * HANDMATIG DOORGEVEN
+                 *
+                 * Geen timer.
+                 *
+                 * Alleen de speler die net
+                 * gespeeld heeft krijgt deze knop.
+                 */
+                {canPassTurn && (
                   <button
                     className="start-button big-button"
-                    onClick={
-                      passTurn
-                    }
-                    disabled={
-                      isPassingTurn
-                    }
+                    onClick={passTurn}
                   >
-                    {isPassingTurn
-                      ? "Beurt doorgeven..."
-                      : "Beurt doorgeven →"}
+                    Beurt doorgeven →
                   </button>
-                ) : (
-                  <div className="next-countdown">
-                    Wacht tot{" "}
-                    <strong>
-                      {
-                        guessResult
-                          .playerName
-                      }
-                    </strong>{" "}
-                    de beurt doorgeeft.
-                  </div>
                 )}
+
+                {!canPassTurn &&
+                  !gameState?.gameFinished && (
+                    <div className="next-countdown">
+                      Wacht tot{" "}
+                      <strong>
+                        {
+                          guessResult.playerName
+                        }
+                      </strong>{" "}
+                      de beurt doorgeeft.
+                    </div>
+                  )}
               </div>
             </div>
           )}
