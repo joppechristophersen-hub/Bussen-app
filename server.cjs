@@ -10,8 +10,6 @@ const io = new Server(PORT, {
 
 const rooms = {};
 
-const RESULT_DELAY = 3000;
-
 const SUITS = [
   {
     name: "harten",
@@ -54,19 +52,10 @@ const VALUES = [
 function shuffle(array) {
   const shuffled = [...array];
 
-  for (
-    let i = shuffled.length - 1;
-    i > 0;
-    i--
-  ) {
-    const j = Math.floor(
-      Math.random() * (i + 1)
-    );
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
 
-    [
-      shuffled[i],
-      shuffled[j],
-    ] = [
+    [shuffled[i], shuffled[j]] = [
       shuffled[j],
       shuffled[i],
     ];
@@ -93,13 +82,9 @@ function createDeck(numberOfDecks = 1) {
               .substring(2, 9),
 
           suit: suit.name,
-
           symbol: suit.symbol,
-
           value: cardValue.value,
-
           name: cardValue.name,
-
           color: suit.color,
         });
       }
@@ -119,8 +104,7 @@ function createRoomCode() {
     code +=
       characters[
         Math.floor(
-          Math.random() *
-            characters.length
+          Math.random() * characters.length
         )
       ];
   }
@@ -273,19 +257,15 @@ function checkGuess(
 
     if (guess === "binnen") {
       return (
-        drawnCard.value >
-          lowest &&
-        drawnCard.value <
-          highest
+        drawnCard.value > lowest &&
+        drawnCard.value < highest
       );
     }
 
     if (guess === "buiten") {
       return (
-        drawnCard.value <
-          lowest ||
-        drawnCard.value >
-          highest
+        drawnCard.value < lowest ||
+        drawnCard.value > highest
       );
     }
 
@@ -309,33 +289,11 @@ function checkGuess(
  * VOLGENDE BEURT
  * =========================
  *
- * Dit is de kern van de beurtvolgorde.
+ * Deze functie wordt NIET meer
+ * automatisch aangeroepen.
  *
- * Bijvoorbeeld met 4 spelers:
- *
- * Stap 1:
- * speler 1
- * speler 2
- * speler 3
- * speler 4
- *
- * Stap 2:
- * speler 1
- * speler 2
- * speler 3
- * speler 4
- *
- * Stap 3:
- * speler 1
- * speler 2
- * speler 3
- * speler 4
- *
- * Stap 4:
- * speler 1
- * speler 2
- * speler 3
- * speler 4
+ * De huidige speler moet zelf
+ * op "Volgende speler" drukken.
  */
 
 function advanceTurn(roomCode) {
@@ -344,8 +302,8 @@ function advanceTurn(roomCode) {
   if (!room) return;
 
   /*
-   * Resultaat van de vorige kaart
-   * is nu afgelopen.
+   * Het resultaat van de vorige
+   * kaart is voorbij.
    */
   room.game.resultShowing = false;
 
@@ -354,9 +312,7 @@ function advanceTurn(roomCode) {
   room.game.waitingForGuess = false;
 
   /*
-   * Zolang er nog spelers over zijn
-   * in deze stap, gaat alleen de speler
-   * omhoog.
+   * Er zijn nog spelers in deze stap.
    */
   if (
     room.game.currentPlayerIndex <
@@ -367,7 +323,7 @@ function advanceTurn(roomCode) {
     sendGameState(roomCode);
 
     console.log(
-      `Kamer ${roomCode}: volgende speler is ${
+      `Kamer ${roomCode}: beurt naar ${
         room.players[
           room.game.currentPlayerIndex
         ].name
@@ -380,8 +336,8 @@ function advanceTurn(roomCode) {
   /*
    * Iedereen heeft deze stap gespeeld.
    *
-   * We gaan dus terug naar speler 1
-   * en verhogen de stap.
+   * Terug naar speler 1 en
+   * naar de volgende stap.
    */
   room.game.currentPlayerIndex = 0;
 
@@ -408,9 +364,6 @@ function advanceTurn(roomCode) {
     return;
   }
 
-  /*
-   * Nieuwe stap begint bij speler 1.
-   */
   sendGameState(roomCode);
 
   console.log(
@@ -745,15 +698,8 @@ io.on("connection", (socket) => {
       room.game = {
         started: true,
 
-        /*
-         * Het spel begint altijd
-         * bij speler 1.
-         */
         currentPlayerIndex: 0,
 
-        /*
-         * Stap 0 = kleur.
-         */
         currentStep: 0,
 
         currentCard: null,
@@ -833,8 +779,7 @@ io.on("connection", (socket) => {
 
       /*
        * Alleen de speler die
-       * daadwerkelijk aan de beurt is
-       * mag trekken.
+       * aan de beurt is mag trekken.
        */
       if (
         currentPlayer.id !==
@@ -863,10 +808,6 @@ io.on("connection", (socket) => {
       room.game.waitingForGuess =
         true;
 
-      /*
-       * Alleen de speler die de kaart
-       * trekt krijgt de verborgen kaart.
-       */
       io.to(
         socket.id
       ).emit(
@@ -934,11 +875,6 @@ io.on("connection", (socket) => {
         return;
       }
 
-      /*
-       * Extra beveiliging:
-       * alleen de huidige speler
-       * mag de gok insturen.
-       */
       if (
         currentPlayer.id !==
         socket.id
@@ -967,16 +903,19 @@ io.on("connection", (socket) => {
         );
 
       /*
-       * Kaart wordt direct toegevoegd
-       * aan de hand van deze speler.
+       * Kaart wordt toegevoegd
+       * aan de speler.
        */
       currentPlayer.cards.push(
         card
       );
 
       /*
-       * De huidige kaart kan niet
-       * nogmaals worden gespeeld.
+       * Gok is klaar.
+       *
+       * De speler moet nu zelf
+       * op "Volgende speler"
+       * drukken.
        */
       room.game.waitingForGuess =
         false;
@@ -984,19 +923,11 @@ io.on("connection", (socket) => {
       room.game.resultShowing =
         true;
 
-      /*
-       * BELANGRIJK:
-       * We houden de kaart niet meer
-       * als currentCard vast in de game state.
-       * De kaart zit nu in de hand en
-       * het resultaat wordt via guess-result
-       * naar iedereen gestuurd.
-       */
       room.game.currentCard =
         null;
 
       /*
-       * Eerst resultaat tonen.
+       * Resultaat naar iedereen.
        */
       io.to(
         roomCode
@@ -1027,6 +958,12 @@ io.on("connection", (socket) => {
         }
       );
 
+      /*
+       * Ook de nieuwe kaartverdeling
+       * direct naar iedereen sturen.
+       */
+      sendGameState(roomCode);
+
       console.log(
         `${currentPlayer.name}: stap ${
           room.game.currentStep + 1
@@ -1036,18 +973,77 @@ io.on("connection", (socket) => {
             : "fout"
         }`
       );
+    }
+  );
+
+  /*
+   * =========================
+   * VOLGENDE SPELER
+   * =========================
+   *
+   * De huidige speler drukt
+   * handmatig op de knop.
+   */
+
+  socket.on(
+    "next-player",
+    () => {
+      const roomCode =
+        socket.roomCode;
+
+      const room =
+        rooms[roomCode];
+
+      if (!room) return;
+
+      if (
+        !room.game.started
+      ) {
+        return;
+      }
+
+      if (
+        room.game.finished
+      ) {
+        return;
+      }
 
       /*
-       * GEEN sendGameState HIER.
-       *
-       * Eerst moet het resultaat
-       * 3 seconden zichtbaar blijven.
+       * Er moet eerst een resultaat
+       * zijn voordat je verder kunt.
        */
-      setTimeout(() => {
-        advanceTurn(
-          roomCode
+      if (
+        !room.game.resultShowing
+      ) {
+        return;
+      }
+
+      const currentPlayer =
+        getCurrentPlayer(
+          room
         );
-      }, RESULT_DELAY);
+
+      if (!currentPlayer) {
+        return;
+      }
+
+      /*
+       * Alleen de speler die zojuist
+       * heeft gespeeld mag de beurt
+       * doorgeven.
+       */
+      if (
+        currentPlayer.id !==
+        socket.id
+      ) {
+        return;
+      }
+
+      console.log(
+        `${currentPlayer.name} geeft de beurt door`
+      );
+
+      advanceTurn(roomCode);
     }
   );
 
@@ -1104,6 +1100,18 @@ io.on("connection", (socket) => {
       }
 
       /*
+       * Onthoud waar de speler
+       * stond voordat hij verwijderd
+       * wordt.
+       */
+      const removedIndex =
+        room.players.findIndex(
+          (player) =>
+            player.id ===
+            socket.id
+        );
+
+      /*
        * Gewone speler weg.
        */
       room.players =
@@ -1125,17 +1133,24 @@ io.on("connection", (socket) => {
       }
 
       /*
-       * Als de speler die verdween
-       * vóór de huidige speler in de
-       * array stond, moeten we de index
-       * corrigeren.
+       * Als een speler vóór de
+       * huidige speler verwijderd
+       * werd, moet de index één
+       * terug.
        */
-      const currentPlayerIndex =
-        room.game
-          .currentPlayerIndex;
-
       if (
-        currentPlayerIndex >=
+        removedIndex !== -1 &&
+        removedIndex <
+          room.game.currentPlayerIndex
+      ) {
+        room.game.currentPlayerIndex -= 1;
+      }
+
+      /*
+       * Index veilig houden.
+       */
+      if (
+        room.game.currentPlayerIndex >=
         room.players.length
       ) {
         room.game.currentPlayerIndex =

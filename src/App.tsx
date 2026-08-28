@@ -104,16 +104,8 @@ function App() {
     useState(false);
 
   /*
-   * Countdown voor het volgende resultaat.
-   *
-   * -1 betekent dat er geen countdown loopt.
-   */
-  const [countdown, setCountdown] =
-    useState(-1);
-
-  /*
    * =========================
-   * QR CODE / URL
+   * QR CODE
    * =========================
    */
 
@@ -139,309 +131,149 @@ function App() {
 
   /*
    * =========================
-   * COUNTDOWN
-   * =========================
-   *
-   * De countdown wordt volledig
-   * lokaal weergegeven.
-   *
-   * De server bepaalt wanneer de
-   * volgende beurt daadwerkelijk
-   * begint.
-   */
-
-  useEffect(() => {
-    if (!guessResult) {
-      setCountdown(-1);
-      return;
-    }
-
-    setCountdown(3);
-
-    const interval =
-      window.setInterval(() => {
-        setCountdown((current) => {
-          if (current <= 1) {
-            window.clearInterval(
-              interval
-            );
-
-            return 0;
-          }
-
-          return current - 1;
-        });
-      }, 1000);
-
-    return () => {
-      window.clearInterval(
-        interval
-      );
-    };
-  }, [guessResult]);
-
-  /*
-   * =========================
    * SOCKET EVENTS
    * =========================
    */
 
   useEffect(() => {
-    function handlePlayersUpdated(
-      updatedPlayers: Player[]
-    ) {
-      setPlayerNames(
-        updatedPlayers
-      );
-    }
-
-    function handleGameStarted() {
-      setDrawnCard(null);
-      setGuessResult(null);
-      setCountdown(-1);
-      setIsDrawing(false);
-      setGameState(null);
-      setScreen("game");
-    }
-
-    function handleGameState(
-      state: GameState
-    ) {
-      /*
-       * BELANGRIJK:
-       *
-       * De server stuurt na de countdown
-       * een nieuwe game-state.
-       *
-       * Als de speler verandert, moet
-       * het oude resultaat verdwijnen.
-       */
-      setGameState(state);
-
-      setPlayerNames(
-        state.players
-      );
-
-      /*
-       * Zodra de beurt daadwerkelijk
-       * is veranderd, is het vorige
-       * resultaat voorbij.
-       */
-      setGuessResult((previousResult) => {
-        if (!previousResult) {
-          return null;
-        }
-
-        const previousPlayerIndex =
-          state.players.findIndex(
-            (player) =>
-              player.id ===
-              previousResult.playerId
-          );
-
-        /*
-         * Als de huidige speler niet
-         * meer de speler van het
-         * vorige resultaat is,
-         * wissen we het resultaat.
-         */
-        if (
-          state.currentPlayerIndex !==
-          previousPlayerIndex
-        ) {
-          return null;
-        }
-
-        /*
-         * Ook wanneer de stap veranderd
-         * is, moet het oude resultaat weg.
-         */
-        if (
-          state.currentStep !==
-          previousResult.step
-        ) {
-          return null;
-        }
-
-        return previousResult;
-      });
-
-      /*
-       * Wanneer de server aangeeft dat
-       * er niet meer gewacht wordt op
-       * een gok, kan de lokale kaart
-       * worden opgeruimd.
-       */
-      if (
-        !state.waitingForGuess
-      ) {
-        setDrawnCard(null);
-        setIsDrawing(false);
-      }
-
-      /*
-       * Als het spel klaar is:
-       */
-      if (state.gameFinished) {
-        setGuessResult(null);
-        setCountdown(-1);
-        setDrawnCard(null);
-        setIsDrawing(false);
-      }
-    }
-
-    function handleCardDrawn({
-      card,
-    }: {
-      playerId: string;
-      step: number;
-      card: Card;
-    }) {
-      setDrawnCard(card);
-      setIsDrawing(false);
-
-      /*
-       * Nieuw spelmoment = oud resultaat
-       * verwijderen.
-       */
-      setGuessResult(null);
-      setCountdown(-1);
-    }
-
-    function handleGuessResult(
-      result: GuessResult
-    ) {
-      /*
-       * Eerst het resultaat laten zien.
-       */
-      setGuessResult(result);
-
-      /*
-       * De kaart die als gokkaart
-       * verborgen was, is nu bekend.
-       */
-      setDrawnCard(null);
-
-      setIsDrawing(false);
-
-      /*
-       * Countdown start automatisch
-       * door de useEffect hierboven.
-       */
-      setCountdown(3);
-    }
-
-    function handleFourCardsComplete() {
-      setDrawnCard(null);
-      setIsDrawing(false);
-      setGuessResult(null);
-      setCountdown(-1);
-    }
-
-    function handleRoomClosed() {
-      alert(
-        "De host heeft de kamer gesloten."
-      );
-
-      resetToHome();
-    }
-
-    function handleRemovedFromRoom() {
-      alert(
-        "Je bent uit de kamer verwijderd."
-      );
-
-      resetToHome();
-    }
-
     socket.on(
       "players-updated",
-      handlePlayersUpdated
+      (
+        updatedPlayers: Player[]
+      ) => {
+        setPlayerNames(
+          updatedPlayers
+        );
+      }
     );
 
     socket.on(
       "game-started",
-      handleGameStarted
+      () => {
+        setDrawnCard(null);
+        setGuessResult(null);
+        setIsDrawing(false);
+        setScreen("game");
+      }
     );
 
     socket.on(
       "game-state",
-      handleGameState
+      (state: GameState) => {
+        setGameState(state);
+
+        setPlayerNames(
+          state.players
+        );
+
+        /*
+         * Wanneer de beurt echt
+         * naar een nieuwe speler/stap
+         * gaat, ruimen we de oude kaart
+         * en het oude resultaat op.
+         */
+        if (!state.resultShowing) {
+          setGuessResult(null);
+        }
+
+        if (!state.waitingForGuess) {
+          setDrawnCard(null);
+          setIsDrawing(false);
+        }
+      }
     );
 
     socket.on(
       "card-drawn",
-      handleCardDrawn
+      ({
+        card,
+      }: {
+        playerId: string;
+        step: number;
+        card: Card;
+      }) => {
+        setDrawnCard(card);
+        setIsDrawing(false);
+        setGuessResult(null);
+      }
     );
 
     socket.on(
       "guess-result",
-      handleGuessResult
+      (
+        result: GuessResult
+      ) => {
+        setGuessResult(result);
+        setDrawnCard(null);
+        setIsDrawing(false);
+      }
     );
 
     socket.on(
       "four-cards-complete",
-      handleFourCardsComplete
+      () => {
+        setDrawnCard(null);
+        setGuessResult(null);
+        setIsDrawing(false);
+      }
     );
 
     socket.on(
       "room-closed",
-      handleRoomClosed
+      () => {
+        alert(
+          "De host heeft de kamer gesloten."
+        );
+
+        resetToHome();
+      }
     );
 
     socket.on(
       "removed-from-room",
-      handleRemovedFromRoom
+      () => {
+        alert(
+          "Je bent uit de kamer verwijderd."
+        );
+
+        resetToHome();
+      }
     );
 
     return () => {
       socket.off(
-        "players-updated",
-        handlePlayersUpdated
+        "players-updated"
       );
 
       socket.off(
-        "game-started",
-        handleGameStarted
+        "game-started"
       );
 
       socket.off(
-        "game-state",
-        handleGameState
+        "game-state"
       );
 
       socket.off(
-        "card-drawn",
-        handleCardDrawn
+        "card-drawn"
       );
 
       socket.off(
-        "guess-result",
-        handleGuessResult
+        "guess-result"
       );
 
       socket.off(
-        "four-cards-complete",
-        handleFourCardsComplete
+        "four-cards-complete"
       );
 
       socket.off(
-        "room-closed",
-        handleRoomClosed
+        "room-closed"
       );
 
       socket.off(
-        "removed-from-room",
-        handleRemovedFromRoom
+        "removed-from-room"
       );
     };
   }, []);
-
-  /*
-   * =========================
-   * RESET
-   * =========================
-   */
 
   function resetToHome() {
     setRoomCode("");
@@ -450,7 +282,6 @@ function App() {
     setGameState(null);
     setDrawnCard(null);
     setGuessResult(null);
-    setCountdown(-1);
     setIsDrawing(false);
     setScreen("home");
   }
@@ -469,7 +300,6 @@ function App() {
       alert(
         "Vul eerst je naam in."
       );
-
       return;
     }
 
@@ -645,10 +475,6 @@ function App() {
       return;
     }
 
-    /*
-     * Alleen de huidige speler
-     * mag een kaart pakken.
-     */
     if (
       currentPlayer.id !==
       socket.id
@@ -668,13 +494,8 @@ function App() {
       return;
     }
 
-    if (guessResult) {
-      return;
-    }
-
     setIsDrawing(true);
     setGuessResult(null);
-    setCountdown(-1);
 
     socket.emit("draw-card");
   }
@@ -699,10 +520,6 @@ function App() {
       return;
     }
 
-    /*
-     * Alleen de speler die aan de
-     * beurt is mag gokken.
-     */
     if (
       currentPlayer.id !==
       socket.id
@@ -714,18 +531,49 @@ function App() {
       return;
     }
 
-    /*
-     * Voorkom meerdere klikken
-     * terwijl de server het resultaat
-     * nog verwerkt.
-     */
-    setDrawnCard(null);
-
     socket.emit(
       "guess-card",
       {
         guess,
       }
+    );
+  }
+
+  /*
+   * =========================
+   * VOLGENDE SPELER
+   * =========================
+   */
+
+  function nextPlayer() {
+    if (!gameState) return;
+
+    if (!guessResult) {
+      return;
+    }
+
+    const currentPlayer =
+      gameState.players[
+        gameState.currentPlayerIndex
+      ];
+
+    if (!currentPlayer) {
+      return;
+    }
+
+    /*
+     * Alleen de speler die net
+     * heeft gespeeld mag doorgaan.
+     */
+    if (
+      currentPlayer.id !==
+      socket.id
+    ) {
+      return;
+    }
+
+    socket.emit(
+      "next-player"
     );
   }
 
@@ -795,7 +643,10 @@ function App() {
       const second =
         player?.cards?.[1];
 
-      if (first && second) {
+      if (
+        first &&
+        second
+      ) {
         return `Ligt de nieuwe kaart binnen of buiten ${first.name} ${first.symbol} en ${second.name} ${second.symbol}?`;
       }
 
@@ -877,10 +728,14 @@ function App() {
     const myCards =
       myPlayer?.cards || [];
 
+    const canGoNext =
+      !!guessResult &&
+      currentPlayer?.id ===
+        socket.id;
+
     return (
       <main className="app">
         <section className="card game-card">
-
           <div className="game-top">
             <div className="logo small-logo">
               🚌
@@ -942,12 +797,6 @@ function App() {
             </strong>
           </div>
 
-          /*
-           * =========================
-           * BEURT MELDING
-           * =========================
-           */
-
           <div className="turn-message">
             {gameState?.gameFinished ? (
               <>
@@ -965,15 +814,12 @@ function App() {
             ) : guessResult ? (
               <>
                 <strong>
-                  {guessResult.playerId ===
-                  socket.id
-                    ? "Jouw kaart is gespeeld!"
-                    : `${guessResult.playerName} heeft gespeeld!`}
+                  Kaart gespeeld!
                 </strong>
 
                 <p>
-                  Het resultaat staat
-                  hieronder.
+                  Druk op de knop om de
+                  beurt door te geven.
                 </p>
               </>
             ) : isMyTurn ? (
@@ -999,12 +845,6 @@ function App() {
               </>
             )}
           </div>
-
-          /*
-           * =========================
-           * MIJN KAARTEN
-           * =========================
-           */
 
           <div className="my-cards">
             <div className="section-title">
@@ -1054,12 +894,6 @@ function App() {
             </div>
           </div>
 
-          /*
-           * =========================
-           * RESULTAAT
-           * =========================
-           */
-
           {guessResult && (
             <div
               className={
@@ -1075,36 +909,37 @@ function App() {
               </div>
 
               <div className="result-content">
-
                 <h2>
                   {guessResult.playerId ===
                   socket.id
                     ? guessResult.correct
-                      ? "Goed! 🎉"
-                      : "Fout! 🥃"
+                      ? "Goed!"
+                      : "Fout!"
                     : `${guessResult.playerName} had het ${
                         guessResult.correct
-                          ? "goed!"
-                          : "fout!"
-                      }`}
+                          ? "goed"
+                          : "fout"
+                      }!`}
                 </h2>
 
                 <div className="revealed-card">
                   <span>
                     {
-                      guessResult.card
-                        .name
+                      guessResult
+                        .card.name
                     }
                   </span>
 
                   <strong
                     className={
-                      guessResult.card
+                      guessResult
+                        .card
                         .color
                     }
                   >
                     {
-                      guessResult.card
+                      guessResult
+                        .card
                         .symbol
                     }
                   </strong>
@@ -1146,34 +981,31 @@ function App() {
 
                 {guessResult.correct && (
                   <div className="drink-message success">
-                    Geen slok! 🎉
+                    Geen slok!
                   </div>
                 )}
 
-                <div className="next-countdown">
-                  {countdown > 0 ? (
-                    <>
-                      Volgende speler over{" "}
-                      <strong>
-                        {countdown}
-                      </strong>{" "}
-                      seconden...
-                    </>
-                  ) : (
-                    <>
-                      Volgende beurt...
-                    </>
-                  )}
-                </div>
+                {canGoNext && (
+                  <button
+                    className="start-button big-button next-player-button"
+                    onClick={
+                      nextPlayer
+                    }
+                  >
+                    Volgende speler →
+                  </button>
+                )}
+
+                {!canGoNext && (
+                  <div className="next-countdown">
+                    {guessResult.playerName}{" "}
+                    moet de beurt
+                    doorgeven.
+                  </div>
+                )}
               </div>
             </div>
           )}
-
-          /*
-           * =========================
-           * MIJN BEURT
-           * =========================
-           */
 
           {!guessResult &&
             !gameState?.gameFinished &&
@@ -1193,7 +1025,6 @@ function App() {
                   </button>
                 ) : (
                   <div className="guess-area">
-
                     <div className="hidden-card large">
                       ?
                     </div>
@@ -1285,17 +1116,10 @@ function App() {
               </>
             )}
 
-          /*
-           * =========================
-           * WACHTEN OP ANDERE SPELER
-           * =========================
-           */
-
           {!guessResult &&
             !gameState?.gameFinished &&
             !isMyTurn && (
               <div className="waiting-message game-waiting">
-
                 <div className="hidden-card">
                   ?
                 </div>
@@ -1311,12 +1135,6 @@ function App() {
                 </p>
               </div>
             )}
-
-          /*
-           * =========================
-           * SPEL AF
-           * =========================
-           */
 
           {gameState?.gameFinished && (
             <div className="finished-message">
@@ -1335,12 +1153,6 @@ function App() {
               </p>
             </div>
           )}
-
-          /*
-           * =========================
-           * SPELERS
-           * =========================
-           */
 
           <div className="game-players">
             <div className="section-title">
@@ -1411,7 +1223,6 @@ function App() {
     return (
       <main className="app">
         <section className="card lobby-card">
-
           <div className="logo small-logo">
             🚌
           </div>
@@ -1548,7 +1359,6 @@ function App() {
     return (
       <main className="app">
         <section className="card">
-
           <button
             className="back-button"
             onClick={() => {
@@ -1640,7 +1450,6 @@ function App() {
     return (
       <main className="app">
         <section className="card settings-card">
-
           <button
             className="back-button"
             onClick={() =>
@@ -1847,7 +1656,6 @@ function App() {
   return (
     <main className="app">
       <section className="card">
-
         <div className="logo">
           🚌
         </div>
@@ -1886,7 +1694,6 @@ function App() {
         <button className="secondary">
           Spelregels
         </button>
-
       </section>
     </main>
   );
