@@ -2,6 +2,7 @@ const { Server } = require("socket.io");
 
 const PORT = process.env.PORT || 3001;
 const RESULT_DELAY = 3000;
+const SERVER_VERSION = "AUTO_TURN_V3";
 
 const io = new Server(PORT, {
   cors: {
@@ -78,9 +79,7 @@ function createDeck(numberOfDecks = 1) {
         deck.push({
           id:
             `${deckNumber}-${suit.name}-${cardValue.value}-` +
-            Math.random()
-              .toString(36)
-              .substring(2, 9),
+            Math.random().toString(36).substring(2, 9),
 
           suit: suit.name,
           symbol: suit.symbol,
@@ -104,9 +103,7 @@ function createRoomCode() {
   for (let i = 0; i < 5; i++) {
     code +=
       characters[
-        Math.floor(
-          Math.random() * characters.length
-        )
+        Math.floor(Math.random() * characters.length)
       ];
   }
 
@@ -130,45 +127,31 @@ function getCurrentPlayer(room) {
 }
 
 function clearResultTimer(room) {
-  if (
-    room &&
-    room.game &&
-    room.game.resultTimer
-  ) {
-    clearTimeout(
-      room.game.resultTimer
-    );
-
-    room.game.resultTimer = null;
+  if (!room?.game?.resultTimer) {
+    return;
   }
+
+  clearTimeout(room.game.resultTimer);
+
+  room.game.resultTimer = null;
 }
 
 /*
  * =========================
  * GAME STATE
  * =========================
- *
- * Dit is de centrale waarheid.
- *
- * De server bepaalt:
- * - wie aan de beurt is
- * - welke ronde actief is
- * - of er gegokt wordt
- * - goed/fout
- * - welk resultaat zichtbaar is
- * - wanneer de volgende speler begint
  */
 
 function publicGameState(room) {
   return {
-    players: room.players.map(
-      (player) => ({
-        id: player.id,
-        name: player.name,
-        isHost: player.isHost,
-        cards: player.cards || [],
-      })
-    ),
+    serverVersion: SERVER_VERSION,
+
+    players: room.players.map((player) => ({
+      id: player.id,
+      name: player.name,
+      isHost: player.isHost,
+      cards: player.cards || [],
+    })),
 
     currentPlayerIndex:
       room.game.currentPlayerIndex,
@@ -177,11 +160,8 @@ function publicGameState(room) {
       room.game.currentStep,
 
     /*
-     * De echte huidige kaart wordt NIET
-     * naar iedereen gestuurd.
-     *
-     * Anders zouden andere spelers de
-     * kaart al vóór de gok kunnen zien.
+     * De geheime kaart sturen we
+     * nooit naar alle spelers.
      */
     currentCard: null,
 
@@ -225,7 +205,7 @@ function checkGuess(
   room,
   player,
   guess,
-  drawnCard
+  card
 ) {
   const step =
     room.game.currentStep;
@@ -236,9 +216,7 @@ function checkGuess(
    */
 
   if (step === 0) {
-    return (
-      guess === drawnCard.color
-    );
+    return guess === card.color;
   }
 
   /*
@@ -256,22 +234,17 @@ function checkGuess(
 
     if (guess === "hoger") {
       return (
-        drawnCard.value >
+        card.value >
         firstCard.value
       );
     }
 
     if (guess === "lager") {
       return (
-        drawnCard.value <
+        card.value <
         firstCard.value
       );
     }
-
-    /*
-     * Dezelfde kaartwaarde =
-     * fout.
-     */
 
     return false;
   }
@@ -309,15 +282,15 @@ function checkGuess(
 
     if (guess === "binnen") {
       return (
-        drawnCard.value > lowest &&
-        drawnCard.value < highest
+        card.value > lowest &&
+        card.value < highest
       );
     }
 
     if (guess === "buiten") {
       return (
-        drawnCard.value < lowest ||
-        drawnCard.value > highest
+        card.value < lowest ||
+        card.value > highest
       );
     }
 
@@ -331,7 +304,7 @@ function checkGuess(
 
   if (step === 3) {
     return (
-      guess === drawnCard.suit
+      guess === card.suit
     );
   }
 
@@ -340,8 +313,11 @@ function checkGuess(
 
 /*
  * =========================
- * VOLGENDE SPELER
+ * VOLGENDE BEURT
  * =========================
+ *
+ * DIT IS DE ENIGE FUNCTIE
+ * DIE DE NORMALE BEURT VERANDERT.
  */
 
 function advanceTurn(roomCode) {
@@ -354,7 +330,7 @@ function advanceTurn(roomCode) {
   clearResultTimer(room);
 
   /*
-   * Resultaat verwijderen.
+   * Resultaatscherm afsluiten.
    */
 
   room.game.resultShowing =
@@ -374,7 +350,7 @@ function advanceTurn(roomCode) {
 
   /*
    * =========================
-   * NOG SPELERS IN DEZE RONDE
+   * VOLGENDE SPELER
    * =========================
    */
 
@@ -385,7 +361,7 @@ function advanceTurn(roomCode) {
     room.game.currentPlayerIndex += 1;
 
     console.log(
-      `Kamer ${roomCode}: beurt naar ${
+      `[${roomCode}] Volgende speler: ${
         room.players[
           room.game.currentPlayerIndex
         ].name
@@ -399,19 +375,24 @@ function advanceTurn(roomCode) {
 
   /*
    * =========================
-   * IEDEREEN HEEFT DEZE KAART
+   * LAATSTE SPELER VAN DE RONDE
    * =========================
    *
    * Terug naar speler 1.
-   * Daarna pas volgende ronde.
    */
 
   room.game.currentPlayerIndex = 0;
 
+  /*
+   * Daarna volgende ronde.
+   */
+
   room.game.currentStep += 1;
 
   /*
-   * Vier rondes klaar.
+   * =========================
+   * ALLE 4 RONDES KLAAR
+   * =========================
    */
 
   if (
@@ -420,23 +401,23 @@ function advanceTurn(roomCode) {
     room.game.finished =
       true;
 
+    console.log(
+      `[${roomCode}] Vier kaarten compleet`
+    );
+
     io.to(roomCode).emit(
       "four-cards-complete"
     );
 
     sendGameState(roomCode);
 
-    console.log(
-      `Kamer ${roomCode}: alle vier kaarten zijn compleet`
-    );
-
     return;
   }
 
   console.log(
-    `Kamer ${roomCode}: ronde ${
+    `[${roomCode}] Nieuwe ronde ${
       room.game.currentStep + 1
-    } begint bij ${
+    }, speler 1: ${
       room.players[0].name
     }`
   );
@@ -446,7 +427,7 @@ function advanceTurn(roomCode) {
 
 /*
  * =========================
- * RESULTAAT STARTEN
+ * RESULTAAT + 3 SECONDEN
  * =========================
  */
 
@@ -461,15 +442,53 @@ function startResultTimer(
 
   clearResultTimer(room);
 
+  /*
+   * Elke uitslag krijgt een uniek nummer.
+   *
+   * Hierdoor kan een oude timer nooit
+   * later alsnog een verkeerde beurt
+   * veranderen.
+   */
+
+  room.game.resultSequence += 1;
+
+  const thisResultSequence =
+    room.game.resultSequence;
+
   room.game.resultEndsAt =
     Date.now() +
     RESULT_DELAY;
 
   room.game.resultTimer =
     setTimeout(() => {
-      if (!rooms[roomCode]) {
+      const currentRoom =
+        rooms[roomCode];
+
+      if (!currentRoom) {
         return;
       }
+
+      /*
+       * Alleen doorgaan als dit nog
+       * steeds hetzelfde resultaat is.
+       */
+
+      if (
+        currentRoom.game.resultSequence !==
+        thisResultSequence
+      ) {
+        return;
+      }
+
+      if (
+        !currentRoom.game.resultShowing
+      ) {
+        return;
+      }
+
+      console.log(
+        `[${roomCode}] 3 seconden voorbij`
+      );
 
       advanceTurn(roomCode);
     }, RESULT_DELAY);
@@ -477,13 +496,13 @@ function startResultTimer(
 
 /*
  * =========================
- * SOCKETS
+ * SOCKET CONNECTION
  * =========================
  */
 
 io.on("connection", (socket) => {
   console.log(
-    "Nieuwe speler verbonden:",
+    "Speler verbonden:",
     socket.id
   );
 
@@ -579,6 +598,9 @@ io.on("connection", (socket) => {
           resultTimer:
             null,
 
+          resultSequence:
+            0,
+
           finished:
             false,
         },
@@ -603,7 +625,7 @@ io.on("connection", (socket) => {
       });
 
       console.log(
-        `Kamer ${roomCode} aangemaakt`
+        `[${roomCode}] Kamer aangemaakt`
       );
     }
   );
@@ -720,6 +742,10 @@ io.on("connection", (socket) => {
         "players-updated",
         room.players
       );
+
+      console.log(
+        `[${normalizedCode}] ${player.name} joined`
+      );
     }
   );
 
@@ -818,9 +844,7 @@ io.on("connection", (socket) => {
         return;
       }
 
-      clearResultTimer(
-        room
-      );
+      clearResultTimer(room);
 
       room.deck =
         createDeck(
@@ -861,6 +885,9 @@ io.on("connection", (socket) => {
         resultTimer:
           null,
 
+        resultSequence:
+          0,
+
         finished:
           false,
       };
@@ -869,6 +896,10 @@ io.on("connection", (socket) => {
         roomCode
       ).emit(
         "game-started"
+      );
+
+      console.log(
+        `[${roomCode}] Spel gestart`
       );
 
       sendGameState(
@@ -897,41 +928,24 @@ io.on("connection", (socket) => {
       }
 
       if (
-        !room.game.started
-      ) {
-        return;
-      }
-
-      if (
-        room.game.finished
-      ) {
-        return;
-      }
-
-      if (
-        room.game.waitingForGuess
-      ) {
-        return;
-      }
-
-      if (
+        !room.game.started ||
+        room.game.finished ||
+        room.game.waitingForGuess ||
         room.game.resultShowing
       ) {
         return;
       }
 
       const currentPlayer =
-        getCurrentPlayer(
-          room
-        );
+        getCurrentPlayer(room);
 
       if (!currentPlayer) {
         return;
       }
 
       /*
-       * SERVER BEPAALT WIE
-       * MAG SPELEN.
+       * Alleen de huidige speler
+       * mag trekken.
        */
 
       if (
@@ -965,8 +979,8 @@ io.on("connection", (socket) => {
         true;
 
       /*
-       * De kaart zelf gaat alleen
-       * naar de speler die moet gokken.
+       * Alleen de speler zelf krijgt
+       * de geheime kaart.
        */
 
       io.to(
@@ -979,20 +993,23 @@ io.on("connection", (socket) => {
       );
 
       /*
-       * De rest krijgt wel te horen
-       * dat deze speler nu aan het gokken is,
-       * maar NIET welke kaart het is.
+       * Iedereen krijgt wel de status
+       * dat er nu een gok bezig is.
        */
 
       sendGameState(
         roomCode
+      );
+
+      console.log(
+        `[${roomCode}] ${currentPlayer.name} trekt een kaart`
       );
     }
   );
 
   /*
    * =========================
-   * GOK DOEN
+   * GOK
    * =========================
    */
 
@@ -1017,29 +1034,21 @@ io.on("connection", (socket) => {
       }
 
       if (
-        !room.game.waitingForGuess
-      ) {
-        return;
-      }
-
-      if (
+        !room.game.waitingForGuess ||
         room.game.resultShowing
       ) {
         return;
       }
 
       const currentPlayer =
-        getCurrentPlayer(
-          room
-        );
+        getCurrentPlayer(room);
 
       if (!currentPlayer) {
         return;
       }
 
       /*
-       * Alleen de huidige speler
-       * mag antwoorden.
+       * SERVER IS SCHEIDSRECHTER.
        */
 
       if (
@@ -1064,8 +1073,8 @@ io.on("connection", (socket) => {
           .toLowerCase();
 
       /*
-       * SERVER CONTROLEERT
-       * GOED / FOUT.
+       * Goed/fout wordt ALLEEN
+       * op de server berekend.
        */
 
       const correct =
@@ -1077,7 +1086,7 @@ io.on("connection", (socket) => {
         );
 
       /*
-       * Kaart aan speler geven.
+       * Kaart toevoegen.
        */
 
       currentPlayer.cards.push(
@@ -1085,20 +1094,10 @@ io.on("connection", (socket) => {
       );
 
       /*
-       * Resultaat opslaan
-       * op de SERVER.
+       * Resultaat maken.
        */
 
-      room.game.currentCard =
-        null;
-
-      room.game.waitingForGuess =
-        false;
-
-      room.game.resultShowing =
-        true;
-
-      room.game.result = {
+      const result = {
         playerId:
           currentPlayer.id,
 
@@ -1119,8 +1118,20 @@ io.on("connection", (socket) => {
           correct ? 0 : 1,
       };
 
+      room.game.currentCard =
+        null;
+
+      room.game.waitingForGuess =
+        false;
+
+      room.game.resultShowing =
+        true;
+
+      room.game.result =
+        result;
+
       /*
-       * Timer begint NU.
+       * Timer aanzetten.
        */
 
       startResultTimer(
@@ -1128,12 +1139,26 @@ io.on("connection", (socket) => {
       );
 
       /*
-       * Iedereen krijgt exact
-       * dezelfde server-state:
+       * COMPATIBILITEIT:
        *
-       * - goed/fout
-       * - kaart
-       * - timer
+       * Resultaat ook als apart event
+       * versturen.
+       *
+       * Daardoor ziet de frontend het
+       * resultaat zelfs als een game-state
+       * event vertraagd aankomt.
+       */
+
+      io.to(
+        roomCode
+      ).emit(
+        "guess-result",
+        result
+      );
+
+      /*
+       * Daarna ook de complete
+       * server state sturen.
        */
 
       sendGameState(
@@ -1141,9 +1166,7 @@ io.on("connection", (socket) => {
       );
 
       console.log(
-        `${currentPlayer.name} - ronde ${
-          room.game.currentStep + 1
-        } - ${
+        `[${roomCode}] ${currentPlayer.name}: ${normalizedGuess} → ${
           correct
             ? "GOED"
             : "FOUT"
@@ -1233,6 +1256,10 @@ io.on("connection", (socket) => {
         return;
       }
 
+      /*
+       * Beurtindex corrigeren.
+       */
+
       if (
         removedIndex <
         room.game.currentPlayerIndex
@@ -1268,5 +1295,5 @@ io.on("connection", (socket) => {
 });
 
 console.log(
-  `Bussen multiplayer server draait op poort ${PORT}`
+  `Bussen server ${SERVER_VERSION} draait op poort ${PORT}`
 );

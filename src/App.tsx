@@ -1,16 +1,6 @@
-import {
-  useEffect,
-  useState,
-} from "react";
-
-import {
-  QRCodeSVG,
-} from "qrcode.react";
-
-import {
-  io,
-} from "socket.io-client";
-
+import { useEffect, useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
+import { io } from "socket.io-client";
 import "./App.css";
 
 type Screen =
@@ -47,149 +37,96 @@ type GuessResult = {
 };
 
 type GameState = {
+  serverVersion?: string;
+
   players: Player[];
 
-  currentPlayerIndex:
-    number;
+  currentPlayerIndex: number;
 
-  currentStep:
-    number;
+  currentStep: number;
 
-  currentCard:
-    Card | null;
+  currentCard: Card | null;
 
-  waitingForGuess:
-    boolean;
+  waitingForGuess: boolean;
 
-  resultShowing:
-    boolean;
+  resultShowing: boolean;
 
-  result:
-    GuessResult | null;
+  result?: GuessResult | null;
 
-  resultEndsAt:
-    number | null;
+  resultEndsAt?: number | null;
 
-  gameFinished:
-    boolean;
+  gameFinished: boolean;
 };
 
 const socket = io(
   "https://bussen-server.onrender.com",
   {
-    autoConnect:
-      false,
+    autoConnect: false,
   }
 );
 
 function App() {
-  const [
-    screen,
-    setScreen,
-  ] =
-    useState<Screen>(
-      "home"
-    );
+  const [screen, setScreen] =
+    useState<Screen>("home");
 
-  const [
-    players,
-    setPlayers,
-  ] =
+  const [players, setPlayers] =
     useState(4);
 
-  const [
-    rows,
-    setRows,
-  ] =
+  const [rows, setRows] =
     useState(4);
 
-  const [
-    decks,
-    setDecks,
-  ] =
+  const [decks, setDecks] =
     useState(1);
 
-  const [
-    checkpoints,
-    setCheckpoints,
-  ] =
+  const [checkpoints, setCheckpoints] =
     useState(false);
 
-  const [
-    hostName,
-    setHostName,
-  ] =
+  const [hostName, setHostName] =
     useState("");
 
-  const [
-    roomCode,
-    setRoomCode,
-  ] =
+  const [roomCode, setRoomCode] =
     useState("");
 
-  const [
-    playerNames,
-    setPlayerNames,
-  ] =
-    useState<Player[]>(
-      []
-    );
+  const [playerNames, setPlayerNames] =
+    useState<Player[]>([]);
 
-  const [
-    playerName,
-    setPlayerName,
-  ] =
+  const [playerName, setPlayerName] =
     useState("");
 
-  const [
-    joinCode,
-    setJoinCode,
-  ] =
+  const [joinCode, setJoinCode] =
     useState("");
 
-  const [
-    joinError,
-    setJoinError,
-  ] =
+  const [joinError, setJoinError] =
     useState("");
 
-  const [
-    isHost,
-    setIsHost,
-  ] =
+  const [isHost, setIsHost] =
     useState(false);
 
-  const [
-    gameState,
-    setGameState,
-  ] =
-    useState<GameState | null>(
-      null
-    );
+  const [gameState, setGameState] =
+    useState<GameState | null>(null);
 
-  const [
-    drawnCard,
-    setDrawnCard,
-  ] =
-    useState<Card | null>(
-      null
-    );
+  const [drawnCard, setDrawnCard] =
+    useState<Card | null>(null);
 
-  const [
-    isDrawing,
-    setIsDrawing,
-  ] =
+  /*
+   * Extra lokale kopie van het resultaat.
+   *
+   * Hiermee kunnen we zowel
+   * "guess-result" als game-state gebruiken.
+   */
+
+  const [guessResult, setGuessResult] =
+    useState<GuessResult | null>(null);
+
+  const [isDrawing, setIsDrawing] =
     useState(false);
 
-  const [
-    countdown,
-    setCountdown,
-  ] =
+  const [countdown, setCountdown] =
     useState(0);
 
   /*
    * =========================
-   * QR CODE
+   * QR URL
    * =========================
    */
 
@@ -206,8 +143,7 @@ function App() {
 
     if (
       roomFromUrl &&
-      roomFromUrl.length ===
-        5
+      roomFromUrl.length === 5
     ) {
       setJoinCode(
         roomFromUrl
@@ -235,17 +171,10 @@ function App() {
     }
 
     function handleGameStarted() {
-      setDrawnCard(
-        null
-      );
-
-      setIsDrawing(
-        false
-      );
-
-      setCountdown(
-        0
-      );
+      setDrawnCard(null);
+      setGuessResult(null);
+      setIsDrawing(false);
+      setCountdown(0);
 
       setScreen(
         "game"
@@ -255,10 +184,19 @@ function App() {
     function handleGameState(
       state: GameState
     ) {
-      /*
-       * De volledige spelstatus
-       * komt van de SERVER.
-       */
+      console.log(
+        "GAME STATE:",
+        state
+      );
+
+      if (
+        state.serverVersion
+      ) {
+        console.log(
+          "SERVER VERSION:",
+          state.serverVersion
+        );
+      }
 
       setGameState(
         state
@@ -269,13 +207,34 @@ function App() {
       );
 
       /*
-       * Nieuwe beurt:
-       * lokale kaart opruimen.
+       * Als de server een resultaat
+       * meestuurt, gebruiken we dat.
        */
 
       if (
-        !state.waitingForGuess
+        state.resultShowing &&
+        state.result
       ) {
+        setGuessResult(
+          state.result
+        );
+      }
+
+      /*
+       * Als resultShowing FALSE wordt,
+       * is de server daadwerkelijk
+       * naar de volgende speler gegaan.
+       *
+       * Dan pas ruimen we het resultaat op.
+       */
+
+      if (
+        !state.resultShowing
+      ) {
+        setGuessResult(
+          null
+        );
+
         setDrawnCard(
           null
         );
@@ -283,18 +242,24 @@ function App() {
         setIsDrawing(
           false
         );
+
+        setCountdown(
+          0
+        );
       }
     }
 
-    function handleCardDrawn(
-      {
-        card,
-      }: {
-        card: Card;
-      }
-    ) {
+    function handleCardDrawn({
+      card,
+    }: {
+      card: Card;
+    }) {
       setDrawnCard(
         card
+      );
+
+      setGuessResult(
+        null
       );
 
       setIsDrawing(
@@ -302,8 +267,48 @@ function App() {
       );
     }
 
+    /*
+     * Direct resultaat-event.
+     *
+     * Hierdoor verschijnt GOED/FOUT
+     * meteen bij alle spelers.
+     */
+
+    function handleGuessResult(
+      result: GuessResult
+    ) {
+      console.log(
+        "RESULTAAT:",
+        result
+      );
+
+      setGuessResult(
+        result
+      );
+
+      setDrawnCard(
+        null
+      );
+
+      setIsDrawing(
+        false
+      );
+
+      /*
+       * Meteen zichtbaar beginnen op 3.
+       */
+
+      setCountdown(
+        3
+      );
+    }
+
     function handleFourCardsComplete() {
       setDrawnCard(
+        null
+      );
+
+      setGuessResult(
         null
       );
 
@@ -353,6 +358,11 @@ function App() {
     );
 
     socket.on(
+      "guess-result",
+      handleGuessResult
+    );
+
+    socket.on(
       "four-cards-complete",
       handleFourCardsComplete
     );
@@ -389,6 +399,11 @@ function App() {
       );
 
       socket.off(
+        "guess-result",
+        handleGuessResult
+      );
+
+      socket.off(
         "four-cards-complete",
         handleFourCardsComplete
       );
@@ -407,58 +422,102 @@ function App() {
 
   /*
    * =========================
-   * RESULTAAT TIMER
+   * 3 SECONDEN COUNTDOWN
    * =========================
    *
-   * De server bepaalt het echte
-   * eindmoment.
+   * Alleen de server verandert
+   * daadwerkelijk de beurt.
    *
-   * Deze timer is alleen voor
-   * de zichtbare 3-2-1 countdown.
+   * Deze timer is puur visueel.
    */
 
   useEffect(() => {
-    if (
-      !gameState?.resultShowing ||
-      !gameState.resultEndsAt
-    ) {
-      setCountdown(
-        0
-      );
+    if (!guessResult) {
+      setCountdown(0);
 
       return;
     }
 
-    function updateCountdown() {
-      if (
-        !gameState?.resultEndsAt
-      ) {
-        return;
+    /*
+     * Als de server een exact eindmoment
+     * stuurt gebruiken we dat.
+     */
+
+    if (
+      gameState?.resultEndsAt
+    ) {
+      function updateCountdown() {
+        const endTime =
+          gameState?.resultEndsAt;
+
+        if (!endTime) {
+          return;
+        }
+
+        const millisecondsLeft =
+          endTime -
+          Date.now();
+
+        const secondsLeft =
+          Math.max(
+            0,
+            Math.ceil(
+              millisecondsLeft /
+                1000
+            )
+          );
+
+        setCountdown(
+          secondsLeft
+        );
       }
 
-      const millisecondsLeft =
-        gameState.resultEndsAt -
-        Date.now();
+      updateCountdown();
 
-      const secondsLeft =
-        Math.max(
-          0,
-          Math.ceil(
-            millisecondsLeft /
-              1000
-          )
+      const interval =
+        window.setInterval(
+          updateCountdown,
+          100
         );
 
-      setCountdown(
-        secondsLeft
-      );
+      return () => {
+        window.clearInterval(
+          interval
+        );
+      };
     }
 
-    updateCountdown();
+    /*
+     * Fallback voor eventueel
+     * iets vertraagde game-state.
+     */
+
+    setCountdown(3);
+
+    const startedAt =
+      Date.now();
 
     const interval =
       window.setInterval(
-        updateCountdown,
+        () => {
+          const elapsed =
+            Date.now() -
+            startedAt;
+
+          const remaining =
+            Math.max(
+              0,
+              3 -
+                Math.floor(
+                  elapsed /
+                    1000
+                )
+            );
+
+          setCountdown(
+            remaining
+          );
+        },
         100
       );
 
@@ -468,42 +527,20 @@ function App() {
       );
     };
   }, [
-    gameState?.resultShowing,
+    guessResult,
     gameState?.resultEndsAt,
   ]);
 
   function resetToHome() {
-    setRoomCode(
-      ""
-    );
-
-    setPlayerNames(
-      []
-    );
-
-    setIsHost(
-      false
-    );
-
-    setGameState(
-      null
-    );
-
-    setDrawnCard(
-      null
-    );
-
-    setIsDrawing(
-      false
-    );
-
-    setCountdown(
-      0
-    );
-
-    setScreen(
-      "home"
-    );
+    setRoomCode("");
+    setPlayerNames([]);
+    setIsHost(false);
+    setGameState(null);
+    setDrawnCard(null);
+    setGuessResult(null);
+    setIsDrawing(false);
+    setCountdown(0);
+    setScreen("home");
   }
 
   /*
@@ -524,9 +561,7 @@ function App() {
       return;
     }
 
-    if (
-      !socket.connected
-    ) {
+    if (!socket.connected) {
       socket.connect();
     }
 
@@ -545,17 +580,13 @@ function App() {
         },
       },
 
-      (
-        response: {
-          success: boolean;
-          roomCode?: string;
-          players?: Player[];
-          message?: string;
-        }
-      ) => {
-        if (
-          !response.success
-        ) {
+      (response: {
+        success: boolean;
+        roomCode?: string;
+        players?: Player[];
+        message?: string;
+      }) => {
+        if (!response.success) {
           alert(
             response.message ||
               "Er ging iets mis."
@@ -600,9 +631,7 @@ function App() {
         .trim()
         .toUpperCase();
 
-    setJoinError(
-      ""
-    );
+    setJoinError("");
 
     if (!name) {
       setJoinError(
@@ -622,9 +651,7 @@ function App() {
       return;
     }
 
-    if (
-      !socket.connected
-    ) {
+    if (!socket.connected) {
       socket.connect();
     }
 
@@ -639,17 +666,13 @@ function App() {
           name,
       },
 
-      (
-        response: {
-          success: boolean;
-          roomCode?: string;
-          players?: Player[];
-          message?: string;
-        }
-      ) => {
-        if (
-          !response.success
-        ) {
+      (response: {
+        success: boolean;
+        roomCode?: string;
+        players?: Player[];
+        message?: string;
+      }) => {
+        if (!response.success) {
           setJoinError(
             response.message ||
               "Er ging iets mis."
@@ -714,18 +737,8 @@ function App() {
     }
 
     if (
-      gameState.gameFinished
-    ) {
-      return;
-    }
-
-    if (
-      gameState.resultShowing
-    ) {
-      return;
-    }
-
-    if (
+      gameState.gameFinished ||
+      gameState.resultShowing ||
       gameState.waitingForGuess
     ) {
       return;
@@ -766,12 +779,6 @@ function App() {
     guess: string
   ) {
     if (!gameState) {
-      return;
-    }
-
-    if (
-      gameState.resultShowing
-    ) {
       return;
     }
 
@@ -880,9 +887,7 @@ function App() {
       <div className="guess-grid">
         <button
           onClick={() =>
-            makeGuess(
-              "harten"
-            )
+            makeGuess("harten")
           }
         >
           ♥ Harten
@@ -890,9 +895,7 @@ function App() {
 
         <button
           onClick={() =>
-            makeGuess(
-              "ruiten"
-            )
+            makeGuess("ruiten")
           }
         >
           ♦ Ruiten
@@ -900,9 +903,7 @@ function App() {
 
         <button
           onClick={() =>
-            makeGuess(
-              "klaveren"
-            )
+            makeGuess("klaveren")
           }
         >
           ♣ Klaveren
@@ -910,9 +911,7 @@ function App() {
 
         <button
           onClick={() =>
-            makeGuess(
-              "schoppen"
-            )
+            makeGuess("schoppen")
           }
         >
           ♠ Schoppen
@@ -927,9 +926,7 @@ function App() {
    * =========================
    */
 
-  if (
-    screen === "game"
-  ) {
+  if (screen === "game") {
     const currentPlayer =
       gameState?.players[
         gameState.currentPlayerIndex
@@ -954,9 +951,18 @@ function App() {
       myPlayer?.cards ||
       [];
 
+    /*
+     * Het resultaat kan via twee
+     * kanalen binnenkomen.
+     *
+     * We gebruiken de server-state
+     * als eerste keuze en het losse
+     * event als backup.
+     */
+
     const result =
       gameState?.result ||
-      null;
+      guessResult;
 
     const isMyResult =
       result?.playerId ===
@@ -1049,7 +1055,7 @@ function App() {
                 </strong>
 
                 <p>
-                  De volgende speler begint automatisch.
+                  Volgende speler begint automatisch.
                 </p>
               </>
             ) : isMyTurn ? (
@@ -1128,15 +1134,15 @@ function App() {
           {/*
            * =========================
            * RESULTAAT
-           *
-           * IEDEREEN ziet:
-           * - goed/fout
-           * - kaart
-           * - gok
-           *
-           * ALLEEN speler zelf ziet:
-           * - drinken / geen drinken
            * =========================
+           *
+           * ALLE spelers zien:
+           * - Goed / fout
+           * - Welke kaart
+           * - Welke gok
+           *
+           * Alleen de betreffende speler:
+           * - Drinken / geen drinken
            */}
 
           {result && (
@@ -1205,9 +1211,8 @@ function App() {
                 </p>
 
                 {/*
-                 * Alleen de speler
-                 * die deze kaart kreeg
-                 * ziet de drinkopdracht.
+                 * Alleen eigen speler ziet
+                 * drinkopdracht.
                  */}
 
                 {isMyResult &&
@@ -1362,7 +1367,7 @@ function App() {
 
           {/*
            * =========================
-           * ANDERE SPELERS WACHTEN
+           * WACHTEN
            * =========================
            */}
 
@@ -1477,9 +1482,7 @@ function App() {
    * =========================
    */
 
-  if (
-    screen === "lobby"
-  ) {
+  if (screen === "lobby") {
     return (
       <main className="app">
         <section className="card lobby-card">
@@ -1624,18 +1627,14 @@ function App() {
    * =========================
    */
 
-  if (
-    screen === "join"
-  ) {
+  if (screen === "join") {
     return (
       <main className="app">
         <section className="card">
           <button
             className="back-button"
             onClick={() => {
-              setJoinError(
-                ""
-              );
+              setJoinError("");
 
               setScreen(
                 "home"
@@ -1676,9 +1675,7 @@ function App() {
                     .value
                 )
               }
-              maxLength={
-                15
-              }
+              maxLength={15}
             />
           </div>
 
@@ -1709,9 +1706,7 @@ function App() {
                     )
                 )
               }
-              maxLength={
-                5
-              }
+              maxLength={5}
             />
           </div>
 
@@ -1742,10 +1737,7 @@ function App() {
    * =========================
    */
 
-  if (
-    screen ===
-    "settings"
-  ) {
+  if (screen === "settings") {
     return (
       <main className="app">
         <section className="card settings-card">
@@ -1791,9 +1783,7 @@ function App() {
                     .value
                 )
               }
-              maxLength={
-                15
-              }
+              maxLength={15}
             />
           </div>
 
@@ -1808,8 +1798,7 @@ function App() {
                   setPlayers(
                     Math.max(
                       2,
-                      players -
-                        1
+                      players - 1
                     )
                   )
                 }
@@ -1826,8 +1815,7 @@ function App() {
                   setPlayers(
                     Math.min(
                       20,
-                      players +
-                        1
+                      players + 1
                     )
                   )
                 }
@@ -1844,9 +1832,7 @@ function App() {
 
             <div className="options">
               {[3, 4, 5].map(
-                (
-                  number
-                ) => (
+                (number) => (
                   <button
                     key={
                       number
@@ -1879,9 +1865,7 @@ function App() {
 
             <div className="options">
               {[1, 2].map(
-                (
-                  number
-                ) => (
+                (number) => (
                   <button
                     key={
                       number
@@ -2013,17 +1997,9 @@ function App() {
         <button
           className="secondary"
           onClick={() => {
-            setJoinError(
-              ""
-            );
-
-            setPlayerName(
-              ""
-            );
-
-            setJoinCode(
-              ""
-            );
+            setJoinError("");
+            setPlayerName("");
+            setJoinCode("");
 
             setScreen(
               "join"
