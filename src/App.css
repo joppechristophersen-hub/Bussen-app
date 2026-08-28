@@ -47,12 +47,6 @@ button {
   align-items: center;
 }
 
-/*
- * =========================
- * BASIS KAART
- * =========================
- */
-
 .card {
   width: 100%;
   max-width: 520px;
@@ -73,17 +67,9 @@ button {
   padding: 32px;
 
   box-shadow:
-    0 30px 80px
-      rgba(0, 0, 0, 0.45),
-    0 4px 16px
-      rgba(0, 0, 0, 0.25);
+    0 30px 80px rgba(0, 0, 0, 0.45),
+    0 4px 16px rgba(0, 0, 0, 0.25);
 }
-
-/*
- * =========================
- * LOGO
- * =========================
- */
 
 .logo {
   width: 72px;
@@ -109,12 +95,6 @@ button {
     rgba(255, 255, 255, 0.08);
 
   font-size: 38px;
-
-  box-shadow:
-    inset 0 1px 0
-      rgba(255, 255, 255, 0.05),
-    0 8px 20px
-      rgba(0, 0, 0, 0.25);
 }
 
 .small-logo {
@@ -126,12 +106,6 @@ button {
   margin-bottom: 14px;
 }
 
-/*
- * =========================
- * TITELS
- * =========================
- */
-
 h1 {
   margin: 0;
 
@@ -141,14 +115,12 @@ h1 {
   line-height: 1.1;
 
   color: #ffffff;
-
-  letter-spacing: -0.02em;
 }
 
 h2 {
   margin: 0;
 
-  color: #f7f8fa;
+  color: #ffffff;
 }
 
 .subtitle {
@@ -163,12 +135,6 @@ h2 {
 
   line-height: 1.5;
 }
-
-/*
- * =========================
- * ALGEMENE KNOPPEN
- * =========================
- */
 
 .card
   > button:not(
@@ -198,46 +164,6 @@ h2 {
   color: #11151a;
 
   font-weight: 800;
-
-  box-shadow:
-    0 6px 18px
-      rgba(0, 0, 0, 0.2);
-
-  transition:
-    transform 0.15s,
-    opacity 0.15s,
-    box-shadow 0.15s;
-}
-
-.card
-  > button:hover:not(
-    :disabled
-  ) {
-  transform:
-    translateY(-1px);
-
-  box-shadow:
-    0 9px 24px
-      rgba(0, 0, 0, 0.28);
-}
-
-.card
-  > button:active:not(
-    :disabled
-  ) {
-  transform:
-    translateY(0);
-}
-
-.card
-  > button:disabled {
-  opacity: 0.4;
-
-  cursor: not-allowed;
-
-  transform: none;
-
-  box-shadow: none;
 }
 
 .secondary {
@@ -270,16 +196,6 @@ h2 {
 
   margin-bottom: 22px;
 }
-
-.back-button:hover {
-  color: #ffffff;
-}
-
-/*
- * =========================
- * SETTINGS
- * =========================
- */
 
 .setting {
   margin-bottom: 22px;
@@ -315,35 +231,11 @@ h2 {
 
   color:
     #f4f6f8;
-
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
 }
 
 .setting input::placeholder {
   color: #737d89;
 }
-
-.setting input:focus {
-  border-color:
-    #cbd2da;
-
-  box-shadow:
-    0 0 0 3px
-      rgba(
-        255,
-        255,
-        255,
-        0.05
-      );
-}
-
-/*
- * =========================
- * COUNTER
- * =========================
- */
 
 .counter {
   display: flex;
@@ -379,18 +271,6 @@ h2 {
   color: #ffffff;
 
   font-size: 24px;
-
-  transition:
-    background 0.15s,
-    transform 0.15s;
-}
-
-.counter button:hover {
-  background:
-    #303743;
-
-  transform:
-    translateY(-1px);
 }
 
 .counter span {
@@ -400,12 +280,6 @@ h2 {
 
   color: #ffffff;
 }
-
-/*
- * =========================
- * OPTIES
- * =========================
- */
 
 .options {
   display: flex;
@@ -431,16 +305,6 @@ h2 {
   padding: 12px;
 
   font-weight: 800;
-
-  transition:
-    background 0.15s,
-    border-color 0.15s,
-    color 0.15s;
-}
-
-.options button:hover {
-  background:
-    #222831;
 }
 
 .options button.selected {
@@ -453,12 +317,6 @@ h2 {
   border-color:
     #f2f4f6;
 }
-
-/*
- * =========================
- * GAME SUMMARY
- * =========================
- */
 
 .game-summary {
   margin-top: 25px;
@@ -475,10 +333,6 @@ h2 {
     #2a3139;
 }
 
-.game-summary strong {
-  color: #ffffff;
-}
-
 .game-summary p {
   margin:
     5px
@@ -488,15 +342,7 @@ h2 {
   color: #aab2bc;
 
   font-size: 14px;
-
-  line-height: 1.5;
 }
-
-/*
- * =========================
- * LOBBY
- * =========================
- */
 
 .qr-placeholder {
   display: flex;
@@ -511,14 +357,11 @@ h2 {
     20px
     0;
 
-  padding:
-    18px;
+  padding: 18px;
 
-  border-radius:
-    18px;
+  border-radius: 18px;
 
-  background:
-    #f6f7f8;
+  background: #ffffff;
 }
 
 .qr-placeholder p {
@@ -528,11 +371,7 @@ h2 {
 
   font-weight: 800;
 
-  letter-spacing:
-    0.08em;
-
-  color:
-    #4c5560;
+  color: #4c5560;
 }
 
 .room-code {
@@ -569,8 +408,7 @@ h2 {
 
   font-size: 28px;
 
-  letter-spacing:
-    0.12em;
+  letter-spacing: 0.12em;
 
   color: #ffffff;
 }
@@ -661,20 +499,6 @@ h2 {
   font-size: 20px;
 }
 
-.remove-player:hover {
-  background:
-    #3a424e;
-}
-
-.lobby-back {
-  display: block;
-
-  margin:
-    18px
-    auto
-    0;
-}
-
 /*
  * =========================
  * GAME
@@ -697,8 +521,6 @@ h2 {
 
 .game-top .small-logo {
   margin: 0;
-
-  flex-shrink: 0;
 }
 
 .game-top h1 {
@@ -717,12 +539,6 @@ h2 {
 
   font-size: 14px;
 }
-
-/*
- * =========================
- * STAP PROGRESS
- * =========================
- */
 
 .step-progress {
   display: grid;
@@ -785,15 +601,6 @@ h2 {
 
   border-color:
     #f3f5f7;
-
-  box-shadow:
-    0 4px 16px
-      rgba(
-        0,
-        0,
-        0,
-        0.2
-      );
 }
 
 .step.completed {
@@ -806,12 +613,6 @@ h2 {
   border-color:
     #343b45;
 }
-
-/*
- * =========================
- * GAME INFO
- * =========================
- */
 
 .game-info {
   display: flex;
@@ -851,12 +652,6 @@ h2 {
   color: #ffffff;
 }
 
-/*
- * =========================
- * TURN MESSAGE
- * =========================
- */
-
 .turn-message {
   text-align: center;
 
@@ -879,18 +674,10 @@ h2 {
     0;
 
   color: #aab2bc;
-
-  line-height: 1.4;
 }
 
-/*
- * =========================
- * MIJN KAARTEN
- * =========================
- */
-
 .my-cards {
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 
 .section-title {
@@ -914,10 +701,16 @@ h2 {
   color: #8e98a4;
 }
 
+/*
+ * =========================
+ * ECHTERE SPEELKAARTEN
+ * =========================
+ */
+
 .cards-row {
   display: flex;
 
-  gap: 8px;
+  gap: 9px;
 }
 
 .playing-card,
@@ -926,170 +719,126 @@ h2 {
 
   min-width: 0;
 
-  aspect-ratio:
-    0.72;
+  aspect-ratio: 0.69;
 
-  border-radius: 13px;
+  border-radius: 10px;
 }
 
 .playing-card {
+  position: relative;
+
+  overflow: hidden;
+
   background:
     linear-gradient(
-      180deg,
-      #ffffff,
-      #edf0f3
+      145deg,
+      #ffffff 0%,
+      #f7f7f4 100%
     );
 
   border:
     1px solid
-    rgba(
-      255,
-      255,
-      255,
-      0.7
-    );
+    #d9d9d6;
 
   box-shadow:
-    0 8px 20px
+    0 8px 18px
       rgba(
         0,
         0,
         0,
-        0.28
+        0.32
       );
+
+  color: #171717;
+}
+
+.playing-card.rood {
+  color: #cf2727;
+}
+
+.playing-card.zwart {
+  color: #16191d;
+}
+
+.card-corner {
+  position: absolute;
 
   display: flex;
 
   flex-direction:
     column;
 
-  align-items:
-    center;
+  align-items: center;
 
-  justify-content:
-    center;
+  line-height: 0.9;
 }
 
-.playing-card.rood {
-  color: #d52d2d;
-}
+.card-corner strong {
+  font-size: 15px;
 
-.playing-card.zwart {
-  color: #171c22;
-}
-
-.card-value {
   font-weight: 900;
+}
+
+.card-corner span {
+  margin-top: 3px;
 
   font-size: 15px;
 }
 
-.card-symbol {
-  font-size: 27px;
-
-  line-height: 1;
-
-  margin-top: 4px;
+.card-corner-top {
+  top: 7px;
+  left: 7px;
 }
 
-.empty-card {
-  border:
-    2px dashed
-    #39414b;
+.card-corner-bottom {
+  bottom: 7px;
+  right: 7px;
 
-  background:
-    #11161c;
+  transform:
+    rotate(180deg);
+}
+
+.card-center-symbol {
+  position: absolute;
+
+  inset: 0;
 
   display: flex;
 
   align-items: center;
 
-  justify-content:
-    center;
+  justify-content: center;
 
-  color: #59636f;
-
-  font-weight: 800;
-}
-
-/*
- * =========================
- * BELANGRIJKE GAME KNOP
- * =========================
- */
-
-.start-button {
-  width: 100%;
-
-  border: 0;
-
-  border-radius: 15px;
-
-  padding: 15px;
-
-  background:
-    linear-gradient(
-      180deg,
-      #ffffff,
-      #e4e7ea
+  font-size:
+    clamp(
+      28px,
+      7vw,
+      44px
     );
 
-  color: #11151a;
-
-  font-weight: 900;
-
-  box-shadow:
-    0 8px 22px
-      rgba(
-        0,
-        0,
-        0,
-        0.28
-      );
-
-  transition:
-    transform 0.15s,
-    opacity 0.15s,
-    box-shadow 0.15s;
+  line-height: 1;
 }
 
-.start-button:hover:not(
-    :disabled
-  ) {
-  transform:
-    translateY(-1px);
+.empty-card {
+  display: flex;
 
-  box-shadow:
-    0 12px 28px
-      rgba(
-        0,
-        0,
-        0,
-        0.35
-      );
+  align-items: center;
+
+  justify-content: center;
+
+  background:
+    #11161c;
+
+  border:
+    1px dashed
+    #414a55;
+
+  color:
+    #56606c;
 }
 
-.start-button:active:not(
-    :disabled
-  ) {
-  transform:
-    translateY(0);
-}
-
-.start-button:disabled {
-  opacity: 0.42;
-
-  cursor:
-    not-allowed;
-
-  box-shadow:
-    none;
-}
-
-.big-button {
-  font-size: 17px;
-
-  margin-top: 5px;
+.empty-card span {
+  font-size: 28px;
 }
 
 /*
@@ -1102,72 +851,15 @@ h2 {
   text-align: center;
 
   padding:
-    12px
+    10px
     0
     8px;
 }
 
-.hidden-card {
-  width: 72px;
-  height: 96px;
-
-  margin:
-    0
-    auto
-    14px;
-
-  border-radius: 12px;
-
-  background:
-    linear-gradient(
-      145deg,
-      #343c47,
-      #171c23
-    );
-
-  color: #ffffff;
-
-  border:
-    1px solid
-    rgba(
-      255,
-      255,
-      255,
-      0.08
-    );
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content:
-    center;
-
-  font-size: 32px;
-
-  font-weight: 800;
-
-  box-shadow:
-    0 10px 24px
-      rgba(
-        0,
-        0,
-        0,
-        0.35
-      );
-}
-
-.hidden-card.large {
-  width: 88px;
-  height: 120px;
-
-  font-size: 38px;
-}
-
 .guess-area h2 {
-  font-size: 18px;
-
   margin-bottom: 14px;
+
+  font-size: 18px;
 }
 
 .guess-grid {
@@ -1190,7 +882,8 @@ h2 {
     );
 }
 
-.guess-grid button {
+.guess-grid button,
+.disco-button {
   border:
     1px solid
     #343c46;
@@ -1208,22 +901,39 @@ h2 {
     8px;
 
   font-weight: 800;
-
-  transition:
-    background 0.15s,
-    transform 0.15s,
-    border-color 0.15s;
 }
 
-.guess-grid button:hover {
+.guess-grid button:hover,
+.disco-button:hover {
   background:
     #272e38;
+}
 
-  border-color:
-    #4b5562;
+.disco-button {
+  width: 100%;
 
-  transform:
-    translateY(-1px);
+  margin-top: 9px;
+
+  font-size: 15px;
+}
+
+.dealing-message {
+  padding: 20px;
+
+  border-radius: 15px;
+
+  text-align: center;
+
+  background:
+    #10141a;
+
+  border:
+    1px solid
+    #292f38;
+
+  color: #aeb6c1;
+
+  font-weight: 700;
 }
 
 /*
@@ -1233,15 +943,21 @@ h2 {
  */
 
 .result-area {
-  display: flex;
+  width: 100%;
+  max-width: 390px;
 
-  gap: 15px;
+  margin:
+    0
+    auto
+    22px;
 
-  padding: 18px;
+  padding:
+    22px
+    18px;
 
-  border-radius: 18px;
+  border-radius: 20px;
 
-  margin-bottom: 20px;
+  text-align: center;
 
   border:
     1px solid
@@ -1251,151 +967,145 @@ h2 {
       255,
       0.07
     );
-
-  box-shadow:
-    0 8px 25px
-      rgba(
-        0,
-        0,
-        0,
-        0.18
-      );
 }
 
 .result-area.correct {
   background:
-    linear-gradient(
-      135deg,
-      #15311e,
-      #102519
-    );
+    #14291a;
 
   border-color:
     rgba(
-      75,
-      190,
-      106,
-      0.25
+      92,
+      196,
+      119,
+      0.24
     );
 }
 
 .result-area.wrong {
   background:
-    linear-gradient(
-      135deg,
-      #3a1719,
-      #281113
-    );
+    #311719;
 
   border-color:
     rgba(
       235,
       83,
       83,
-      0.28
+      0.24
     );
 }
 
 .result-icon {
-  width: 40px;
-  height: 40px;
+  width: 46px;
+  height: 46px;
 
-  flex-shrink: 0;
+  margin:
+    0
+    auto
+    10px;
 
   border-radius: 50%;
+
+  background:
+    #ffffff;
+
+  color:
+    #11151a;
 
   display: flex;
 
   align-items: center;
 
-  justify-content:
-    center;
+  justify-content: center;
 
-  font-size: 22px;
+  font-size: 24px;
 
   font-weight: 900;
-
-  background:
-    rgba(
-      255,
-      255,
-      255,
-      0.96
-    );
-
-  color: #11151a;
-}
-
-.result-content {
-  flex: 1;
-
-  min-width: 0;
 }
 
 .result-content h2 {
-  font-size: 19px;
+  margin-bottom: 12px;
 
-  margin-bottom: 8px;
+  font-size: 24px;
 
   color: #ffffff;
 }
 
 .result-content p {
   margin:
-    4px
+    8px
     0;
 
-  font-size: 13px;
+  color: #cbd1d7;
 
-  color: #d0d6dc;
+  font-size: 13px;
 }
 
 .revealed-card {
-  display: inline-flex;
+  width: 64px;
+  height: 88px;
 
-  align-items: center;
+  margin:
+    4px
+    auto
+    14px;
 
-  gap: 5px;
+  padding: 7px;
 
-  padding:
-    7px
-    10px;
-
-  margin-bottom: 5px;
-
-  border-radius: 9px;
+  border-radius: 8px;
 
   background:
-    #f5f6f7;
+    #ffffff;
 
-  color:
-    #11151a;
-
-  font-weight: 800;
+  border:
+    1px solid
+    #dededb;
 
   box-shadow:
-    0 4px 12px
+    0 7px 18px
       rgba(
         0,
         0,
         0,
-        0.2
+        0.25
       );
+
+  display: flex;
+
+  flex-direction:
+    column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #15181c;
 }
 
-.revealed-card strong.rood {
-  color: #d52d2d;
+.revealed-card.rood {
+  color: #cf2727;
 }
 
-.revealed-card strong.zwart {
-  color: #17202a;
+.revealed-card.zwart {
+  color: #15181c;
+}
+
+.revealed-card span {
+  font-size: 17px;
+
+  font-weight: 900;
+}
+
+.revealed-card strong {
+  margin-top: 5px;
+
+  font-size: 28px;
 }
 
 .drink-message {
-  margin-top:
-    10px !important;
+  margin-top: 13px;
 
-  padding: 10px;
+  padding: 10px 12px;
 
   border-radius: 10px;
 
@@ -1404,35 +1114,32 @@ h2 {
       255,
       255,
       255,
-      0.1
+      0.09
     );
 
-  color:
-    #ffffff !important;
+  color: #ffffff;
 
-  font-size:
-    14px !important;
+  font-size: 14px;
 
   font-weight: 800;
 }
 
 .drink-message.success {
-  color:
-    #b8f2c6 !important;
+  color: #b9f3c7;
 
   background:
     rgba(
-      72,
+      73,
       174,
-      98,
-      0.14
+      99,
+      0.13
     );
 }
 
 .next-countdown {
-  margin-top: 12px;
+  margin-top: 14px;
 
-  padding-top: 10px;
+  padding-top: 12px;
 
   border-top:
     1px solid
@@ -1443,22 +1150,57 @@ h2 {
       0.08
     );
 
-  font-size: 12px;
+  color: #9fa8b3;
 
-  color: #b5bdc6;
+  font-size: 12px;
 }
 
 .next-countdown strong {
   color: #ffffff;
 
-  font-size: 14px;
+  font-size: 15px;
 }
 
 /*
  * =========================
- * WACHTSCHERM
+ * WACHTEN
  * =========================
  */
+
+.hidden-card {
+  width: 72px;
+  height: 96px;
+
+  margin:
+    0
+    auto
+    14px;
+
+  border-radius: 10px;
+
+  background:
+    repeating-linear-gradient(
+      45deg,
+      #28303a,
+      #28303a 5px,
+      #20262e 5px,
+      #20262e 10px
+    );
+
+  border:
+    3px solid
+    #d5d8db;
+
+  color: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 30px;
+}
 
 .game-waiting {
   margin:
@@ -1468,8 +1210,7 @@ h2 {
 
   padding: 20px;
 
-  border-radius:
-    16px;
+  border-radius: 16px;
 
   background:
     #10141a;
@@ -1479,14 +1220,17 @@ h2 {
     #292f38;
 }
 
-.game-waiting
-  .hidden-card {
-  margin-bottom: 10px;
+.waiting-message {
+  text-align: center;
+
+  color: #aab2bc;
+
+  padding: 15px;
 }
 
 /*
  * =========================
- * SPELERS TIJDENS GAME
+ * SPELERS
  * =========================
  */
 
@@ -1503,8 +1247,7 @@ h2 {
 
   padding: 10px;
 
-  border-radius:
-    13px;
+  border-radius: 13px;
 
   margin-top: 7px;
 
@@ -1514,10 +1257,6 @@ h2 {
   border:
     1px solid
     #292f38;
-
-  transition:
-    background 0.15s,
-    border-color 0.15s;
 }
 
 .game-player.active {
@@ -1555,9 +1294,6 @@ h2 {
 
   font-weight: 900;
 
-  letter-spacing:
-    0.05em;
-
   color: #ffffff;
 }
 
@@ -1566,12 +1302,6 @@ h2 {
 
   color: #aeb6c0;
 }
-
-/*
- * =========================
- * KLAAR
- * =========================
- */
 
 .finished-message {
   text-align: center;
@@ -1604,17 +1334,7 @@ h2 {
 }
 
 .finished-message p {
-  margin-bottom: 0;
-
   color: #aeb6c0;
-}
-
-.waiting-message {
-  text-align: center;
-
-  color: #aab2bc;
-
-  padding: 15px;
 }
 
 .join-error {
@@ -1630,20 +1350,32 @@ h2 {
   background:
     #39171a;
 
-  border:
-    1px solid
-    rgba(
-      235,
-      83,
-      83,
-      0.25
-    );
-
   color: #ffb9b9;
 
   font-size: 13px;
 
   font-weight: 700;
+}
+
+.start-button {
+  width: 100%;
+
+  border: 0;
+
+  border-radius: 15px;
+
+  padding: 15px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #e4e7ea
+    );
+
+  color: #11151a;
+
+  font-weight: 900;
 }
 
 /*
@@ -1678,16 +1410,8 @@ h2 {
     font-size: 28px;
   }
 
-  .game-top {
-    margin-bottom: 20px;
-  }
-
   .game-top h1 {
     font-size: 22px;
-  }
-
-  .game-top .subtitle {
-    font-size: 13px;
   }
 
   .guess-grid {
@@ -1698,24 +1422,13 @@ h2 {
       );
   }
 
-  .guess-grid button {
-    min-height: 52px;
-  }
-
-  .step {
-    padding:
-      8px
-      3px;
+  .guess-grid button,
+  .disco-button {
+    min-height: 50px;
   }
 
   .step small {
     font-size: 8px;
-  }
-
-  .result-area {
-    padding: 15px;
-
-    gap: 12px;
   }
 
   .cards-row {
@@ -1724,19 +1437,35 @@ h2 {
 
   .playing-card,
   .empty-card {
-    border-radius:
-      11px;
+    border-radius: 8px;
   }
 
-  .card-symbol {
-    font-size: 24px;
+  .card-corner {
+    transform-origin: center;
   }
 
-  .card-value {
-    font-size: 14px;
+  .card-corner strong {
+    font-size: 12px;
   }
 
-  .game-player {
-    padding: 9px;
+  .card-corner span {
+    font-size: 12px;
+  }
+
+  .card-corner-bottom {
+    transform:
+      rotate(180deg);
+  }
+
+  .card-center-symbol {
+    font-size: 30px;
+  }
+
+  .result-area {
+    max-width: none;
+
+    padding:
+      20px
+      15px;
   }
 }

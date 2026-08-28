@@ -2,7 +2,7 @@ const { Server } = require("socket.io");
 
 const PORT = process.env.PORT || 3001;
 const RESULT_DELAY = 3000;
-const SERVER_VERSION = "AUTO_TURN_V4_DISCO";
+const SERVER_VERSION = "AUTO_DEAL_V5_DISCO";
 
 const io = new Server(PORT, {
   cors: {
@@ -172,6 +172,11 @@ function publicGameState(room) {
     currentStep:
       room.game.currentStep,
 
+    /*
+     * De geheime kaart gaat
+     * nooit naar iedereen.
+     */
+
     currentCard:
       null,
 
@@ -210,30 +215,109 @@ function sendGameState(
 
 /*
  * =========================
- * DISCO CONTROLEREN
+ * AUTOMATISCH KAART DELEN
  * =========================
  *
- * Disco is goed wanneer de speler
- * na de vierde kaart alle vier
- * de figuren/suits heeft:
+ * Dit vervangt de knop
+ * "Kaart spelen".
  *
- * ♥ Harten
- * ♦ Ruiten
- * ♣ Klaveren
- * ♠ Schoppen
+ * Zodra een beurt begint,
+ * deelt de server automatisch
+ * één kaart aan de speler.
+ */
+
+function beginTurn(
+  roomCode
+) {
+  const room =
+    rooms[roomCode];
+
+  if (!room) {
+    return;
+  }
+
+  if (
+    !room.game.started ||
+    room.game.finished ||
+    room.game.resultShowing ||
+    room.game.waitingForGuess
+  ) {
+    return;
+  }
+
+  const currentPlayer =
+    getCurrentPlayer(
+      room
+    );
+
+  if (!currentPlayer) {
+    return;
+  }
+
+  if (
+    room.deck.length ===
+    0
+  ) {
+    room.deck =
+      createDeck(
+        room.settings.decks
+      );
+  }
+
+  const card =
+    room.deck.pop();
+
+  if (!card) {
+    return;
+  }
+
+  room.game.currentCard =
+    card;
+
+  room.game.waitingForGuess =
+    true;
+
+  /*
+   * Eerst iedereen vertellen
+   * wie aan de beurt is.
+   */
+
+  sendGameState(
+    roomCode
+  );
+
+  /*
+   * Alleen de speler zelf krijgt
+   * zijn geheime kaart.
+   */
+
+  io.to(
+    currentPlayer.id
+  ).emit(
+    "card-drawn",
+    {
+      card,
+    }
+  );
+
+  console.log(
+    `[${roomCode}] Automatisch kaart gedeeld aan ${currentPlayer.name}`
+  );
+}
+
+/*
+ * =========================
+ * DISCO
+ * =========================
  */
 
 function checkDisco(
   player,
   drawnCard
 ) {
-  /*
-   * Voor de vierde kaart moet de speler
-   * precies drie kaarten hebben.
-   */
-
   if (
-    player.cards.length !== 3
+    player.cards.length !==
+    3
   ) {
     return false;
   }
@@ -269,8 +353,7 @@ function checkGuess(
     room.game.currentStep;
 
   /*
-   * RONDE 1
-   * ROOD / ZWART
+   * 1. ROOD / ZWART
    */
 
   if (step === 0) {
@@ -281,8 +364,7 @@ function checkGuess(
   }
 
   /*
-   * RONDE 2
-   * HOGER / LAGER
+   * 2. HOGER / LAGER
    */
 
   if (step === 1) {
@@ -315,8 +397,7 @@ function checkGuess(
   }
 
   /*
-   * RONDE 3
-   * BINNEN / BUITEN
+   * 3. BINNEN / BUITEN
    */
 
   if (step === 2) {
@@ -371,17 +452,10 @@ function checkGuess(
   }
 
   /*
-   * =========================
-   * RONDE 4
-   * FIGUUR OF DISCO
-   * =========================
+   * 4. FIGUUR / DISCO
    */
 
   if (step === 3) {
-    /*
-     * DISCO
-     */
-
     if (
       guess === "disco"
     ) {
@@ -390,10 +464,6 @@ function checkGuess(
         card
       );
     }
-
-    /*
-     * NORMALE FIGUURGOK
-     */
 
     return (
       guess ===
@@ -458,7 +528,11 @@ function advanceTurn(
       }`
     );
 
-    sendGameState(
+    /*
+     * Meteen kaart delen.
+     */
+
+    beginTurn(
       roomCode
     );
 
@@ -467,22 +541,16 @@ function advanceTurn(
 
   /*
    * LAATSTE SPELER
-   *
-   * Terug naar speler 1.
    */
 
   room.game.currentPlayerIndex =
     0;
 
-  /*
-   * Volgende ronde.
-   */
-
   room.game.currentStep +=
     1;
 
   /*
-   * Vier kaarten klaar.
+   * Alle vier rondes klaar.
    */
 
   if (
@@ -491,10 +559,6 @@ function advanceTurn(
   ) {
     room.game.finished =
       true;
-
-    console.log(
-      `[${roomCode}] Vier kaarten compleet`
-    );
 
     io.to(
       roomCode
@@ -506,6 +570,10 @@ function advanceTurn(
       roomCode
     );
 
+    console.log(
+      `[${roomCode}] Vier kaarten compleet`
+    );
+
     return;
   }
 
@@ -513,19 +581,24 @@ function advanceTurn(
     `[${roomCode}] Nieuwe ronde ${
       room.game.currentStep +
       1
-    }, speler 1: ${
+    } begint bij ${
       room.players[0].name
     }`
   );
 
-  sendGameState(
+  /*
+   * Ook bij nieuwe ronde
+   * meteen een kaart.
+   */
+
+  beginTurn(
     roomCode
   );
 }
 
 /*
  * =========================
- * RESULTAAT TIMER
+ * RESULTAATTIMER
  * =========================
  */
 
@@ -578,10 +651,6 @@ function startResultTimer(
           return;
         }
 
-        console.log(
-          `[${roomCode}] 3 seconden voorbij`
-        );
-
         advanceTurn(
           roomCode
         );
@@ -592,7 +661,7 @@ function startResultTimer(
 
 /*
  * =========================
- * SOCKET CONNECTION
+ * SOCKETS
  * =========================
  */
 
@@ -605,9 +674,7 @@ io.on(
     );
 
     /*
-     * =========================
      * KAMER MAKEN
-     * =========================
      */
 
     socket.on(
@@ -724,17 +791,11 @@ io.on(
               roomCode
             ].players,
         });
-
-        console.log(
-          `[${roomCode}] Kamer aangemaakt`
-        );
       }
     );
 
     /*
-     * =========================
      * JOINEN
-     * =========================
      */
 
     socket.on(
@@ -844,17 +905,11 @@ io.on(
           "players-updated",
           room.players
         );
-
-        console.log(
-          `[${normalizedCode}] ${player.name} joined`
-        );
       }
     );
 
     /*
-     * =========================
      * SPELER VERWIJDEREN
-     * =========================
      */
 
     socket.on(
@@ -918,9 +973,7 @@ io.on(
     );
 
     /*
-     * =========================
      * SPEL STARTEN
-     * =========================
      */
 
     socket.on(
@@ -1009,112 +1062,19 @@ io.on(
           "game-started"
         );
 
-        console.log(
-          `[${roomCode}] Spel gestart`
-        );
+        /*
+         * Speler 1 krijgt meteen
+         * zijn eerste kaart.
+         */
 
-        sendGameState(
+        beginTurn(
           roomCode
         );
       }
     );
 
     /*
-     * =========================
-     * KAART TREKKEN
-     * =========================
-     */
-
-    socket.on(
-      "draw-card",
-      () => {
-        const roomCode =
-          socket.roomCode;
-
-        const room =
-          rooms[
-            roomCode
-          ];
-
-        if (!room) {
-          return;
-        }
-
-        if (
-          !room.game.started ||
-          room.game.finished ||
-          room.game
-            .waitingForGuess ||
-          room.game
-            .resultShowing
-        ) {
-          return;
-        }
-
-        const currentPlayer =
-          getCurrentPlayer(
-            room
-          );
-
-        if (
-          !currentPlayer
-        ) {
-          return;
-        }
-
-        if (
-          currentPlayer.id !==
-          socket.id
-        ) {
-          return;
-        }
-
-        if (
-          room.deck.length ===
-          0
-        ) {
-          room.deck =
-            createDeck(
-              room.settings.decks
-            );
-        }
-
-        const card =
-          room.deck.pop();
-
-        if (!card) {
-          return;
-        }
-
-        room.game.currentCard =
-          card;
-
-        room.game.waitingForGuess =
-          true;
-
-        io.to(
-          socket.id
-        ).emit(
-          "card-drawn",
-          {
-            card,
-          }
-        );
-
-        sendGameState(
-          roomCode
-        );
-
-        console.log(
-          `[${roomCode}] ${currentPlayer.name} trekt een kaart`
-        );
-      }
-    );
-
-    /*
-     * =========================
      * GOK
-     * =========================
      */
 
     socket.on(
@@ -1136,12 +1096,7 @@ io.on(
 
         if (
           !room.game.started ||
-          room.game.finished
-        ) {
-          return;
-        }
-
-        if (
+          room.game.finished ||
           !room.game
             .waitingForGuess ||
           room.game
@@ -1177,16 +1132,10 @@ io.on(
 
         const normalizedGuess =
           String(
-            guess ||
-              ""
+            guess || ""
           )
             .trim()
             .toLowerCase();
-
-        /*
-         * SERVER BEREKENT
-         * GOED / FOUT.
-         */
 
         const correct =
           checkGuess(
@@ -1196,28 +1145,15 @@ io.on(
             card
           );
 
-        /*
-         * Was dit een
-         * Disco-gok?
-         */
-
         const isDisco =
           room.game.currentStep ===
             3 &&
           normalizedGuess ===
             "disco";
 
-        /*
-         * Kaart toevoegen.
-         */
-
         currentPlayer.cards.push(
           card
         );
-
-        /*
-         * Resultaat maken.
-         */
 
         const result = {
           playerId:
@@ -1260,11 +1196,6 @@ io.on(
           roomCode
         );
 
-        /*
-         * Resultaat direct
-         * naar iedereen.
-         */
-
         io.to(
           roomCode
         ).emit(
@@ -1272,38 +1203,22 @@ io.on(
           result
         );
 
-        /*
-         * Complete state
-         * synchroniseren.
-         */
-
         sendGameState(
           roomCode
         );
 
-        if (
-          isDisco &&
-          correct
-        ) {
-          console.log(
-            `[${roomCode}] 🪩 DISCO door ${currentPlayer.name}! Iedereen behalve ${currentPlayer.name} drinkt.`
-          );
-        } else {
-          console.log(
-            `[${roomCode}] ${currentPlayer.name}: ${normalizedGuess} → ${
-              correct
-                ? "GOED"
-                : "FOUT"
-            }`
-          );
-        }
+        console.log(
+          `[${roomCode}] ${currentPlayer.name}: ${normalizedGuess} → ${
+            correct
+              ? "GOED"
+              : "FOUT"
+          }`
+        );
       }
     );
 
     /*
-     * =========================
      * DISCONNECT
-     * =========================
      */
 
     socket.on(

@@ -103,9 +103,6 @@ function App() {
   const [guessResult, setGuessResult] =
     useState<GuessResult | null>(null);
 
-  const [isDrawing, setIsDrawing] =
-    useState(false);
-
   const [countdown, setCountdown] =
     useState(0);
 
@@ -130,8 +127,13 @@ function App() {
       roomFromUrl &&
       roomFromUrl.length === 5
     ) {
-      setJoinCode(roomFromUrl);
-      setScreen("join");
+      setJoinCode(
+        roomFromUrl
+      );
+
+      setScreen(
+        "join"
+      );
     }
   }, []);
 
@@ -153,38 +155,23 @@ function App() {
     function handleGameStarted() {
       setDrawnCard(null);
       setGuessResult(null);
-      setIsDrawing(false);
       setCountdown(0);
 
-      setScreen("game");
+      setScreen(
+        "game"
+      );
     }
 
     function handleGameState(
       state: GameState
     ) {
-      console.log(
-        "GAME STATE:",
+      setGameState(
         state
       );
-
-      if (
-        state.serverVersion
-      ) {
-        console.log(
-          "SERVER VERSION:",
-          state.serverVersion
-        );
-      }
-
-      setGameState(state);
 
       setPlayerNames(
         state.players
       );
-
-      /*
-       * RESULTAAT VAN SERVER
-       */
 
       if (
         state.resultShowing &&
@@ -195,31 +182,31 @@ function App() {
         );
       }
 
-      /*
-       * Resultaat alleen opruimen
-       * als de server zegt dat het
-       * resultaatscherm klaar is.
-       */
-
       if (
         !state.resultShowing
       ) {
-        setGuessResult(null);
-        setCountdown(0);
+        setGuessResult(
+          null
+        );
+
+        setCountdown(
+          0
+        );
       }
 
       /*
-       * Getrokken kaart alleen
-       * opruimen bij een echte
-       * nieuwe beurt.
+       * Alleen kaart verwijderen
+       * wanneer er geen actieve gok
+       * én geen resultaat is.
        */
 
       if (
         !state.waitingForGuess &&
         !state.resultShowing
       ) {
-        setDrawnCard(null);
-        setIsDrawing(false);
+        setDrawnCard(
+          null
+        );
       }
     }
 
@@ -228,40 +215,43 @@ function App() {
     }: {
       card: Card;
     }) {
-      console.log(
-        "KAART ONTVANGEN:",
+      setDrawnCard(
         card
       );
 
-      setDrawnCard(card);
-
-      setGuessResult(null);
-
-      setIsDrawing(false);
+      setGuessResult(
+        null
+      );
     }
 
     function handleGuessResult(
       result: GuessResult
     ) {
-      console.log(
-        "RESULTAAT:",
+      setGuessResult(
         result
       );
 
-      setGuessResult(result);
+      setDrawnCard(
+        null
+      );
 
-      setDrawnCard(null);
-
-      setIsDrawing(false);
-
-      setCountdown(3);
+      setCountdown(
+        3
+      );
     }
 
     function handleFourCardsComplete() {
-      setDrawnCard(null);
-      setGuessResult(null);
-      setIsDrawing(false);
-      setCountdown(0);
+      setDrawnCard(
+        null
+      );
+
+      setGuessResult(
+        null
+      );
+
+      setCountdown(
+        0
+      );
     }
 
     function handleRoomClosed() {
@@ -422,7 +412,7 @@ function App() {
 
     setCountdown(3);
 
-    const startTime =
+    const startedAt =
       Date.now();
 
     const interval =
@@ -430,7 +420,7 @@ function App() {
         () => {
           const elapsed =
             Date.now() -
-            startTime;
+            startedAt;
 
           const secondsLeft =
             Math.max(
@@ -459,12 +449,6 @@ function App() {
     gameState?.resultEndsAt,
   ]);
 
-  /*
-   * =========================
-   * RESET
-   * =========================
-   */
-
   function resetToHome() {
     setRoomCode("");
     setPlayerNames([]);
@@ -472,16 +456,9 @@ function App() {
     setGameState(null);
     setDrawnCard(null);
     setGuessResult(null);
-    setIsDrawing(false);
     setCountdown(0);
     setScreen("home");
   }
-
-  /*
-   * =========================
-   * KAMER MAKEN
-   * =========================
-   */
 
   function startLobby() {
     const name =
@@ -505,7 +482,8 @@ function App() {
       "create-room",
 
       {
-        playerName: name,
+        playerName:
+          name,
 
         settings: {
           players,
@@ -542,18 +520,16 @@ function App() {
             []
         );
 
-        setIsHost(true);
+        setIsHost(
+          true
+        );
 
-        setScreen("lobby");
+        setScreen(
+          "lobby"
+        );
       }
     );
   }
-
-  /*
-   * =========================
-   * JOINEN
-   * =========================
-   */
 
   function joinRoom() {
     const name =
@@ -594,8 +570,11 @@ function App() {
       "join-room",
 
       {
-        roomCode: code,
-        playerName: name,
+        roomCode:
+          code,
+
+        playerName:
+          name,
       },
 
       (response: {
@@ -625,18 +604,16 @@ function App() {
             []
         );
 
-        setIsHost(false);
+        setIsHost(
+          false
+        );
 
-        setScreen("lobby");
+        setScreen(
+          "lobby"
+        );
       }
     );
   }
-
-  /*
-   * =========================
-   * SPELER VERWIJDEREN
-   * =========================
-   */
 
   function removePlayer(
     playerId: string
@@ -651,12 +628,6 @@ function App() {
     );
   }
 
-  /*
-   * =========================
-   * SPEL STARTEN
-   * =========================
-   */
-
   function startGame() {
     if (!isHost) {
       return;
@@ -669,59 +640,7 @@ function App() {
 
   /*
    * =========================
-   * KAART TREKKEN
-   * =========================
-   */
-
-  function drawCard() {
-    if (!gameState) {
-      return;
-    }
-
-    if (
-      gameState.gameFinished
-    ) {
-      return;
-    }
-
-    if (
-      gameState.resultShowing
-    ) {
-      return;
-    }
-
-    if (
-      gameState.waitingForGuess
-    ) {
-      return;
-    }
-
-    const currentPlayer =
-      gameState.players[
-        gameState.currentPlayerIndex
-      ];
-
-    if (!currentPlayer) {
-      return;
-    }
-
-    if (
-      currentPlayer.id !==
-      socket.id
-    ) {
-      return;
-    }
-
-    setIsDrawing(true);
-
-    socket.emit(
-      "draw-card"
-    );
-  }
-
-  /*
-   * =========================
-   * GOK DOEN
+   * GOK
    * =========================
    */
 
@@ -766,21 +685,9 @@ function App() {
     );
   }
 
-  /*
-   * =========================
-   * QR URL
-   * =========================
-   */
-
   function getJoinUrl() {
     return `${window.location.origin}/?room=${roomCode}`;
   }
-
-  /*
-   * =========================
-   * STAPPEN
-   * =========================
-   */
 
   const stepNames = [
     "Kleur",
@@ -788,6 +695,36 @@ function App() {
     "Binnen of buiten",
     "Figuur",
   ];
+
+  function getCardRank(
+    card: Card
+  ) {
+    if (
+      card.name === "Boer"
+    ) {
+      return "B";
+    }
+
+    if (
+      card.name === "Vrouw"
+    ) {
+      return "V";
+    }
+
+    if (
+      card.name === "Heer"
+    ) {
+      return "H";
+    }
+
+    if (
+      card.name === "Aas"
+    ) {
+      return "A";
+    }
+
+    return card.name;
+  }
 
   function getStepDescription() {
     if (!gameState) {
@@ -814,10 +751,10 @@ function App() {
         player?.cards?.[0];
 
       if (card) {
-        return `Is de nieuwe kaart hoger of lager dan ${card.name} ${card.symbol}?`;
+        return `Hoger of lager dan ${card.name} ${card.symbol}?`;
       }
 
-      return "Raad of de kaart hoger of lager is dan je eerste kaart.";
+      return "Hoger of lager?";
     }
 
     if (
@@ -834,27 +771,21 @@ function App() {
         first &&
         second
       ) {
-        return `Ligt de nieuwe kaart binnen of buiten ${first.name} ${first.symbol} en ${second.name} ${second.symbol}?`;
+        return `Binnen of buiten ${first.name} ${first.symbol} en ${second.name} ${second.symbol}?`;
       }
 
-      return "Raad of de kaart binnen of buiten je eerste twee kaarten ligt.";
+      return "Binnen of buiten?";
     }
 
     if (
       gameState.currentStep ===
       3
     ) {
-      return "Raad het figuur van de kaart, of kies Disco als je denkt dat je met deze kaart alle vier de figuren compleet hebt.";
+      return "Raad het figuur, of ga voor Disco als je denkt dat je alle vier compleet maakt.";
     }
 
     return "";
   }
-
-  /*
-   * =========================
-   * FIGUUR + DISCO
-   * =========================
-   */
 
   function renderSuitButtons() {
     return (
@@ -902,7 +833,7 @@ function App() {
         </div>
 
         <button
-          className="start-button big-button"
+          className="disco-button"
           onClick={() =>
             makeGuess(
               "disco"
@@ -956,26 +887,11 @@ function App() {
       result?.playerId ===
       socket.id;
 
-    /*
-     * =========================
-     * DISCO RESULTAAT
-     * =========================
-     */
-
     const isDiscoSuccess =
       Boolean(
         result?.isDisco &&
           result.correct
       );
-
-    /*
-     * Normale fout:
-     * alleen degene die gokte drinkt.
-     *
-     * Goede Disco:
-     * iedereen BEHALVE degene
-     * die Disco had drinkt.
-     */
 
     const shouldDrink =
       Boolean(
@@ -1079,7 +995,9 @@ function App() {
                 <strong>
                   {isDiscoSuccess
                     ? "🪩 DISCO!"
-                    : `${result.playerName} heeft gespeeld`}
+                    : result.correct
+                      ? "Goed!"
+                      : "Fout!"}
                 </strong>
 
                 <p>
@@ -1089,7 +1007,7 @@ function App() {
             ) : isMyTurn ? (
               <>
                 <strong>
-                  Jij bent aan de beurt!
+                  Jij bent aan de beurt
                 </strong>
 
                 <p>
@@ -1128,13 +1046,33 @@ function App() {
                     key={card.id}
                     className={`playing-card ${card.color}`}
                   >
-                    <span className="card-value">
-                      {card.name}
-                    </span>
+                    <div className="card-corner card-corner-top">
+                      <strong>
+                        {getCardRank(
+                          card
+                        )}
+                      </strong>
 
-                    <span className="card-symbol">
+                      <span>
+                        {card.symbol}
+                      </span>
+                    </div>
+
+                    <div className="card-center-symbol">
                       {card.symbol}
-                    </span>
+                    </div>
+
+                    <div className="card-corner card-corner-bottom">
+                      <strong>
+                        {getCardRank(
+                          card
+                        )}
+                      </strong>
+
+                      <span>
+                        {card.symbol}
+                      </span>
+                    </div>
                   </div>
                 )
               )}
@@ -1152,7 +1090,9 @@ function App() {
                     key={index}
                     className="empty-card"
                   >
-                    ?
+                    <span>
+                      🂠
+                    </span>
                   </div>
                 )
               )}
@@ -1190,20 +1130,16 @@ function App() {
                       : "Fout!"}
                 </h2>
 
-                <div className="revealed-card">
+                <div
+                  className={`revealed-card ${result.card.color}`}
+                >
                   <span>
-                    {
+                    {getCardRank(
                       result.card
-                        .name
-                    }
+                    )}
                   </span>
 
-                  <strong
-                    className={
-                      result.card
-                        .color
-                    }
-                  >
+                  <strong>
                     {
                       result.card
                         .symbol
@@ -1218,68 +1154,32 @@ function App() {
                       ? "Disco 🪩"
                       : result.guess}
                   </strong>
-                  .
                 </p>
-
-                <p>
-                  De kaart was{" "}
-                  <strong>
-                    {
-                      result.card
-                        .name
-                    }{" "}
-                    {
-                      result.card
-                        .symbol
-                    }
-                  </strong>
-                  .
-                </p>
-
-                {/*
-                 * =========================
-                 * DISCO GOED
-                 * =========================
-                 */}
 
                 {isDiscoSuccess &&
                   isMyResult && (
                     <div className="drink-message success">
-                      🪩 Disco! Iedereen behalve jij neemt 1 slok!
+                      🪩 Iedereen behalve jij neemt 1 slok!
                     </div>
                   )}
 
                 {isDiscoSuccess &&
                   shouldDrink && (
                     <div className="drink-message">
-                      🪩 Disco! Neem{" "}
+                      🪩 Neem{" "}
                       <strong>
                         1 slok
                       </strong>
-                      !
                     </div>
                   )}
-
-                {/*
-                 * =========================
-                 * NORMALE GOK GOED
-                 * =========================
-                 */}
 
                 {!result.isDisco &&
                   isMyResult &&
                   result.correct && (
                     <div className="drink-message success">
-                      Geen slok!
+                      Geen slok
                     </div>
                   )}
-
-                {/*
-                 * =========================
-                 * NORMALE GOK FOUT
-                 * OF DISCO FOUT
-                 * =========================
-                 */}
 
                 {!isDiscoSuccess &&
                   shouldDrink && (
@@ -1288,7 +1188,6 @@ function App() {
                       <strong>
                         1 slok
                       </strong>
-                      !
                     </div>
                   )}
 
@@ -1296,10 +1195,7 @@ function App() {
                   Volgende speler over{" "}
                   <strong>
                     {countdown}
-                  </strong>{" "}
-                  {countdown === 1
-                    ? "seconde"
-                    : "seconden"}
+                  </strong>
                   ...
                 </div>
               </div>
@@ -1308,7 +1204,7 @@ function App() {
 
           {/*
            * =========================
-           * SPELER IS AAN DE BEURT
+           * DIRECT GOKKEN
            * =========================
            */}
 
@@ -1316,28 +1212,10 @@ function App() {
             !gameState?.gameFinished &&
             isMyTurn && (
               <>
-                {!drawnCard ? (
-                  <button
-                    className="start-button big-button"
-                    onClick={
-                      drawCard
-                    }
-                    disabled={
-                      isDrawing
-                    }
-                  >
-                    {isDrawing
-                      ? "Kaart pakken..."
-                      : "Kaart spelen 🃏"}
-                  </button>
-                ) : (
+                {drawnCard ? (
                   <div className="guess-area">
-                    <div className="hidden-card large">
-                      ?
-                    </div>
-
                     <h2>
-                      Jouw gok
+                      Maak je keuze
                     </h2>
 
                     {currentStep ===
@@ -1419,15 +1297,13 @@ function App() {
                       3 &&
                       renderSuitButtons()}
                   </div>
+                ) : (
+                  <div className="dealing-message">
+                    🃏 Kaart wordt gedeeld...
+                  </div>
                 )}
               </>
             )}
-
-          {/*
-           * =========================
-           * ANDERE SPELER
-           * =========================
-           */}
 
           {!result &&
             !gameState?.gameFinished &&
@@ -1438,13 +1314,12 @@ function App() {
                 </div>
 
                 <p>
-                  Wacht tot{" "}
                   <strong>
                     {
                       currentPlayer?.name
                     }
                   </strong>{" "}
-                  zijn kaart speelt.
+                  maakt een keuze...
                 </p>
               </div>
             )}
@@ -1658,23 +1533,8 @@ function App() {
             </button>
           ) : (
             <div className="waiting-message">
-              <p>
-                Wachten tot de host het spel start...
-              </p>
+              Wachten tot de host het spel start...
             </div>
-          )}
-
-          {isHost && (
-            <button
-              className="back-button lobby-back"
-              onClick={() =>
-                setScreen(
-                  "settings"
-                )
-              }
-            >
-              ← Instellingen aanpassen
-            </button>
           )}
         </section>
       </main>
@@ -1697,10 +1557,7 @@ function App() {
             className="back-button"
             onClick={() => {
               setJoinError("");
-
-              setScreen(
-                "home"
-              );
+              setScreen("home");
             }}
           >
             ← Terug
@@ -2033,12 +1890,6 @@ function App() {
     );
   }
 
-  /*
-   * =========================
-   * HOME
-   * =========================
-   */
-
   return (
     <main className="app">
       <section className="card">
@@ -2071,10 +1922,7 @@ function App() {
             setJoinError("");
             setPlayerName("");
             setJoinCode("");
-
-            setScreen(
-              "join"
-            );
+            setScreen("join");
           }}
         >
           Meedoen met spel
