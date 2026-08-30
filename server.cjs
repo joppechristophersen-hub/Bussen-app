@@ -7,7 +7,7 @@ const TREE_NEXT_DELAY = 1800;
 const TREE_START_DELAY = 1400;
 const BUS_RESULT_DELAY = 2000;
 
-const SERVER_VERSION = "BUS_V2_REAL_STOCK";
+const SERVER_VERSION = "BUS_V3_DOUBLE_RESTART";
 
 const io = new Server(PORT, {
   cors: {
@@ -60,7 +60,9 @@ function shuffle(array) {
   const result = [...array];
 
   for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(
+      Math.random() * (i + 1)
+    );
 
     [result[i], result[j]] = [
       result[j],
@@ -175,7 +177,7 @@ function refillStock(room) {
     0
   ) {
     console.log(
-      "WAARSCHUWING: stock én aflegstapel zijn leeg."
+      "WAARSCHUWING: stock en aflegstapel zijn leeg."
     );
 
     return;
@@ -185,9 +187,10 @@ function refillStock(room) {
     `Stock leeg. ${room.discardPile.length} gebruikte kaarten opnieuw geschud.`
   );
 
-  room.deck = shuffle(
-    room.discardPile
-  );
+  room.deck =
+    shuffle(
+      room.discardPile
+    );
 
   room.discardPile = [];
 }
@@ -209,7 +212,8 @@ function takeCard(room) {
 
 function clearResultTimer(room) {
   if (
-    room?.game?.resultTimer
+    room?.game
+      ?.resultTimer
   ) {
     clearTimeout(
       room.game.resultTimer
@@ -222,7 +226,8 @@ function clearResultTimer(room) {
 
 function clearTreeTimer(room) {
   if (
-    room?.game?.tree?.timer
+    room?.game
+      ?.tree?.timer
   ) {
     clearTimeout(
       room.game.tree.timer
@@ -235,7 +240,8 @@ function clearTreeTimer(room) {
 
 function clearBusTimer(room) {
   if (
-    room?.game?.bus?.timer
+    room?.game
+      ?.bus?.timer
   ) {
     clearTimeout(
       room.game.bus.timer
@@ -267,41 +273,43 @@ function publicTreeState(room) {
   }
 
   const currentResolverId =
-    tree.status === "resolving"
+    tree.status ===
+    "resolving"
       ? tree.pendingResolvers[
           tree.currentResolverIndex
         ] || null
       : null;
 
   return {
-    rows: tree.rows.map(
-      (row) => ({
-        rowNumber:
-          row.rowNumber,
+    rows:
+      tree.rows.map(
+        (row) => ({
+          rowNumber:
+            row.rowNumber,
 
-        drinks:
-          row.rowNumber,
+          drinks:
+            row.rowNumber,
 
-        cards:
-          row.cards.map(
-            (treeCard) => ({
-              id:
-                treeCard.card.id,
+          cards:
+            row.cards.map(
+              (treeCard) => ({
+                id:
+                  treeCard.card.id,
 
-              revealed:
-                treeCard.revealed,
+                revealed:
+                  treeCard.revealed,
 
-              isDouble:
-                treeCard.isDouble,
+                isDouble:
+                  treeCard.isDouble,
 
-              card:
-                treeCard.revealed
-                  ? treeCard.card
-                  : null,
-            })
-          ),
-      })
-    ),
+                card:
+                  treeCard.revealed
+                    ? treeCard.card
+                    : null,
+              })
+            ),
+        })
+      ),
 
     status:
       tree.status,
@@ -310,19 +318,24 @@ function publicTreeState(room) {
       tree.activeCard
         ? {
             rowIndex:
-              tree.activeCard.rowIndex,
+              tree.activeCard
+                .rowIndex,
 
             cardIndex:
-              tree.activeCard.cardIndex,
+              tree.activeCard
+                .cardIndex,
 
             rowNumber:
-              tree.activeCard.rowNumber,
+              tree.activeCard
+                .rowNumber,
 
             isDouble:
-              tree.activeCard.isDouble,
+              tree.activeCard
+                .isDouble,
 
             card:
-              tree.activeCard.card,
+              tree.activeCard
+                .card,
           }
         : null,
 
@@ -463,7 +476,8 @@ function publicGameState(room) {
       ),
 
     currentPlayerIndex:
-      room.game.currentPlayerIndex,
+      room.game
+        .currentPlayerIndex,
 
     currentStep:
       room.game.currentStep,
@@ -472,16 +486,19 @@ function publicGameState(room) {
       null,
 
     waitingForGuess:
-      room.game.waitingForGuess,
+      room.game
+        .waitingForGuess,
 
     resultShowing:
-      room.game.resultShowing,
+      room.game
+        .resultShowing,
 
     result:
       room.game.result,
 
     resultEndsAt:
-      room.game.resultEndsAt,
+      room.game
+        .resultEndsAt,
 
     gameFinished:
       room.game.finished,
@@ -502,7 +519,9 @@ function sendGameState(roomCode) {
     return;
   }
 
-  io.to(roomCode).emit(
+  io.to(
+    roomCode
+  ).emit(
     "game-state",
     publicGameState(room)
   );
@@ -527,8 +546,10 @@ function beginTurn(roomCode) {
       "cards" ||
     !room.game.started ||
     room.game.finished ||
-    room.game.resultShowing ||
-    room.game.waitingForGuess
+    room.game
+      .resultShowing ||
+    room.game
+      .waitingForGuess
   ) {
     return;
   }
@@ -553,7 +574,9 @@ function beginTurn(roomCode) {
   room.game.waitingForGuess =
     true;
 
-  sendGameState(roomCode);
+  sendGameState(
+    roomCode
+  );
 
   io.to(
     currentPlayer.id
@@ -570,7 +593,8 @@ function checkDisco(
   drawnCard
 ) {
   if (
-    player.cards.length !== 3
+    player.cards.length !==
+    3
   ) {
     return false;
   }
@@ -601,8 +625,7 @@ function checkGuess(
 
   if (step === 0) {
     return (
-      guess ===
-      card.color
+      guess === card.color
     );
   }
 
@@ -665,10 +688,8 @@ function checkGuess(
       guess === "binnen"
     ) {
       return (
-        card.value >
-          low &&
-        card.value <
-          high
+        card.value > low &&
+        card.value < high
       );
     }
 
@@ -676,10 +697,8 @@ function checkGuess(
       guess === "buiten"
     ) {
       return (
-        card.value <
-          low ||
-        card.value >
-          high
+        card.value < low ||
+        card.value > high
       );
     }
 
@@ -697,8 +716,7 @@ function checkGuess(
     }
 
     return (
-      guess ===
-      card.suit
+      guess === card.suit
     );
   }
 
@@ -751,7 +769,8 @@ function drawTreeCard(
   }
 
   if (
-    skippedCards.length > 0
+    skippedCards.length >
+    0
   ) {
     return (
       skippedCards.pop() ||
@@ -780,11 +799,13 @@ function buildTree(room) {
   const usedValues =
     new Set();
 
-  const skippedCards = [];
+  const skippedCards =
+    [];
 
   for (
     let rowNumber = 1;
-    rowNumber <= rowCount;
+    rowNumber <=
+    rowCount;
     rowNumber++
   ) {
     const cards = [];
@@ -814,7 +835,9 @@ function buildTree(room) {
 
       cards.push({
         card,
-        revealed: false,
+
+        revealed:
+          false,
 
         isDouble:
           cardIndex ===
@@ -826,6 +849,7 @@ function buildTree(room) {
           rowNumber - 1,
 
         cardIndex,
+
         rowNumber,
       });
     }
@@ -932,7 +956,9 @@ function advanceTreeResolver(
     tree.status =
       "resolving";
 
-    sendGameState(roomCode);
+    sendGameState(
+      roomCode
+    );
 
     return;
   }
@@ -940,19 +966,14 @@ function advanceTreeResolver(
   tree.status =
     "resolved";
 
-  sendGameState(roomCode);
+  sendGameState(
+    roomCode
+  );
 
   queueNextTreeCard(
     roomCode
   );
 }
-
-/*
- * =========================
- * KAARTEN VAN VORIGE FASE
- * NAAR AFLEGSTAPEL
- * =========================
- */
 
 function prepareUsedCardsForBus(
   room
@@ -1068,7 +1089,8 @@ function determineBusDriver(
   let safety = 0;
 
   while (
-    candidates.length > 1 &&
+    candidates.length >
+      1 &&
     safety < 20
   ) {
     safety++;
@@ -1196,7 +1218,9 @@ function revealNextTreeCard(
     tree.status =
       "finished";
 
-    sendGameState(roomCode);
+    sendGameState(
+      roomCode
+    );
 
     determineBusDriver(
       roomCode
@@ -1276,7 +1300,9 @@ function revealNextTreeCard(
     tree.status =
       "no-match";
 
-    sendGameState(roomCode);
+    sendGameState(
+      roomCode
+    );
 
     queueNextTreeCard(
       roomCode
@@ -1288,7 +1314,9 @@ function revealNextTreeCard(
   tree.status =
     "resolving";
 
-  sendGameState(roomCode);
+  sendGameState(
+    roomCode
+  );
 }
 
 function startTree(
@@ -1327,7 +1355,9 @@ function startTree(
   room.game.tree =
     buildTree(room);
 
-  sendGameState(roomCode);
+  sendGameState(
+    roomCode
+  );
 
   queueNextTreeCard(
     roomCode,
@@ -1375,7 +1405,9 @@ function advanceTurn(
     room.game.currentPlayerIndex +=
       1;
 
-    beginTurn(roomCode);
+    beginTurn(
+      roomCode
+    );
 
     return;
   }
@@ -1390,12 +1422,16 @@ function advanceTurn(
     room.game.currentStep >=
     4
   ) {
-    startTree(roomCode);
+    startTree(
+      roomCode
+    );
 
     return;
   }
 
-  beginTurn(roomCode);
+  beginTurn(
+    roomCode
+  );
 }
 
 function startResultTimer(
@@ -1522,7 +1558,9 @@ function startBusSetup(
       false,
   };
 
-  sendGameState(roomCode);
+  sendGameState(
+    roomCode
+  );
 }
 
 function dealBusCards(room) {
@@ -1632,7 +1670,9 @@ function finishBus(
   room.game.finished =
     true;
 
-  sendGameState(roomCode);
+  sendGameState(
+    roomCode
+  );
 }
 
 function continueBusAfterResult(
@@ -1706,6 +1746,143 @@ function continueBusAfterResult(
 
 /*
  * =========================
+ * DUBBEL = FOUT
+ * =========================
+ *
+ * Eerst laten we het fout-resultaat
+ * zien.
+ *
+ * Daarna:
+ * - eventueel bus doorgeven
+ * - of iemand toevoegen
+ * - ALTIJD terug naar kaart 1
+ *
+ * Een checkpoint geldt dus NIET
+ * bij een dubbele kaart.
+ */
+
+function continueBusAfterDouble(
+  roomCode,
+  selectedPlayerId
+) {
+  const room =
+    rooms[roomCode];
+
+  if (
+    !room ||
+    !room.game.bus
+  ) {
+    return;
+  }
+
+  const bus =
+    room.game.bus;
+
+  clearBusTimer(room);
+
+  bus.timer =
+    setTimeout(
+      () => {
+        const currentRoom =
+          rooms[roomCode];
+
+        if (
+          !currentRoom ||
+          !currentRoom.game.bus
+        ) {
+          return;
+        }
+
+        const currentBus =
+          currentRoom.game.bus;
+
+        const selectedPlayer =
+          currentRoom.players.find(
+            (player) =>
+              player.id ===
+              selectedPlayerId
+          );
+
+        if (
+          !selectedPlayer
+        ) {
+          currentBus.result =
+            null;
+
+          currentBus.currentIndex =
+            0;
+
+          currentBus.status =
+            "playing";
+
+          sendGameState(
+            roomCode
+          );
+
+          return;
+        }
+
+        /*
+         * BUS DOORGEVEN
+         */
+
+        if (
+          currentBus.doubleRule ===
+          "pass"
+        ) {
+          currentBus.activeDriverId =
+            selectedPlayer.id;
+
+          currentBus.riders = [
+            selectedPlayer.id,
+          ];
+        }
+
+        /*
+         * IEMAND MEENEMEN
+         */
+
+        if (
+          currentBus.doubleRule ===
+          "take-along"
+        ) {
+          if (
+            !currentBus.riders.includes(
+              selectedPlayer.id
+            )
+          ) {
+            currentBus.riders.push(
+              selectedPlayer.id
+            );
+          }
+        }
+
+        /*
+         * DUBBEL IS ALTIJD FOUT.
+         *
+         * Dus ongeacht checkpoints:
+         * TERUG NAAR KAART 1.
+         */
+
+        currentBus.currentIndex =
+          0;
+
+        currentBus.result =
+          null;
+
+        currentBus.status =
+          "playing";
+
+        sendGameState(
+          roomCode
+        );
+      },
+      BUS_RESULT_DELAY
+    );
+}
+
+/*
+ * =========================
  * SOCKET.IO
  * =========================
  */
@@ -1756,11 +1933,13 @@ io.on(
 
             checkpoints:
               Boolean(
-                settings?.checkpoints
+                settings
+                  ?.checkpoints
               ),
 
             doubleRule:
-              settings?.doubleRule ===
+              settings
+                ?.doubleRule ===
               "take-along"
                 ? "take-along"
                 : "pass",
@@ -1850,14 +2029,15 @@ io.on(
           roomCode,
 
           players:
-            rooms[roomCode]
-              .players,
+            rooms[
+              roomCode
+            ].players,
         });
       }
     );
 
     /*
-     * JOIN
+     * JOIN ROOM
      */
 
     socket.on(
@@ -1960,7 +2140,9 @@ io.on(
             room.players,
         });
 
-        io.to(code).emit(
+        io.to(
+          code
+        ).emit(
           "players-updated",
           room.players
         );
@@ -2141,8 +2323,10 @@ io.on(
           !room ||
           room.game.phase !==
             "cards" ||
-          !room.game.waitingForGuess ||
-          room.game.resultShowing
+          !room.game
+            .waitingForGuess ||
+          room.game
+            .resultShowing
         ) {
           return;
         }
@@ -2183,7 +2367,8 @@ io.on(
           );
 
         const isDisco =
-          room.game.currentStep ===
+          room.game
+            .currentStep ===
             3 &&
           normalizedGuess ===
             "disco";
@@ -2200,7 +2385,8 @@ io.on(
             player.name,
 
           step:
-            room.game.currentStep,
+            room.game
+              .currentStep,
 
           card,
 
@@ -2399,8 +2585,8 @@ io.on(
           giver.cards.findIndex(
             (card) =>
               card.value ===
-              tree.activeCard.card
-                .value
+              tree.activeCard
+                .card.value
           );
 
         if (
@@ -2549,7 +2735,7 @@ io.on(
 
     /*
      * =========================
-     * BUS: LENGTEKAART
+     * BUS LENGTEKAART
      * =========================
      */
 
@@ -2622,27 +2808,8 @@ io.on(
         bus.lengthCard =
           card;
 
-        /*
-         * 2 = 2 kaarten
-         * ...
-         * Boer = 11
-         * Vrouw = 12
-         * Heer = 13
-         * Aas = 14
-         */
-
         bus.length =
           card.value;
-
-        /*
-         * De lengtekaart is gebruikt,
-         * maar ligt niet bovenop een
-         * busstapel.
-         *
-         * Daarom mag hij later bij
-         * een lege stock opnieuw
-         * geschud worden.
-         */
 
         addToDiscard(
           room,
@@ -2665,7 +2832,7 @@ io.on(
 
     /*
      * =========================
-     * BUS: AANTAL OPEN
+     * BUS OPEN KAARTEN
      * =========================
      */
 
@@ -2778,7 +2945,7 @@ io.on(
 
     /*
      * =========================
-     * BUS CHECKPOINTS
+     * CHECKPOINTS
      * =========================
      */
 
@@ -2871,10 +3038,6 @@ io.on(
       }
     );
 
-    /*
-     * CHECKPOINTS KLAAR
-     */
-
     socket.on(
       "bus-checkpoints-ready",
       (callback) => {
@@ -2937,7 +3100,7 @@ io.on(
 
     /*
      * =========================
-     * BUS STARTEN
+     * BUS START
      * =========================
      */
 
@@ -3014,7 +3177,7 @@ io.on(
 
     /*
      * =========================
-     * BUS HOGER / LAGER
+     * BUS GOK
      * =========================
      */
 
@@ -3106,10 +3269,10 @@ io.on(
         }
 
         /*
-         * Bij een dichte kaart:
+         * Bij een dichte kaart kiest
+         * de speler eerst.
          *
-         * speler heeft AL gekozen.
-         * Nu draaien we hem pas om.
+         * Daarna wordt de kaart onthuld.
          */
 
         pile.revealed =
@@ -3117,10 +3280,6 @@ io.on(
 
         const referenceCard =
           pile.card;
-
-        /*
-         * Nieuwe kaart uit de echte stock.
-         */
 
         const newCard =
           takeCard(room);
@@ -3138,11 +3297,8 @@ io.on(
         }
 
         /*
-         * De oude bovenste kaart wordt
-         * nu bedekt.
-         *
-         * Hij mag dus bij een lege stock
-         * opnieuw geschud worden.
+         * Oude bovenste kaart wordt
+         * aflegstapel.
          */
 
         addToDiscard(
@@ -3151,8 +3307,8 @@ io.on(
         );
 
         /*
-         * Nieuwe kaart wordt de bovenste
-         * kaart van deze buspositie.
+         * Nieuwe kaart wordt bovenste
+         * kaart van de positie.
          */
 
         pile.card =
@@ -3162,13 +3318,18 @@ io.on(
           true;
 
         /*
+         * =========================
          * DUBBEL
+         * =========================
          */
 
         if (
           newCard.value ===
           referenceCard.value
         ) {
+          const drinks =
+            position + 1;
+
           bus.result = {
             type:
               "double",
@@ -3189,7 +3350,12 @@ io.on(
             double:
               true,
 
-            drinks:
+            drinks,
+
+            /*
+             * Dubbel negeert checkpoints.
+             */
+            restartIndex:
               0,
           };
 
@@ -3208,6 +3374,10 @@ io.on(
           return;
         }
 
+        /*
+         * NORMAAL HOGER/LAGER
+         */
+
         const correct =
           normalizedGuess ===
           "hoger"
@@ -3215,14 +3385,6 @@ io.on(
               referenceCard.value
             : newCard.value <
               referenceCard.value;
-
-        /*
-         * Positie is 0-based.
-         *
-         * Dus fout op index 4 =
-         * kaart 5 =
-         * 5 slokken.
-         */
 
         const drinks =
           position + 1;
@@ -3283,7 +3445,7 @@ io.on(
 
     /*
      * =========================
-     * DUBBEL REGEL
+     * DUBBEL KEUZE
      * =========================
      */
 
@@ -3328,7 +3490,8 @@ io.on(
           bus.status !==
             "double-choice" ||
           bus.activeDriverId !==
-            socket.id
+            socket.id ||
+          !bus.result
         ) {
           done({
             success:
@@ -3358,68 +3521,63 @@ io.on(
           return;
         }
 
-        if (
-          bus.doubleRule ===
-          "pass"
-        ) {
-          bus.activeDriverId =
-            selectedPlayer.id;
-
-          bus.riders = [
-            selectedPlayer.id,
-          ];
-        }
-
-        if (
-          bus.doubleRule ===
-          "take-along"
-        ) {
-          if (
-            !bus.riders.includes(
-              selectedPlayer.id
-            )
-          ) {
-            bus.riders.push(
-              selectedPlayer.id
-            );
-          }
-        }
-
         /*
-         * Een dubbel vervangt goed/fout.
+         * DUBBEL TELT NU VOLLEDIG
+         * ALS FOUT.
          *
-         * De buspositie is daarmee
-         * afgehandeld en we gaan door
-         * naar de volgende.
+         * Voorbeeld:
+         *
+         * dubbel op kaart 5
+         * = 5 slokken
+         * = terug naar kaart 1.
          */
 
-        bus.currentIndex +=
-          1;
+        const originalResult = {
+          ...bus.result,
+        };
 
-        bus.result =
-          null;
+        bus.result = {
+          ...originalResult,
 
-        if (
-          bus.currentIndex >=
-          bus.length
-        ) {
-          finishBus(
-            roomCode
-          );
+          type:
+            "wrong",
 
-          done({
-            success:
-              true,
-          });
+          correct:
+            false,
 
-          return;
-        }
+          double:
+            true,
+
+          restartIndex:
+            0,
+        };
+
+        /*
+         * Eerst foutresultaat tonen.
+         *
+         * De huidige speler blijft
+         * tijdens dit resultaat nog
+         * bestuurder, zodat duidelijk
+         * is wie de dubbel heeft
+         * gegooid en wie moet drinken.
+         */
 
         bus.status =
-          "playing";
+          "result";
 
         sendGameState(
           roomCode
+        );
+
+        /*
+         * Daarna:
+         * - dubbelregel toepassen
+         * - terug naar kaart 1
+         */
+
+        continueBusAfterDouble(
+          roomCode,
+          selectedPlayer.id
         );
 
         done({
