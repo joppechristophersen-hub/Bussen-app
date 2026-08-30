@@ -1,8 +1,12 @@
 const { Server } = require("socket.io");
 
 const PORT = process.env.PORT || 3001;
+
 const RESULT_DELAY = 3000;
-const SERVER_VERSION = "AUTO_DEAL_V5_DISCO";
+const TREE_NEXT_DELAY = 1800;
+const TREE_START_DELAY = 1400;
+
+const SERVER_VERSION = "TREE_V1";
 
 const io = new Server(PORT, {
   cors: {
@@ -54,10 +58,21 @@ const VALUES = [
 function shuffle(array) {
   const shuffled = [...array];
 
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+  for (
+    let i = shuffled.length - 1;
+    i > 0;
+    i--
+  ) {
+    const j =
+      Math.floor(
+        Math.random() *
+          (i + 1)
+      );
 
-    [shuffled[i], shuffled[j]] = [
+    [
+      shuffled[i],
+      shuffled[j],
+    ] = [
       shuffled[j],
       shuffled[i],
     ];
@@ -66,26 +81,48 @@ function shuffle(array) {
   return shuffled;
 }
 
-function createDeck(numberOfDecks = 1) {
+function createDeck(
+  numberOfDecks = 1
+) {
   const deck = [];
 
   for (
     let deckNumber = 0;
-    deckNumber < numberOfDecks;
+    deckNumber <
+    numberOfDecks;
     deckNumber++
   ) {
-    for (const suit of SUITS) {
-      for (const cardValue of VALUES) {
+    for (
+      const suit of SUITS
+    ) {
+      for (
+        const cardValue of
+        VALUES
+      ) {
         deck.push({
           id:
             `${deckNumber}-${suit.name}-${cardValue.value}-` +
-            Math.random().toString(36).substring(2, 9),
+            Math.random()
+              .toString(36)
+              .substring(
+                2,
+                9
+              ),
 
-          suit: suit.name,
-          symbol: suit.symbol,
-          value: cardValue.value,
-          name: cardValue.name,
-          color: suit.color,
+          suit:
+            suit.name,
+
+          symbol:
+            suit.symbol,
+
+          value:
+            cardValue.value,
+
+          name:
+            cardValue.name,
+
+          color:
+            suit.color,
         });
       }
     }
@@ -100,10 +137,17 @@ function createRoomCode() {
 
   let code = "";
 
-  for (let i = 0; i < 5; i++) {
+  for (
+    let i = 0;
+    i < 5;
+    i++
+  ) {
     code +=
       characters[
-        Math.floor(Math.random() * characters.length)
+        Math.floor(
+          Math.random() *
+            characters.length
+        )
       ];
   }
 
@@ -111,43 +155,214 @@ function createRoomCode() {
 }
 
 function getUniqueRoomCode() {
-  let code = createRoomCode();
+  let code =
+    createRoomCode();
 
   while (rooms[code]) {
-    code = createRoomCode();
+    code =
+      createRoomCode();
   }
 
   return code;
 }
 
-function getCurrentPlayer(room) {
+function ensureDeck(room) {
+  if (
+    room.deck.length ===
+    0
+  ) {
+    room.deck =
+      createDeck(
+        room.settings
+          .decks
+      );
+  }
+}
+
+function takeCard(room) {
+  ensureDeck(room);
+
+  return (
+    room.deck.pop() ||
+    null
+  );
+}
+
+function getCurrentPlayer(
+  room
+) {
   return room.players[
-    room.game.currentPlayerIndex
+    room.game
+      .currentPlayerIndex
   ];
 }
 
-function clearResultTimer(room) {
-  if (!room?.game?.resultTimer) {
+function clearResultTimer(
+  room
+) {
+  if (
+    !room?.game
+      ?.resultTimer
+  ) {
     return;
   }
 
   clearTimeout(
-    room.game.resultTimer
+    room.game
+      .resultTimer
   );
 
-  room.game.resultTimer = null;
+  room.game.resultTimer =
+    null;
+}
+
+function clearTreeTimer(
+  room
+) {
+  if (
+    !room?.game
+      ?.tree?.timer
+  ) {
+    return;
+  }
+
+  clearTimeout(
+    room.game.tree.timer
+  );
+
+  room.game.tree.timer =
+    null;
 }
 
 /*
  * =========================
- * GAME STATE
+ * PUBLIC TREE STATE
  * =========================
  */
 
-function publicGameState(room) {
+function publicTreeState(
+  room
+) {
+  const tree =
+    room.game.tree;
+
+  if (!tree) {
+    return null;
+  }
+
+  const currentResolverId =
+    tree.status ===
+      "resolving"
+      ? tree.pendingResolvers[
+          tree.currentResolverIndex
+        ] || null
+      : null;
+
+  return {
+    rows:
+      tree.rows.map(
+        (row) => ({
+          rowNumber:
+            row.rowNumber,
+
+          drinks:
+            row.rowNumber,
+
+          cards:
+            row.cards.map(
+              (treeCard) => ({
+                id:
+                  treeCard.card
+                    .id,
+
+                revealed:
+                  treeCard
+                    .revealed,
+
+                isDouble:
+                  treeCard
+                    .isDouble,
+
+                card:
+                  treeCard
+                    .revealed
+                    ? treeCard
+                        .card
+                    : null,
+              })
+            ),
+        })
+      ),
+
+    status:
+      tree.status,
+
+    activeCard:
+      tree.activeCard
+        ? {
+            rowIndex:
+              tree.activeCard
+                .rowIndex,
+
+            cardIndex:
+              tree.activeCard
+                .cardIndex,
+
+            rowNumber:
+              tree.activeCard
+                .rowNumber,
+
+            isDouble:
+              tree.activeCard
+                .isDouble,
+
+            card:
+              tree.activeCard
+                .card,
+          }
+        : null,
+
+    pendingResolverIds:
+      [...tree.pendingResolvers],
+
+    currentResolverId,
+
+    drinksToDistribute:
+      tree.drinksToDistribute,
+
+    revealedCount:
+      tree.currentSequenceIndex +
+      1,
+
+    totalCards:
+      tree.sequence.length,
+
+    lastAction:
+      tree.lastAction,
+
+    busDriver:
+      tree.busDriver,
+
+    tieBreakRounds:
+      tree.tieBreakRounds,
+  };
+}
+
+/*
+ * =========================
+ * PUBLIC GAME STATE
+ * =========================
+ */
+
+function publicGameState(
+  room
+) {
   return {
     serverVersion:
       SERVER_VERSION,
+
+    phase:
+      room.game.phase,
 
     players:
       room.players.map(
@@ -162,38 +377,44 @@ function publicGameState(room) {
             player.isHost,
 
           cards:
-            player.cards || [],
+            player.cards ||
+            [],
         })
       ),
 
     currentPlayerIndex:
-      room.game.currentPlayerIndex,
+      room.game
+        .currentPlayerIndex,
 
     currentStep:
-      room.game.currentStep,
-
-    /*
-     * De geheime kaart gaat
-     * nooit naar iedereen.
-     */
+      room.game
+        .currentStep,
 
     currentCard:
       null,
 
     waitingForGuess:
-      room.game.waitingForGuess,
+      room.game
+        .waitingForGuess,
 
     resultShowing:
-      room.game.resultShowing,
+      room.game
+        .resultShowing,
 
     result:
       room.game.result,
 
     resultEndsAt:
-      room.game.resultEndsAt,
+      room.game
+        .resultEndsAt,
 
     gameFinished:
       room.game.finished,
+
+    tree:
+      publicTreeState(
+        room
+      ),
   };
 }
 
@@ -207,23 +428,20 @@ function sendGameState(
     return;
   }
 
-  io.to(roomCode).emit(
+  io.to(
+    roomCode
+  ).emit(
     "game-state",
-    publicGameState(room)
+    publicGameState(
+      room
+    )
   );
 }
 
 /*
  * =========================
- * AUTOMATISCH KAART DELEN
+ * KAARTFASE
  * =========================
- *
- * Dit vervangt de knop
- * "Kaart spelen".
- *
- * Zodra een beurt begint,
- * deelt de server automatisch
- * één kaart aan de speler.
  */
 
 function beginTurn(
@@ -237,10 +455,14 @@ function beginTurn(
   }
 
   if (
+    room.game.phase !==
+      "cards" ||
     !room.game.started ||
     room.game.finished ||
-    room.game.resultShowing ||
-    room.game.waitingForGuess
+    room.game
+      .resultShowing ||
+    room.game
+      .waitingForGuess
   ) {
     return;
   }
@@ -254,18 +476,8 @@ function beginTurn(
     return;
   }
 
-  if (
-    room.deck.length ===
-    0
-  ) {
-    room.deck =
-      createDeck(
-        room.settings.decks
-      );
-  }
-
   const card =
-    room.deck.pop();
+    takeCard(room);
 
   if (!card) {
     return;
@@ -277,19 +489,9 @@ function beginTurn(
   room.game.waitingForGuess =
     true;
 
-  /*
-   * Eerst iedereen vertellen
-   * wie aan de beurt is.
-   */
-
   sendGameState(
     roomCode
   );
-
-  /*
-   * Alleen de speler zelf krijgt
-   * zijn geheime kaart.
-   */
 
   io.to(
     currentPlayer.id
@@ -301,7 +503,7 @@ function beginTurn(
   );
 
   console.log(
-    `[${roomCode}] Automatisch kaart gedeeld aan ${currentPlayer.name}`
+    `[${roomCode}] Kaart gedeeld aan ${currentPlayer.name}`
   );
 }
 
@@ -350,11 +552,8 @@ function checkGuess(
   card
 ) {
   const step =
-    room.game.currentStep;
-
-  /*
-   * 1. ROOD / ZWART
-   */
+    room.game
+      .currentStep;
 
   if (step === 0) {
     return (
@@ -362,10 +561,6 @@ function checkGuess(
       card.color
     );
   }
-
-  /*
-   * 2. HOGER / LAGER
-   */
 
   if (step === 1) {
     const firstCard =
@@ -395,10 +590,6 @@ function checkGuess(
 
     return false;
   }
-
-  /*
-   * 3. BINNEN / BUITEN
-   */
 
   if (step === 2) {
     const firstCard =
@@ -451,10 +642,6 @@ function checkGuess(
     return false;
   }
 
-  /*
-   * 4. FIGUUR / DISCO
-   */
-
   if (step === 3) {
     if (
       guess === "disco"
@@ -476,7 +663,658 @@ function checkGuess(
 
 /*
  * =========================
- * VOLGENDE BEURT
+ * BOOM MAKEN
+ * =========================
+ */
+
+function drawTreeCard(
+  room,
+  usedValues,
+  skippedCards
+) {
+  ensureDeck(room);
+
+  const tries =
+    room.deck.length;
+
+  for (
+    let i = 0;
+    i < tries;
+    i++
+  ) {
+    const card =
+      room.deck.pop();
+
+    if (!card) {
+      break;
+    }
+
+    /*
+     * Wanneer alle 13 waarden
+     * al gebruikt zijn kunnen we
+     * geen unieke waarde meer
+     * garanderen.
+     */
+
+    if (
+      usedValues.size >=
+        13 ||
+      !usedValues.has(
+        card.value
+      )
+    ) {
+      usedValues.add(
+        card.value
+      );
+
+      return card;
+    }
+
+    skippedCards.push(
+      card
+    );
+  }
+
+  /*
+   * Geen unieke waarde meer
+   * beschikbaar in deze stap.
+   * Dan pakken we alsnog een kaart.
+   */
+
+  if (
+    skippedCards.length >
+    0
+  ) {
+    const fallback =
+      skippedCards.pop();
+
+    if (fallback) {
+      return fallback;
+    }
+  }
+
+  return takeCard(room);
+}
+
+function buildTree(room) {
+  const rowCount =
+    Math.max(
+      3,
+      Math.min(
+        5,
+        Number(
+          room.settings.rows
+        ) || 4
+      )
+    );
+
+  const rows = [];
+  const sequence = [];
+
+  const usedValues =
+    new Set();
+
+  const skippedCards =
+    [];
+
+  for (
+    let rowNumber = 1;
+    rowNumber <=
+    rowCount;
+    rowNumber++
+  ) {
+    const cards = [];
+
+    const doubleIndex =
+      Math.floor(
+        Math.random() *
+          rowNumber
+      );
+
+    for (
+      let cardIndex = 0;
+      cardIndex <
+      rowNumber;
+      cardIndex++
+    ) {
+      const card =
+        drawTreeCard(
+          room,
+          usedValues,
+          skippedCards
+        );
+
+      if (!card) {
+        continue;
+      }
+
+      const treeCard = {
+        card,
+
+        revealed:
+          false,
+
+        isDouble:
+          cardIndex ===
+          doubleIndex,
+      };
+
+      cards.push(
+        treeCard
+      );
+
+      sequence.push({
+        rowIndex:
+          rowNumber - 1,
+
+        cardIndex,
+
+        rowNumber,
+      });
+    }
+
+    rows.push({
+      rowNumber,
+      cards,
+    });
+  }
+
+  /*
+   * Kaarten die tijdens het zoeken
+   * naar unieke waardes zijn
+   * overgeslagen gaan terug in de
+   * stock.
+   */
+
+  room.deck =
+    shuffle([
+      ...room.deck,
+      ...skippedCards,
+    ]);
+
+  return {
+    rows,
+    sequence,
+
+    currentSequenceIndex:
+      -1,
+
+    activeCard:
+      null,
+
+    status:
+      "waiting",
+
+    pendingResolvers:
+      [],
+
+    currentResolverIndex:
+      0,
+
+    drinksToDistribute:
+      0,
+
+    lastAction:
+      null,
+
+    timer:
+      null,
+
+    busDriver:
+      null,
+
+    tieBreakRounds:
+      [],
+  };
+}
+
+/*
+ * =========================
+ * BUSCHAUFFEUR BEPALEN
+ * =========================
+ */
+
+function determineBusDriver(
+  roomCode
+) {
+  const room =
+    rooms[roomCode];
+
+  if (
+    !room ||
+    !room.game.tree
+  ) {
+    return;
+  }
+
+  const tree =
+    room.game.tree;
+
+  const highestCardCount =
+    Math.max(
+      ...room.players.map(
+        (player) =>
+          player.cards.length
+      )
+    );
+
+  let candidates =
+    room.players.filter(
+      (player) =>
+        player.cards.length ===
+        highestCardCount
+    );
+
+  const tieBreakRounds =
+    [];
+
+  let roundNumber = 1;
+  let safety = 0;
+
+  while (
+    candidates.length >
+      1 &&
+    safety < 20
+  ) {
+    safety++;
+
+    const draws =
+      candidates.map(
+        (player) => {
+          const card =
+            takeCard(room);
+
+          return {
+            playerId:
+              player.id,
+
+            playerName:
+              player.name,
+
+            card,
+          };
+        }
+      );
+
+    const validDraws =
+      draws.filter(
+        (draw) =>
+          draw.card
+      );
+
+    if (
+      validDraws.length ===
+      0
+    ) {
+      break;
+    }
+
+    const lowestValue =
+      Math.min(
+        ...validDraws.map(
+          (draw) =>
+            draw.card.value
+        )
+      );
+
+    tieBreakRounds.push({
+      round:
+        roundNumber,
+
+      draws:
+        validDraws,
+    });
+
+    candidates =
+      candidates.filter(
+        (player) =>
+          validDraws.some(
+            (draw) =>
+              draw.playerId ===
+                player.id &&
+              draw.card.value ===
+                lowestValue
+          )
+      );
+
+    roundNumber++;
+  }
+
+  const busDriver =
+    candidates[0] ||
+    room.players[0];
+
+  tree.busDriver = {
+    id:
+      busDriver.id,
+
+    name:
+      busDriver.name,
+
+    remainingCards:
+      busDriver.cards
+        .length,
+  };
+
+  tree.tieBreakRounds =
+    tieBreakRounds;
+
+  tree.status =
+    "finished";
+
+  room.game.phase =
+    "tree-finished";
+
+  room.game.finished =
+    true;
+
+  sendGameState(
+    roomCode
+  );
+
+  console.log(
+    `[${roomCode}] ${busDriver.name} gaat de bus in`
+  );
+}
+
+/*
+ * =========================
+ * VOLGENDE BOOMKAART
+ * =========================
+ */
+
+function queueNextTreeCard(
+  roomCode,
+  delay =
+    TREE_NEXT_DELAY
+) {
+  const room =
+    rooms[roomCode];
+
+  if (
+    !room ||
+    !room.game.tree
+  ) {
+    return;
+  }
+
+  clearTreeTimer(room);
+
+  room.game.tree.timer =
+    setTimeout(
+      () => {
+        revealNextTreeCard(
+          roomCode
+        );
+      },
+      delay
+    );
+}
+
+function revealNextTreeCard(
+  roomCode
+) {
+  const room =
+    rooms[roomCode];
+
+  if (
+    !room ||
+    !room.game.tree ||
+    room.game.phase !==
+      "tree"
+  ) {
+    return;
+  }
+
+  const tree =
+    room.game.tree;
+
+  tree.currentSequenceIndex +=
+    1;
+
+  /*
+   * Hele boom geweest.
+   */
+
+  if (
+    tree.currentSequenceIndex >=
+    tree.sequence.length
+  ) {
+    tree.activeCard =
+      null;
+
+    tree.status =
+      "finished";
+
+    sendGameState(
+      roomCode
+    );
+
+    determineBusDriver(
+      roomCode
+    );
+
+    return;
+  }
+
+  const location =
+    tree.sequence[
+      tree.currentSequenceIndex
+    ];
+
+  const row =
+    tree.rows[
+      location.rowIndex
+    ];
+
+  const treeCard =
+    row.cards[
+      location.cardIndex
+    ];
+
+  treeCard.revealed =
+    true;
+
+  const drinks =
+    location.rowNumber *
+    (treeCard.isDouble
+      ? 2
+      : 1);
+
+  tree.activeCard = {
+    rowIndex:
+      location.rowIndex,
+
+    cardIndex:
+      location.cardIndex,
+
+    rowNumber:
+      location.rowNumber,
+
+    isDouble:
+      treeCard.isDouble,
+
+    card:
+      treeCard.card,
+  };
+
+  tree.drinksToDistribute =
+    drinks;
+
+  tree.lastAction =
+    null;
+
+  /*
+   * Welke spelers hebben
+   * dezelfde waarde?
+   */
+
+  tree.pendingResolvers =
+    room.players
+      .filter(
+        (player) =>
+          player.cards.some(
+            (card) =>
+              card.value ===
+              treeCard.card
+                .value
+          )
+      )
+      .map(
+        (player) =>
+          player.id
+      );
+
+  tree.currentResolverIndex =
+    0;
+
+  if (
+    tree.pendingResolvers
+      .length === 0
+  ) {
+    tree.status =
+      "no-match";
+
+    sendGameState(
+      roomCode
+    );
+
+    console.log(
+      `[${roomCode}] Boom: ${treeCard.card.name} ${treeCard.card.symbol} - geen matches`
+    );
+
+    queueNextTreeCard(
+      roomCode
+    );
+
+    return;
+  }
+
+  tree.status =
+    "resolving";
+
+  sendGameState(
+    roomCode
+  );
+
+  console.log(
+    `[${roomCode}] Boom: ${treeCard.card.name} ${treeCard.card.symbol} - ${tree.pendingResolvers.length} match(es)`
+  );
+}
+
+/*
+ * =========================
+ * VOLGENDE MATCHENDE SPELER
+ * =========================
+ */
+
+function advanceTreeResolver(
+  roomCode
+) {
+  const room =
+    rooms[roomCode];
+
+  if (
+    !room ||
+    !room.game.tree
+  ) {
+    return;
+  }
+
+  const tree =
+    room.game.tree;
+
+  tree.currentResolverIndex +=
+    1;
+
+  if (
+    tree.currentResolverIndex <
+    tree.pendingResolvers
+      .length
+  ) {
+    tree.status =
+      "resolving";
+
+    sendGameState(
+      roomCode
+    );
+
+    return;
+  }
+
+  tree.status =
+    "resolved";
+
+  sendGameState(
+    roomCode
+  );
+
+  queueNextTreeCard(
+    roomCode
+  );
+}
+
+/*
+ * =========================
+ * BOOM STARTEN
+ * =========================
+ */
+
+function startTree(
+  roomCode
+) {
+  const room =
+    rooms[roomCode];
+
+  if (!room) {
+    return;
+  }
+
+  clearResultTimer(
+    room
+  );
+
+  room.game.phase =
+    "tree";
+
+  room.game.currentCard =
+    null;
+
+  room.game.waitingForGuess =
+    false;
+
+  room.game.resultShowing =
+    false;
+
+  room.game.result =
+    null;
+
+  room.game.resultEndsAt =
+    null;
+
+  room.game.currentStep =
+    4;
+
+  room.game.tree =
+    buildTree(room);
+
+  sendGameState(
+    roomCode
+  );
+
+  console.log(
+    `[${roomCode}] Boom gestart`
+  );
+
+  queueNextTreeCard(
+    roomCode,
+    TREE_START_DELAY
+  );
+}
+
+/*
+ * =========================
+ * VOLGENDE SPELER KAARTFASE
  * =========================
  */
 
@@ -509,28 +1347,13 @@ function advanceTurn(
   room.game.waitingForGuess =
     false;
 
-  /*
-   * VOLGENDE SPELER
-   */
-
   if (
     room.game.currentPlayerIndex <
-    room.players.length - 1
+    room.players.length -
+      1
   ) {
     room.game.currentPlayerIndex +=
       1;
-
-    console.log(
-      `[${roomCode}] Volgende speler: ${
-        room.players[
-          room.game.currentPlayerIndex
-        ].name
-      }`
-    );
-
-    /*
-     * Meteen kaart delen.
-     */
 
     beginTurn(
       roomCode
@@ -539,10 +1362,6 @@ function advanceTurn(
     return;
   }
 
-  /*
-   * LAATSTE SPELER
-   */
-
   room.game.currentPlayerIndex =
     0;
 
@@ -550,46 +1369,22 @@ function advanceTurn(
     1;
 
   /*
-   * Alle vier rondes klaar.
+   * Vier kaart-rondes gehad.
+   *
+   * Nu niet stoppen:
+   * BOOM STARTEN.
    */
 
   if (
     room.game.currentStep >=
     4
   ) {
-    room.game.finished =
-      true;
-
-    io.to(
+    startTree(
       roomCode
-    ).emit(
-      "four-cards-complete"
-    );
-
-    sendGameState(
-      roomCode
-    );
-
-    console.log(
-      `[${roomCode}] Vier kaarten compleet`
     );
 
     return;
   }
-
-  console.log(
-    `[${roomCode}] Nieuwe ronde ${
-      room.game.currentStep +
-      1
-    } begint bij ${
-      room.players[0].name
-    }`
-  );
-
-  /*
-   * Ook bij nieuwe ronde
-   * meteen een kaart.
-   */
 
   beginTurn(
     roomCode
@@ -598,7 +1393,7 @@ function advanceTurn(
 
 /*
  * =========================
- * RESULTAATTIMER
+ * RESULTAAT TIMER KAARTFASE
  * =========================
  */
 
@@ -619,7 +1414,7 @@ function startResultTimer(
   room.game.resultSequence +=
     1;
 
-  const thisResultSequence =
+  const sequence =
     room.game.resultSequence;
 
   room.game.resultEndsAt =
@@ -639,7 +1434,7 @@ function startResultTimer(
         if (
           currentRoom.game
             .resultSequence !==
-          thisResultSequence
+          sequence
         ) {
           return;
         }
@@ -661,7 +1456,7 @@ function startResultTimer(
 
 /*
  * =========================
- * SOCKETS
+ * SOCKET.IO
  * =========================
  */
 
@@ -713,7 +1508,8 @@ io.on(
 
             checkpoints:
               Boolean(
-                settings?.checkpoints
+                settings
+                  ?.checkpoints
               ),
           },
 
@@ -731,15 +1527,20 @@ io.on(
               isHost:
                 true,
 
-              cards: [],
+              cards:
+                [],
             },
           ],
 
-          deck: [],
+          deck:
+            [],
 
           game: {
             started:
               false,
+
+            phase:
+              "cards",
 
             currentPlayerIndex:
               0,
@@ -770,6 +1571,9 @@ io.on(
 
             finished:
               false,
+
+            tree:
+              null,
           },
         };
 
@@ -874,7 +1678,8 @@ io.on(
           isHost:
             false,
 
-          cards: [],
+          cards:
+            [],
         };
 
         room.players.push(
@@ -1009,9 +1814,14 @@ io.on(
           room
         );
 
+        clearTreeTimer(
+          room
+        );
+
         room.deck =
           createDeck(
-            room.settings.decks
+            room.settings
+              .decks
           );
 
         room.players.forEach(
@@ -1024,6 +1834,9 @@ io.on(
         room.game = {
           started:
             true,
+
+          phase:
+            "cards",
 
           currentPlayerIndex:
             0,
@@ -1054,6 +1867,9 @@ io.on(
 
           finished:
             false,
+
+          tree:
+            null,
         };
 
         io.to(
@@ -1062,11 +1878,6 @@ io.on(
           "game-started"
         );
 
-        /*
-         * Speler 1 krijgt meteen
-         * zijn eerste kaart.
-         */
-
         beginTurn(
           roomCode
         );
@@ -1074,7 +1885,7 @@ io.on(
     );
 
     /*
-     * GOK
+     * KAART GOK
      */
 
     socket.on(
@@ -1095,6 +1906,8 @@ io.on(
         }
 
         if (
+          room.game.phase !==
+            "cards" ||
           !room.game.started ||
           room.game.finished ||
           !room.game
@@ -1111,20 +1924,16 @@ io.on(
           );
 
         if (
-          !currentPlayer
-        ) {
-          return;
-        }
-
-        if (
+          !currentPlayer ||
           currentPlayer.id !==
-          socket.id
+            socket.id
         ) {
           return;
         }
 
         const card =
-          room.game.currentCard;
+          room.game
+            .currentCard;
 
         if (!card) {
           return;
@@ -1146,7 +1955,8 @@ io.on(
           );
 
         const isDisco =
-          room.game.currentStep ===
+          room.game
+            .currentStep ===
             3 &&
           normalizedGuess ===
             "disco";
@@ -1163,7 +1973,8 @@ io.on(
             currentPlayer.name,
 
           step:
-            room.game.currentStep,
+            room.game
+              .currentStep,
 
           card,
 
@@ -1206,13 +2017,342 @@ io.on(
         sendGameState(
           roomCode
         );
+      }
+    );
 
-        console.log(
-          `[${roomCode}] ${currentPlayer.name}: ${normalizedGuess} → ${
-            correct
-              ? "GOED"
-              : "FOUT"
-          }`
+    /*
+     * =========================
+     * BOOM: SLOKKEN VERDELEN
+     * =========================
+     */
+
+    socket.on(
+      "tree-distribute",
+      (
+        {
+          distribution,
+        },
+        callback
+      ) => {
+        const done =
+          typeof callback ===
+          "function"
+            ? callback
+            : () => {};
+
+        const roomCode =
+          socket.roomCode;
+
+        const room =
+          rooms[
+            roomCode
+          ];
+
+        if (
+          !room ||
+          !room.game.tree ||
+          room.game.phase !==
+            "tree"
+        ) {
+          done({
+            success:
+              false,
+
+            message:
+              "De boom is niet actief.",
+          });
+
+          return;
+        }
+
+        const tree =
+          room.game.tree;
+
+        if (
+          tree.status !==
+          "resolving"
+        ) {
+          done({
+            success:
+              false,
+
+            message:
+              "Er is nu geen match om af te handelen.",
+          });
+
+          return;
+        }
+
+        const resolverId =
+          tree.pendingResolvers[
+            tree.currentResolverIndex
+          ];
+
+        if (
+          resolverId !==
+          socket.id
+        ) {
+          done({
+            success:
+              false,
+
+            message:
+              "Een andere speler is nu aan de beurt.",
+          });
+
+          return;
+        }
+
+        const giver =
+          room.players.find(
+            (player) =>
+              player.id ===
+              socket.id
+          );
+
+        if (
+          !giver ||
+          !tree.activeCard
+        ) {
+          done({
+            success:
+              false,
+
+            message:
+              "Speler of boomkaart niet gevonden.",
+          });
+
+          return;
+        }
+
+        const safeDistribution =
+          Array.isArray(
+            distribution
+          )
+            ? distribution
+            : [];
+
+        let total = 0;
+        const receivers =
+          [];
+
+        for (
+          const item of
+          safeDistribution
+        ) {
+          const count =
+            Number(
+              item?.count
+            );
+
+          const receiver =
+            room.players.find(
+              (player) =>
+                player.id ===
+                item?.playerId
+            );
+
+          if (
+            !receiver ||
+            receiver.id ===
+              giver.id ||
+            !Number.isInteger(
+              count
+            ) ||
+            count <= 0
+          ) {
+            continue;
+          }
+
+          total +=
+            count;
+
+          receivers.push({
+            playerId:
+              receiver.id,
+
+            playerName:
+              receiver.name,
+
+            count,
+          });
+        }
+
+        if (
+          total !==
+          tree.drinksToDistribute
+        ) {
+          done({
+            success:
+              false,
+
+            message:
+              `Verdeel precies ${tree.drinksToDistribute} slokken.`,
+          });
+
+          return;
+        }
+
+        /*
+         * Matchende kaart uit
+         * de hand verwijderen.
+         */
+
+        const matchingCardIndex =
+          giver.cards.findIndex(
+            (card) =>
+              card.value ===
+              tree.activeCard
+                .card.value
+          );
+
+        if (
+          matchingCardIndex ===
+          -1
+        ) {
+          done({
+            success:
+              false,
+
+            message:
+              "Je hebt geen matchende kaart meer.",
+          });
+
+          return;
+        }
+
+        giver.cards.splice(
+          matchingCardIndex,
+          1
+        );
+
+        tree.lastAction = {
+          type:
+            "distributed",
+
+          giverId:
+            giver.id,
+
+          giverName:
+            giver.name,
+
+          total,
+
+          receivers,
+        };
+
+        done({
+          success:
+            true,
+        });
+
+        sendGameState(
+          roomCode
+        );
+
+        advanceTreeResolver(
+          roomCode
+        );
+      }
+    );
+
+    /*
+     * =========================
+     * BOOM: MATCH OVERSLAAN
+     * =========================
+     */
+
+    socket.on(
+      "tree-skip-match",
+      (
+        callback
+      ) => {
+        const done =
+          typeof callback ===
+          "function"
+            ? callback
+            : () => {};
+
+        const roomCode =
+          socket.roomCode;
+
+        const room =
+          rooms[
+            roomCode
+          ];
+
+        if (
+          !room ||
+          !room.game.tree ||
+          room.game.phase !==
+            "tree"
+        ) {
+          done({
+            success:
+              false,
+          });
+
+          return;
+        }
+
+        const tree =
+          room.game.tree;
+
+        const resolverId =
+          tree.pendingResolvers[
+            tree.currentResolverIndex
+          ];
+
+        if (
+          tree.status !==
+            "resolving" ||
+          resolverId !==
+            socket.id
+        ) {
+          done({
+            success:
+              false,
+          });
+
+          return;
+        }
+
+        const player =
+          room.players.find(
+            (item) =>
+              item.id ===
+              socket.id
+          );
+
+        tree.lastAction = {
+          type:
+            "skipped",
+
+          giverId:
+            socket.id,
+
+          giverName:
+            player?.name ||
+            "Speler",
+
+          total:
+            0,
+
+          receivers:
+            [],
+        };
+
+        done({
+          success:
+            true,
+        });
+
+        sendGameState(
+          roomCode
+        );
+
+        advanceTreeResolver(
+          roomCode
         );
       }
     );
@@ -1246,6 +2386,10 @@ io.on(
           socket.id
         ) {
           clearResultTimer(
+            room
+          );
+
+          clearTreeTimer(
             room
           );
 
@@ -1289,6 +2433,10 @@ io.on(
             room
           );
 
+          clearTreeTimer(
+            room
+          );
+
           delete rooms[
             roomCode
           ];
@@ -1314,6 +2462,44 @@ io.on(
             0;
         }
 
+        /*
+         * Als iemand tijdens de boom
+         * verdwijnt, verwijderen we hem
+         * ook uit de match-queue.
+         */
+
+        if (
+          room.game.tree
+        ) {
+          room.game.tree
+            .pendingResolvers =
+            room.game.tree
+              .pendingResolvers
+              .filter(
+                (id) =>
+                  id !==
+                  socket.id
+              );
+
+          if (
+            room.game.tree
+              .currentResolverIndex >=
+            room.game.tree
+              .pendingResolvers
+              .length
+          ) {
+            room.game.tree
+              .currentResolverIndex =
+              Math.max(
+                0,
+                room.game.tree
+                  .pendingResolvers
+                  .length -
+                  1
+              );
+          }
+        }
+
         io.to(
           roomCode
         ).emit(
@@ -1321,13 +2507,9 @@ io.on(
           room.players
         );
 
-        if (
-          room.game.started
-        ) {
-          sendGameState(
-            roomCode
-          );
-        }
+        sendGameState(
+          roomCode
+        );
       }
     );
   }
