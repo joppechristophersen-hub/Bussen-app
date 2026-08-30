@@ -1,6 +1,16 @@
-import { useEffect, useState } from "react";
-import { QRCodeSVG } from "qrcode.react";
-import { io } from "socket.io-client";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  QRCodeSVG,
+} from "qrcode.react";
+
+import {
+  io,
+} from "socket.io-client";
+
 import "./App.css";
 
 type Screen =
@@ -10,13 +20,20 @@ type Screen =
   | "lobby"
   | "game";
 
+type GamePhase =
+  | "cards"
+  | "tree"
+  | "tree-finished";
+
 type Card = {
   id: string;
   suit: string;
   symbol: string;
   value: number;
   name: string;
-  color: "rood" | "zwart";
+  color:
+    | "rood"
+    | "zwart";
 };
 
 type Player = {
@@ -37,78 +54,284 @@ type GuessResult = {
   isDisco?: boolean;
 };
 
+type TreeCard = {
+  id: string;
+  revealed: boolean;
+  isDouble: boolean;
+  card: Card | null;
+};
+
+type TreeRow = {
+  rowNumber: number;
+  drinks: number;
+  cards: TreeCard[];
+};
+
+type TreeActiveCard = {
+  rowIndex: number;
+  cardIndex: number;
+  rowNumber: number;
+  isDouble: boolean;
+  card: Card;
+};
+
+type TreeReceiver = {
+  playerId: string;
+  playerName: string;
+  count: number;
+};
+
+type TreeLastAction = {
+  type:
+    | "distributed"
+    | "skipped";
+
+  giverId: string;
+  giverName: string;
+  total: number;
+
+  receivers:
+    TreeReceiver[];
+};
+
+type BusDriver = {
+  id: string;
+  name: string;
+  remainingCards: number;
+};
+
+type TieBreakDraw = {
+  playerId: string;
+  playerName: string;
+  card: Card;
+};
+
+type TieBreakRound = {
+  round: number;
+  draws: TieBreakDraw[];
+};
+
+type TreeState = {
+  rows: TreeRow[];
+
+  status:
+    | "waiting"
+    | "no-match"
+    | "resolving"
+    | "resolved"
+    | "finished";
+
+  activeCard:
+    TreeActiveCard | null;
+
+  pendingResolverIds:
+    string[];
+
+  currentResolverId:
+    string | null;
+
+  drinksToDistribute:
+    number;
+
+  revealedCount:
+    number;
+
+  totalCards:
+    number;
+
+  lastAction:
+    TreeLastAction | null;
+
+  busDriver:
+    BusDriver | null;
+
+  tieBreakRounds:
+    TieBreakRound[];
+};
+
 type GameState = {
   serverVersion?: string;
-  players: Player[];
-  currentPlayerIndex: number;
-  currentStep: number;
-  currentCard: Card | null;
-  waitingForGuess: boolean;
-  resultShowing: boolean;
-  result?: GuessResult | null;
-  resultEndsAt?: number | null;
-  gameFinished: boolean;
+
+  phase:
+    GamePhase;
+
+  players:
+    Player[];
+
+  currentPlayerIndex:
+    number;
+
+  currentStep:
+    number;
+
+  currentCard:
+    Card | null;
+
+  waitingForGuess:
+    boolean;
+
+  resultShowing:
+    boolean;
+
+  result?:
+    GuessResult | null;
+
+  resultEndsAt?:
+    number | null;
+
+  gameFinished:
+    boolean;
+
+  tree:
+    TreeState | null;
 };
 
 const socket = io(
   "https://bussen-server.onrender.com",
   {
-    autoConnect: false,
+    autoConnect:
+      false,
   }
 );
 
 function App() {
-  const [screen, setScreen] =
-    useState<Screen>("home");
+  /*
+   * Socket.IO geeft socket.id
+   * het type string | undefined.
+   *
+   * Voor vergelijkingen en .includes()
+   * gebruiken we altijd deze veilige string.
+   */
 
-  const [players, setPlayers] =
+  const socketId =
+    socket.id ?? "";
+
+  const [
+    screen,
+    setScreen,
+  ] =
+    useState<Screen>(
+      "home"
+    );
+
+  const [
+    players,
+    setPlayers,
+  ] =
     useState(4);
 
-  const [rows, setRows] =
+  const [
+    rows,
+    setRows,
+  ] =
     useState(4);
 
-  const [decks, setDecks] =
+  const [
+    decks,
+    setDecks,
+  ] =
     useState(1);
 
-  const [checkpoints, setCheckpoints] =
+  const [
+    checkpoints,
+    setCheckpoints,
+  ] =
     useState(false);
 
-  const [hostName, setHostName] =
+  const [
+    hostName,
+    setHostName,
+  ] =
     useState("");
 
-  const [roomCode, setRoomCode] =
+  const [
+    roomCode,
+    setRoomCode,
+  ] =
     useState("");
 
-  const [playerNames, setPlayerNames] =
-    useState<Player[]>([]);
+  const [
+    playerNames,
+    setPlayerNames,
+  ] =
+    useState<Player[]>(
+      []
+    );
 
-  const [playerName, setPlayerName] =
+  const [
+    playerName,
+    setPlayerName,
+  ] =
     useState("");
 
-  const [joinCode, setJoinCode] =
+  const [
+    joinCode,
+    setJoinCode,
+  ] =
     useState("");
 
-  const [joinError, setJoinError] =
+  const [
+    joinError,
+    setJoinError,
+  ] =
     useState("");
 
-  const [isHost, setIsHost] =
+  const [
+    isHost,
+    setIsHost,
+  ] =
     useState(false);
 
-  const [gameState, setGameState] =
-    useState<GameState | null>(null);
+  const [
+    gameState,
+    setGameState,
+  ] =
+    useState<GameState | null>(
+      null
+    );
 
-  const [drawnCard, setDrawnCard] =
-    useState<Card | null>(null);
+  const [
+    drawnCard,
+    setDrawnCard,
+  ] =
+    useState<Card | null>(
+      null
+    );
 
-  const [guessResult, setGuessResult] =
-    useState<GuessResult | null>(null);
+  const [
+    guessResult,
+    setGuessResult,
+  ] =
+    useState<GuessResult | null>(
+      null
+    );
 
-  const [countdown, setCountdown] =
+  const [
+    countdown,
+    setCountdown,
+  ] =
     useState(0);
+
+  const [
+    distribution,
+    setDistribution,
+  ] =
+    useState<
+      Record<
+        string,
+        number
+      >
+    >({});
+
+  const [
+    treeSubmitting,
+    setTreeSubmitting,
+  ] =
+    useState(false);
 
   /*
    * =========================
-   * QR CODE
+   * QR URL
    * =========================
    */
 
@@ -125,7 +348,8 @@ function App() {
 
     if (
       roomFromUrl &&
-      roomFromUrl.length === 5
+      roomFromUrl.length ===
+        5
     ) {
       setJoinCode(
         roomFromUrl
@@ -145,7 +369,8 @@ function App() {
 
   useEffect(() => {
     function handlePlayersUpdated(
-      updatedPlayers: Player[]
+      updatedPlayers:
+        Player[]
     ) {
       setPlayerNames(
         updatedPlayers
@@ -153,9 +378,21 @@ function App() {
     }
 
     function handleGameStarted() {
-      setDrawnCard(null);
-      setGuessResult(null);
-      setCountdown(0);
+      setDrawnCard(
+        null
+      );
+
+      setGuessResult(
+        null
+      );
+
+      setCountdown(
+        0
+      );
+
+      setDistribution(
+        {}
+      );
 
       setScreen(
         "game"
@@ -163,7 +400,8 @@ function App() {
     }
 
     function handleGameState(
-      state: GameState
+      state:
+        GameState
     ) {
       setGameState(
         state
@@ -174,6 +412,25 @@ function App() {
       );
 
       if (
+        state.phase !==
+        "cards"
+      ) {
+        setDrawnCard(
+          null
+        );
+
+        setGuessResult(
+          null
+        );
+
+        setCountdown(
+          0
+        );
+      }
+
+      if (
+        state.phase ===
+          "cards" &&
         state.resultShowing &&
         state.result
       ) {
@@ -183,6 +440,8 @@ function App() {
       }
 
       if (
+        state.phase ===
+          "cards" &&
         !state.resultShowing
       ) {
         setGuessResult(
@@ -194,13 +453,9 @@ function App() {
         );
       }
 
-      /*
-       * Alleen kaart verwijderen
-       * wanneer er geen actieve gok
-       * én geen resultaat is.
-       */
-
       if (
+        state.phase ===
+          "cards" &&
         !state.waitingForGuess &&
         !state.resultShowing
       ) {
@@ -225,7 +480,8 @@ function App() {
     }
 
     function handleGuessResult(
-      result: GuessResult
+      result:
+        GuessResult
     ) {
       setGuessResult(
         result
@@ -237,20 +493,6 @@ function App() {
 
       setCountdown(
         3
-      );
-    }
-
-    function handleFourCardsComplete() {
-      setDrawnCard(
-        null
-      );
-
-      setGuessResult(
-        null
-      );
-
-      setCountdown(
-        0
       );
     }
 
@@ -296,11 +538,6 @@ function App() {
     );
 
     socket.on(
-      "four-cards-complete",
-      handleFourCardsComplete
-    );
-
-    socket.on(
       "room-closed",
       handleRoomClosed
     );
@@ -337,11 +574,6 @@ function App() {
       );
 
       socket.off(
-        "four-cards-complete",
-        handleFourCardsComplete
-      );
-
-      socket.off(
         "room-closed",
         handleRoomClosed
       );
@@ -355,23 +587,31 @@ function App() {
 
   /*
    * =========================
-   * COUNTDOWN
+   * KAARTFASE COUNTDOWN
    * =========================
    */
 
   useEffect(() => {
-    if (!guessResult) {
-      setCountdown(0);
+    if (
+      !guessResult ||
+      gameState?.phase !==
+        "cards"
+    ) {
+      setCountdown(
+        0
+      );
 
       return;
     }
 
     if (
-      gameState?.resultEndsAt
+      gameState
+        ?.resultEndsAt
     ) {
       function updateCountdown() {
         const endTime =
-          gameState?.resultEndsAt;
+          gameState
+            ?.resultEndsAt;
 
         if (!endTime) {
           return;
@@ -410,7 +650,9 @@ function App() {
       };
     }
 
-    setCountdown(3);
+    setCountdown(
+      3
+    );
 
     const startedAt =
       Date.now();
@@ -446,19 +688,86 @@ function App() {
     };
   }, [
     guessResult,
+    gameState?.phase,
     gameState?.resultEndsAt,
   ]);
 
+  /*
+   * =========================
+   * VERDELING RESETTEN
+   * =========================
+   */
+
+  useEffect(() => {
+    setDistribution(
+      {}
+    );
+
+    setTreeSubmitting(
+      false
+    );
+  }, [
+    gameState?.tree
+      ?.currentResolverId,
+
+    gameState?.tree
+      ?.activeCard?.card
+      .id,
+  ]);
+
+  /*
+   * =========================
+   * RESET
+   * =========================
+   */
+
   function resetToHome() {
-    setRoomCode("");
-    setPlayerNames([]);
-    setIsHost(false);
-    setGameState(null);
-    setDrawnCard(null);
-    setGuessResult(null);
-    setCountdown(0);
-    setScreen("home");
+    setRoomCode(
+      ""
+    );
+
+    setPlayerNames(
+      []
+    );
+
+    setIsHost(
+      false
+    );
+
+    setGameState(
+      null
+    );
+
+    setDrawnCard(
+      null
+    );
+
+    setGuessResult(
+      null
+    );
+
+    setCountdown(
+      0
+    );
+
+    setDistribution(
+      {}
+    );
+
+    setTreeSubmitting(
+      false
+    );
+
+    setScreen(
+      "home"
+    );
   }
+
+  /*
+   * =========================
+   * KAMER MAKEN
+   * =========================
+   */
 
   function startLobby() {
     const name =
@@ -493,12 +802,21 @@ function App() {
         },
       },
 
-      (response: {
-        success: boolean;
-        roomCode?: string;
-        players?: Player[];
-        message?: string;
-      }) => {
+      (
+        response: {
+          success:
+            boolean;
+
+          roomCode?:
+            string;
+
+          players?:
+            Player[];
+
+          message?:
+            string;
+        }
+      ) => {
         if (
           !response.success
         ) {
@@ -531,6 +849,12 @@ function App() {
     );
   }
 
+  /*
+   * =========================
+   * JOINEN
+   * =========================
+   */
+
   function joinRoom() {
     const name =
       playerName.trim();
@@ -540,7 +864,9 @@ function App() {
         .trim()
         .toUpperCase();
 
-    setJoinError("");
+    setJoinError(
+      ""
+    );
 
     if (!name) {
       setJoinError(
@@ -551,7 +877,8 @@ function App() {
     }
 
     if (
-      code.length !== 5
+      code.length !==
+      5
     ) {
       setJoinError(
         "Een kamercode bestaat uit 5 tekens."
@@ -577,12 +904,21 @@ function App() {
           name,
       },
 
-      (response: {
-        success: boolean;
-        roomCode?: string;
-        players?: Player[];
-        message?: string;
-      }) => {
+      (
+        response: {
+          success:
+            boolean;
+
+          roomCode?:
+            string;
+
+          players?:
+            Player[];
+
+          message?:
+            string;
+        }
+      ) => {
         if (
           !response.success
         ) {
@@ -615,6 +951,12 @@ function App() {
     );
   }
 
+  /*
+   * =========================
+   * SPELER VERWIJDEREN
+   * =========================
+   */
+
   function removePlayer(
     playerId: string
   ) {
@@ -628,6 +970,12 @@ function App() {
     );
   }
 
+  /*
+   * =========================
+   * SPEL STARTEN
+   * =========================
+   */
+
   function startGame() {
     if (!isHost) {
       return;
@@ -640,40 +988,40 @@ function App() {
 
   /*
    * =========================
-   * GOK
+   * KAART GOK
    * =========================
    */
 
   function makeGuess(
     guess: string
   ) {
-    if (!gameState) {
+    if (
+      !gameState ||
+      gameState.phase !==
+        "cards"
+    ) {
       return;
     }
 
     if (
-      gameState.resultShowing
+      gameState
+        .resultShowing
     ) {
       return;
     }
 
     const currentPlayer =
       gameState.players[
-        gameState.currentPlayerIndex
+        gameState
+          .currentPlayerIndex
       ];
 
-    if (!currentPlayer) {
-      return;
-    }
-
     if (
+      !currentPlayer ||
       currentPlayer.id !==
-      socket.id
+        socketId ||
+      !drawnCard
     ) {
-      return;
-    }
-
-    if (!drawnCard) {
       return;
     }
 
@@ -685,9 +1033,21 @@ function App() {
     );
   }
 
+  /*
+   * =========================
+   * JOIN URL
+   * =========================
+   */
+
   function getJoinUrl() {
     return `${window.location.origin}/?room=${roomCode}`;
   }
+
+  /*
+   * =========================
+   * KAARTWAARDES
+   * =========================
+   */
 
   const stepNames = [
     "Kleur",
@@ -700,25 +1060,29 @@ function App() {
     card: Card
   ) {
     if (
-      card.name === "Boer"
+      card.name ===
+      "Boer"
     ) {
       return "B";
     }
 
     if (
-      card.name === "Vrouw"
+      card.name ===
+      "Vrouw"
     ) {
       return "V";
     }
 
     if (
-      card.name === "Heer"
+      card.name ===
+      "Heer"
     ) {
       return "H";
     }
 
     if (
-      card.name === "Aas"
+      card.name ===
+      "Aas"
     ) {
       return "A";
     }
@@ -733,22 +1097,26 @@ function App() {
 
     const player =
       gameState.players[
-        gameState.currentPlayerIndex
+        gameState
+          .currentPlayerIndex
       ];
 
     if (
-      gameState.currentStep ===
+      gameState
+        .currentStep ===
       0
     ) {
       return "Raad of de kaart rood of zwart is.";
     }
 
     if (
-      gameState.currentStep ===
+      gameState
+        .currentStep ===
       1
     ) {
       const card =
-        player?.cards?.[0];
+        player
+          ?.cards?.[0];
 
       if (card) {
         return `Hoger of lager dan ${card.name} ${card.symbol}?`;
@@ -758,14 +1126,17 @@ function App() {
     }
 
     if (
-      gameState.currentStep ===
+      gameState
+        .currentStep ===
       2
     ) {
       const first =
-        player?.cards?.[0];
+        player
+          ?.cards?.[0];
 
       const second =
-        player?.cards?.[1];
+        player
+          ?.cards?.[1];
 
       if (
         first &&
@@ -777,15 +1148,14 @@ function App() {
       return "Binnen of buiten?";
     }
 
-    if (
-      gameState.currentStep ===
-      3
-    ) {
-      return "Raad het figuur, of ga voor Disco als je denkt dat je alle vier compleet maakt.";
-    }
-
-    return "";
+    return "Raad het figuur, of kies Disco als je denkt dat je alle vier compleet maakt.";
   }
+
+  /*
+   * =========================
+   * FIGUUR + DISCO
+   * =========================
+   */
 
   function renderSuitButtons() {
     return (
@@ -848,31 +1218,922 @@ function App() {
 
   /*
    * =========================
-   * GAME
+   * BOOM VERDELING
+   * =========================
+   */
+
+  function changeDistribution(
+    playerId: string,
+    difference: number
+  ) {
+    const totalAvailable =
+      gameState?.tree
+        ?.drinksToDistribute ||
+      0;
+
+    setDistribution(
+      (previous) => {
+        const current =
+          previous[
+            playerId
+          ] || 0;
+
+        const currentTotal =
+          Object.values(
+            previous
+          ).reduce(
+            (
+              total,
+              value
+            ) =>
+              total +
+              value,
+            0
+          );
+
+        if (
+          difference >
+            0 &&
+          currentTotal >=
+            totalAvailable
+        ) {
+          return previous;
+        }
+
+        const nextValue =
+          Math.max(
+            0,
+            current +
+              difference
+          );
+
+        return {
+          ...previous,
+
+          [playerId]:
+            nextValue,
+        };
+      }
+    );
+  }
+
+  function submitTreeDistribution() {
+    const tree =
+      gameState?.tree;
+
+    if (!tree) {
+      return;
+    }
+
+    const total =
+      Object.values(
+        distribution
+      ).reduce(
+        (
+          sum,
+          value
+        ) =>
+          sum +
+          value,
+        0
+      );
+
+    if (
+      total !==
+      tree.drinksToDistribute
+    ) {
+      return;
+    }
+
+    const payload =
+      Object.entries(
+        distribution
+      )
+        .filter(
+          ([
+            ,
+            count,
+          ]) =>
+            count >
+            0
+        )
+        .map(
+          ([
+            playerId,
+            count,
+          ]) => ({
+            playerId,
+            count,
+          })
+        );
+
+    setTreeSubmitting(
+      true
+    );
+
+    socket.emit(
+      "tree-distribute",
+
+      {
+        distribution:
+          payload,
+      },
+
+      (
+        response: {
+          success:
+            boolean;
+
+          message?:
+            string;
+        }
+      ) => {
+        if (
+          !response.success
+        ) {
+          setTreeSubmitting(
+            false
+          );
+
+          alert(
+            response.message ||
+              "Verdelen is niet gelukt."
+          );
+        }
+      }
+    );
+  }
+
+  function skipTreeMatch() {
+    setTreeSubmitting(
+      true
+    );
+
+    socket.emit(
+      "tree-skip-match",
+
+      (
+        response: {
+          success:
+            boolean;
+        }
+      ) => {
+        if (
+          !response.success
+        ) {
+          setTreeSubmitting(
+            false
+          );
+        }
+      }
+    );
+  }
+
+  /*
+   * =========================
+   * SPEELKAART
+   * =========================
+   */
+
+  function renderPlayingCard(
+    card: Card
+  ) {
+    return (
+      <>
+        <div className="card-corner card-corner-top">
+          <strong>
+            {getCardRank(
+              card
+            )}
+          </strong>
+
+          <span>
+            {card.symbol}
+          </span>
+        </div>
+
+        <div className="card-center-symbol">
+          {card.symbol}
+        </div>
+
+        <div className="card-corner card-corner-bottom">
+          <strong>
+            {getCardRank(
+              card
+            )}
+          </strong>
+
+          <span>
+            {card.symbol}
+          </span>
+        </div>
+      </>
+    );
+  }
+
+  /*
+   * =========================
+   * BOOM SCHERM
    * =========================
    */
 
   if (
-    screen === "game"
+    screen ===
+      "game" &&
+    gameState &&
+    (
+      gameState.phase ===
+        "tree" ||
+      gameState.phase ===
+        "tree-finished"
+    )
+  ) {
+    const tree =
+      gameState.tree;
+
+    if (!tree) {
+      return (
+        <main className="app">
+          <section className="card game-card">
+            <div className="waiting-message">
+              Boom wordt opgebouwd...
+            </div>
+          </section>
+        </main>
+      );
+    }
+
+    const me =
+      gameState.players.find(
+        (player) =>
+          player.id ===
+          socketId
+      );
+
+    const isMyResolution =
+      tree.currentResolverId ===
+      socketId;
+
+    /*
+     * HIER ZAT DE TYPESCRIPT-FOUT.
+     *
+     * We gebruiken nu socketId,
+     * wat altijd een string is.
+     */
+
+    const iAmWaitingForResolution =
+      !isMyResolution &&
+      tree.pendingResolverIds.includes(
+        socketId
+      );
+
+    const resolver =
+      gameState.players.find(
+        (player) =>
+          player.id ===
+          tree.currentResolverId
+      );
+
+    const distributedTotal =
+      Object.values(
+        distribution
+      ).reduce(
+        (
+          sum,
+          value
+        ) =>
+          sum +
+          value,
+        0
+      );
+
+    const remaining =
+      Math.max(
+        0,
+        tree.drinksToDistribute -
+          distributedTotal
+      );
+
+    return (
+      <main className="app">
+        <section className="card game-card tree-screen">
+          <div className="game-top">
+            <div className="logo small-logo">
+              🌲
+            </div>
+
+            <div>
+              <h1>
+                De boom
+              </h1>
+
+              <p className="subtitle">
+                Speel je kaarten weg en deel slokken uit
+              </p>
+            </div>
+          </div>
+
+          <div className="tree-progress">
+            <span>
+              Boomkaart
+            </span>
+
+            <strong>
+              {Math.min(
+                tree.revealedCount,
+                tree.totalCards
+              )}{" "}
+              /{" "}
+              {tree.totalCards}
+            </strong>
+          </div>
+
+          <div className="tree-board">
+            {tree.rows.map(
+              (row) => (
+                <div
+                  className="tree-row"
+                  key={
+                    row.rowNumber
+                  }
+                >
+                  <div className="tree-row-info">
+                    <strong>
+                      Rij{" "}
+                      {
+                        row.rowNumber
+                      }
+                    </strong>
+
+                    <span>
+                      {
+                        row.drinks
+                      }{" "}
+                      {row.drinks ===
+                      1
+                        ? "slok"
+                        : "slokken"}
+                    </span>
+                  </div>
+
+                  <div className="tree-row-cards">
+                    {row.cards.map(
+                      (
+                        treeCard
+                      ) => (
+                        <div
+                          key={
+                            treeCard.id
+                          }
+                          className={[
+                            "tree-playing-card",
+
+                            treeCard.isDouble
+                              ? "double"
+                              : "",
+
+                            treeCard.revealed
+                              ? "revealed"
+                              : "hidden",
+                          ]
+                            .filter(
+                              Boolean
+                            )
+                            .join(
+                              " "
+                            )}
+                        >
+                          {treeCard.revealed &&
+                          treeCard.card ? (
+                            <div
+                              className={`tree-card-face ${treeCard.card.color}`}
+                            >
+                              {renderPlayingCard(
+                                treeCard.card
+                              )}
+
+                              {treeCard.isDouble && (
+                                <span className="double-badge">
+                                  2×
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="tree-card-back">
+                              <span>
+                                🚌
+                              </span>
+
+                              {treeCard.isDouble && (
+                                <strong>
+                                  2×
+                                </strong>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+              )
+            )}
+          </div>
+
+          {gameState.phase ===
+            "tree" &&
+            tree.activeCard && (
+              <div className="tree-active-panel">
+                <span className="tree-active-label">
+                  Huidige kaart
+                </span>
+
+                <div
+                  className={`tree-active-card ${tree.activeCard.card.color}`}
+                >
+                  <strong>
+                    {getCardRank(
+                      tree.activeCard
+                        .card
+                    )}
+                  </strong>
+
+                  <span>
+                    {
+                      tree.activeCard
+                        .card
+                        .symbol
+                    }
+                  </span>
+                </div>
+
+                <h2>
+                  {
+                    tree.activeCard
+                      .rowNumber
+                  }{" "}
+                  {tree.activeCard
+                    .rowNumber ===
+                  1
+                    ? "slok"
+                    : "slokken"}
+
+                  {tree.activeCard
+                    .isDouble &&
+                    " × 2"}
+                </h2>
+
+                <p>
+                  Deze kaart is{" "}
+                  <strong>
+                    {
+                      tree.drinksToDistribute
+                    }{" "}
+                    {tree.drinksToDistribute ===
+                    1
+                      ? "slok"
+                      : "slokken"}
+                  </strong>{" "}
+                  waard.
+                </p>
+              </div>
+            )}
+
+          {gameState.phase ===
+            "tree" &&
+            tree.status ===
+              "no-match" && (
+              <div className="tree-message">
+                <strong>
+                  Geen match
+                </strong>
+
+                <p>
+                  Niemand heeft deze waarde. De volgende kaart wordt automatisch omgedraaid.
+                </p>
+              </div>
+            )}
+
+          {gameState.phase ===
+            "tree" &&
+            tree.status ===
+              "waiting" && (
+              <div className="tree-message">
+                <strong>
+                  De boom staat klaar
+                </strong>
+
+                <p>
+                  De eerste kaart wordt automatisch omgedraaid...
+                </p>
+              </div>
+            )}
+
+          {gameState.phase ===
+            "tree" &&
+            tree.status ===
+              "resolving" &&
+            isMyResolution && (
+              <div className="tree-distribute-panel">
+                <div className="tree-match-heading">
+                  <span>
+                    🎯
+                  </span>
+
+                  <div>
+                    <h2>
+                      Jij hebt een match!
+                    </h2>
+
+                    <p>
+                      Leg je matchende kaart weg en verdeel{" "}
+                      <strong>
+                        {
+                          tree.drinksToDistribute
+                        }{" "}
+                        {tree.drinksToDistribute ===
+                        1
+                          ? "slok"
+                          : "slokken"}
+                      </strong>
+                      .
+                    </p>
+                  </div>
+                </div>
+
+                <div className="remaining-drinks">
+                  Nog te verdelen
+
+                  <strong>
+                    {remaining}
+                  </strong>
+                </div>
+
+                <div className="drink-player-list">
+                  {gameState.players
+                    .filter(
+                      (player) =>
+                        player.id !==
+                        socketId
+                    )
+                    .map(
+                      (player) => {
+                        const amount =
+                          distribution[
+                            player.id
+                          ] ||
+                          0;
+
+                        return (
+                          <div
+                            className="drink-player"
+                            key={
+                              player.id
+                            }
+                          >
+                            <div className="player-avatar">
+                              {player.name
+                                .charAt(
+                                  0
+                                )
+                                .toUpperCase()}
+                            </div>
+
+                            <span>
+                              {
+                                player.name
+                              }
+                            </span>
+
+                            <div className="drink-counter">
+                              <button
+                                onClick={() =>
+                                  changeDistribution(
+                                    player.id,
+                                    -1
+                                  )
+                                }
+                                disabled={
+                                  amount ===
+                                    0 ||
+                                  treeSubmitting
+                                }
+                              >
+                                −
+                              </button>
+
+                              <strong>
+                                {
+                                  amount
+                                }
+                              </strong>
+
+                              <button
+                                onClick={() =>
+                                  changeDistribution(
+                                    player.id,
+                                    1
+                                  )
+                                }
+                                disabled={
+                                  remaining ===
+                                    0 ||
+                                  treeSubmitting
+                                }
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      }
+                    )}
+                </div>
+
+                <button
+                  className="tree-confirm-button"
+                  onClick={
+                    submitTreeDistribution
+                  }
+                  disabled={
+                    remaining !==
+                      0 ||
+                    treeSubmitting
+                  }
+                >
+                  {treeSubmitting
+                    ? "Bevestigen..."
+                    : "Kaart wegleggen & uitdelen"}
+                </button>
+
+                <button
+                  className="tree-skip-button"
+                  onClick={
+                    skipTreeMatch
+                  }
+                  disabled={
+                    treeSubmitting
+                  }
+                >
+                  Match bewaren / overslaan
+                </button>
+              </div>
+            )}
+
+          {gameState.phase ===
+            "tree" &&
+            tree.status ===
+              "resolving" &&
+            !isMyResolution && (
+              <div className="tree-message">
+                {iAmWaitingForResolution ? (
+                  <>
+                    <strong>
+                      Jij hebt ook een match
+                    </strong>
+
+                    <p>
+                      Eerst is{" "}
+                      <strong>
+                        {
+                          resolver?.name
+                        }
+                      </strong>{" "}
+                      aan de beurt. Daarna mag jij uitdelen.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <strong>
+                      {
+                        resolver?.name ||
+                        "Een speler"
+                      }{" "}
+                      heeft een match
+                    </strong>
+
+                    <p>
+                      Wachten tot de slokken zijn verdeeld...
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
+
+          {gameState.phase ===
+            "tree" &&
+            tree.status ===
+              "resolved" && (
+              <div className="tree-message">
+                <strong>
+                  Match afgehandeld
+                </strong>
+
+                {tree.lastAction?.type ===
+                "distributed" ? (
+                  <p>
+                    {
+                      tree.lastAction
+                        .giverName
+                    }{" "}
+                    heeft{" "}
+                    {
+                      tree.lastAction
+                        .total
+                    }{" "}
+                    slokken uitgedeeld.
+                  </p>
+                ) : (
+                  <p>
+                    De volgende boomkaart komt eraan...
+                  </p>
+                )}
+              </div>
+            )}
+
+          <div className="tree-hands">
+            <div className="section-title">
+              <h2>
+                Kaarten over
+              </h2>
+
+              <span>
+                Boom
+              </span>
+            </div>
+
+            {gameState.players.map(
+              (player) => (
+                <div
+                  className="game-player"
+                  key={
+                    player.id
+                  }
+                >
+                  <div className="player-avatar">
+                    {player.name
+                      .charAt(0)
+                      .toUpperCase()}
+                  </div>
+
+                  <div className="player-info">
+                    <span>
+                      {
+                        player.name
+                      }
+                    </span>
+
+                    {player.id ===
+                      me?.id && (
+                      <small>
+                        JIJ
+                      </small>
+                    )}
+                  </div>
+
+                  <span className="card-count">
+                    {player.cards
+                      ?.length ||
+                      0}{" "}
+                    🃏
+                  </span>
+                </div>
+              )
+            )}
+          </div>
+
+          {gameState.phase ===
+            "tree-finished" &&
+            tree.busDriver && (
+              <div className="bus-driver-result">
+                <div className="bus-driver-icon">
+                  🚌
+                </div>
+
+                <span>
+                  DE BUS IN
+                </span>
+
+                <h2>
+                  {
+                    tree.busDriver
+                      .name
+                  }
+                </h2>
+
+                <p>
+                  {
+                    tree.busDriver
+                      .remainingCards
+                  }{" "}
+                  {tree.busDriver
+                    .remainingCards ===
+                  1
+                    ? "kaart"
+                    : "kaarten"}{" "}
+                  over
+                </p>
+
+                {tree.tieBreakRounds.length >
+                  0 && (
+                  <div className="tie-break">
+                    <strong>
+                      Gelijkstand beslist met kaarten
+                    </strong>
+
+                    {tree.tieBreakRounds.map(
+                      (
+                        round
+                      ) => (
+                        <div
+                          className="tie-round"
+                          key={
+                            round.round
+                          }
+                        >
+                          <span>
+                            Trekking{" "}
+                            {
+                              round.round
+                            }
+                          </span>
+
+                          {round.draws.map(
+                            (
+                              draw
+                            ) => (
+                              <div
+                                className="tie-draw"
+                                key={`${round.round}-${draw.playerId}`}
+                              >
+                                <span>
+                                  {
+                                    draw.playerName
+                                  }
+                                </span>
+
+                                <strong
+                                  className={
+                                    draw.card
+                                      .color
+                                  }
+                                >
+                                  {getCardRank(
+                                    draw.card
+                                  )}{" "}
+                                  {
+                                    draw.card
+                                      .symbol
+                                  }
+                                </strong>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      )
+                    )}
+                  </div>
+                )}
+
+                <p className="bus-next-text">
+                  Hierna bouwen we de echte bus.
+                </p>
+              </div>
+            )}
+        </section>
+      </main>
+    );
+  }
+
+  /*
+   * =========================
+   * KAARTFASE
+   * =========================
+   */
+
+  if (
+    screen ===
+      "game" &&
+    gameState
   ) {
     const currentPlayer =
-      gameState?.players[
-        gameState.currentPlayerIndex
+      gameState.players[
+        gameState
+          .currentPlayerIndex
       ];
 
     const isMyTurn =
       currentPlayer?.id ===
-      socket.id;
+      socketId;
 
     const currentStep =
-      gameState?.currentStep ??
-      0;
+      gameState.currentStep;
 
     const myPlayer =
-      gameState?.players.find(
+      gameState.players.find(
         (player) =>
           player.id ===
-          socket.id
+          socketId
       );
 
     const myCards =
@@ -880,12 +2141,12 @@ function App() {
       [];
 
     const result =
-      gameState?.result ||
+      gameState.result ||
       guessResult;
 
     const isMyResult =
       result?.playerId ===
-      socket.id;
+      socketId;
 
     const isDiscoSuccess =
       Boolean(
@@ -900,7 +2161,7 @@ function App() {
             (
               isDiscoSuccess &&
               result.playerId !==
-                socket.id
+                socketId
             ) ||
             (
               !isDiscoSuccess &&
@@ -963,10 +2224,8 @@ function App() {
           <div className="game-info">
             <span>
               Stap{" "}
-              {Math.min(
-                currentStep + 1,
-                4
-              )}{" "}
+              {currentStep +
+                1}{" "}
               van 4
             </span>
 
@@ -980,17 +2239,7 @@ function App() {
           </div>
 
           <div className="turn-message">
-            {gameState?.gameFinished ? (
-              <>
-                <strong>
-                  🎉 De vier kaarten zijn compleet!
-                </strong>
-
-                <p>
-                  Iedereen heeft vier kaarten.
-                </p>
-              </>
-            ) : result ? (
+            {result ? (
               <>
                 <strong>
                   {isDiscoSuccess
@@ -1017,12 +2266,14 @@ function App() {
             ) : (
               <>
                 <strong>
-                  {currentPlayer?.name ||
-                    "Speler"}
+                  {
+                    currentPlayer
+                      ?.name
+                  }
                 </strong>
 
                 <p>
-                  is aan de beurt...
+                  maakt een keuze...
                 </p>
               </>
             )}
@@ -1043,36 +2294,14 @@ function App() {
               {myCards.map(
                 (card) => (
                   <div
-                    key={card.id}
+                    key={
+                      card.id
+                    }
                     className={`playing-card ${card.color}`}
                   >
-                    <div className="card-corner card-corner-top">
-                      <strong>
-                        {getCardRank(
-                          card
-                        )}
-                      </strong>
-
-                      <span>
-                        {card.symbol}
-                      </span>
-                    </div>
-
-                    <div className="card-center-symbol">
-                      {card.symbol}
-                    </div>
-
-                    <div className="card-corner card-corner-bottom">
-                      <strong>
-                        {getCardRank(
-                          card
-                        )}
-                      </strong>
-
-                      <span>
-                        {card.symbol}
-                      </span>
-                    </div>
+                    {renderPlayingCard(
+                      card
+                    )}
                   </div>
                 )
               )}
@@ -1085,9 +2314,14 @@ function App() {
                       myCards.length
                   ),
               }).map(
-                (_, index) => (
+                (
+                  _,
+                  index
+                ) => (
                   <div
-                    key={index}
+                    key={
+                      index
+                    }
                     className="empty-card"
                   >
                     <span>
@@ -1098,12 +2332,6 @@ function App() {
               )}
             </div>
           </div>
-
-          {/*
-           * =========================
-           * RESULTAAT
-           * =========================
-           */}
 
           {result && (
             <div
@@ -1148,7 +2376,10 @@ function App() {
                 </div>
 
                 <p>
-                  {result.playerName} koos{" "}
+                  {
+                    result.playerName
+                  }{" "}
+                  koos{" "}
                   <strong>
                     {result.isDisco
                       ? "Disco 🪩"
@@ -1166,10 +2397,7 @@ function App() {
                 {isDiscoSuccess &&
                   shouldDrink && (
                     <div className="drink-message">
-                      🪩 Neem{" "}
-                      <strong>
-                        1 slok
-                      </strong>
+                      🪩 Neem 1 slok
                     </div>
                   )}
 
@@ -1184,10 +2412,7 @@ function App() {
                 {!isDiscoSuccess &&
                   shouldDrink && (
                     <div className="drink-message">
-                      🥃 Neem{" "}
-                      <strong>
-                        1 slok
-                      </strong>
+                      🥃 Neem 1 slok
                     </div>
                   )}
 
@@ -1202,14 +2427,7 @@ function App() {
             </div>
           )}
 
-          {/*
-           * =========================
-           * DIRECT GOKKEN
-           * =========================
-           */}
-
           {!result &&
-            !gameState?.gameFinished &&
             isMyTurn && (
               <>
                 {drawnCard ? (
@@ -1306,7 +2524,6 @@ function App() {
             )}
 
           {!result &&
-            !gameState?.gameFinished &&
             !isMyTurn && (
               <div className="waiting-message game-waiting">
                 <div className="hidden-card">
@@ -1316,30 +2533,14 @@ function App() {
                 <p>
                   <strong>
                     {
-                      currentPlayer?.name
+                      currentPlayer
+                        ?.name
                     }
                   </strong>{" "}
                   maakt een keuze...
                 </p>
               </div>
             )}
-
-          {gameState?.gameFinished && (
-            <div className="finished-message">
-              <div>
-                🃏
-              </div>
-
-              <h2>
-                Alle vier kaarten zijn gespeeld!
-              </h2>
-
-              <p>
-                Iedereen heeft nu vier kaarten.
-                Hierna bouwen we de boom.
-              </p>
-            </div>
-          )}
 
           <div className="game-players">
             <div className="section-title">
@@ -1349,14 +2550,13 @@ function App() {
 
               <span>
                 {
-                  gameState
-                    ?.players
+                  gameState.players
                     .length
                 }
               </span>
             </div>
 
-            {gameState?.players.map(
+            {gameState.players.map(
               (
                 player,
                 index
@@ -1367,7 +2567,8 @@ function App() {
                   }
                   className={
                     index ===
-                    gameState.currentPlayerIndex
+                    gameState
+                      .currentPlayerIndex
                       ? "game-player active"
                       : "game-player"
                   }
@@ -1386,8 +2587,8 @@ function App() {
                     </span>
 
                     {index ===
-                      gameState.currentPlayerIndex &&
-                      !gameState.gameFinished && (
+                      gameState
+                        .currentPlayerIndex && (
                         <small>
                           AAN DE BEURT
                         </small>
@@ -1416,7 +2617,8 @@ function App() {
    */
 
   if (
-    screen === "lobby"
+    screen ===
+    "lobby"
   ) {
     return (
       <main className="app">
@@ -1459,7 +2661,9 @@ function App() {
             </span>
 
             <strong>
-              {roomCode}
+              {
+                roomCode
+              }
             </strong>
           </div>
 
@@ -1548,7 +2752,8 @@ function App() {
    */
 
   if (
-    screen === "join"
+    screen ===
+    "join"
   ) {
     return (
       <main className="app">
@@ -1556,8 +2761,13 @@ function App() {
           <button
             className="back-button"
             onClick={() => {
-              setJoinError("");
-              setScreen("home");
+              setJoinError(
+                ""
+              );
+
+              setScreen(
+                "home"
+              );
             }}
           >
             ← Terug
@@ -1594,7 +2804,9 @@ function App() {
                     .value
                 )
               }
-              maxLength={15}
+              maxLength={
+                15
+              }
             />
           </div>
 
@@ -1625,7 +2837,9 @@ function App() {
                     )
                 )
               }
-              maxLength={5}
+              maxLength={
+                5
+              }
             />
           </div>
 
@@ -1705,7 +2919,9 @@ function App() {
                     .value
                 )
               }
-              maxLength={15}
+              maxLength={
+                15
+              }
             />
           </div>
 
@@ -1730,7 +2946,9 @@ function App() {
               </button>
 
               <span>
-                {players}
+                {
+                  players
+                }
               </span>
 
               <button
@@ -1866,10 +3084,11 @@ function App() {
             <p>
               {players} spelers ·{" "}
               {rows} rijen ·{" "}
-              {decks}{" "}
-              {decks === 1
-                ? "kaartspel"
-                : "kaartspellen"}{" "}
+              {decks} kaartspel
+              {decks ===
+              1
+                ? ""
+                : "len"}{" "}
               · checkpoints{" "}
               {checkpoints
                 ? "aan"
@@ -1889,6 +3108,12 @@ function App() {
       </main>
     );
   }
+
+  /*
+   * =========================
+   * HOME
+   * =========================
+   */
 
   return (
     <main className="app">
@@ -1919,10 +3144,21 @@ function App() {
         <button
           className="secondary"
           onClick={() => {
-            setJoinError("");
-            setPlayerName("");
-            setJoinCode("");
-            setScreen("join");
+            setJoinError(
+              ""
+            );
+
+            setPlayerName(
+              ""
+            );
+
+            setJoinCode(
+              ""
+            );
+
+            setScreen(
+              "join"
+            );
           }}
         >
           Meedoen met spel
