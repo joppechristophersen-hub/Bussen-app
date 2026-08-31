@@ -35,7 +35,8 @@ type DoubleRule =
 
 type CheckpointFailRule =
   | "retry"
-  | "reset";
+  | "reset"
+  | "safe";
 
 type Card = {
   id: string;
@@ -197,6 +198,8 @@ type BusResult = {
   restartIndex?: number;
 
   secondChance?: boolean;
+
+  checkpointSafe?: boolean;
 };
 
 type BusState = {
@@ -476,8 +479,7 @@ function App() {
 
     if (
       roomFromUrl &&
-      roomFromUrl.length ===
-        5
+      roomFromUrl.length === 5
     ) {
       setJoinCode(
         roomFromUrl
@@ -491,7 +493,7 @@ function App() {
 
   /*
    * =========================
-   * SOCKETS
+   * SOCKET EVENTS
    * =========================
    */
 
@@ -506,37 +508,15 @@ function App() {
     }
 
     function handleGameStarted() {
-      setDrawnCard(
-        null
-      );
+      setDrawnCard(null);
+      setGuessResult(null);
+      setCountdown(0);
+      setDistribution({});
+      setSelectedCheckpoints([]);
+      setTreeSubmitting(false);
+      setBusSubmitting(false);
 
-      setGuessResult(
-        null
-      );
-
-      setCountdown(
-        0
-      );
-
-      setDistribution(
-        {}
-      );
-
-      setSelectedCheckpoints(
-        []
-      );
-
-      setTreeSubmitting(
-        false
-      );
-
-      setBusSubmitting(
-        false
-      );
-
-      setScreen(
-        "game"
-      );
+      setScreen("game");
     }
 
     function handleGameState(
@@ -604,8 +584,7 @@ function App() {
         state.bus
       ) {
         setSelectedCheckpoints(
-          state.bus
-            .checkpoints
+          state.bus.checkpoints
         );
       }
 
@@ -1576,7 +1555,11 @@ function App() {
   function toggleCheckpoint(
     index: number
   ) {
-    if (!isHost) {
+    if (
+      gameState?.bus
+        ?.activeDriverId !==
+      socketId
+    ) {
       return;
     }
 
@@ -1608,7 +1591,11 @@ function App() {
   }
 
   function confirmCheckpoints() {
-    if (!isHost) {
+    if (
+      gameState?.bus
+        ?.activeDriverId !==
+      socketId
+    ) {
       return;
     }
 
@@ -1622,6 +1609,14 @@ function App() {
   }
 
   function startBus() {
+    if (
+      gameState?.bus
+        ?.activeDriverId !==
+      socketId
+    ) {
+      return;
+    }
+
     setBusSubmitting(
       true
     );
@@ -1633,6 +1628,9 @@ function App() {
         response: {
           success:
             boolean;
+
+          message?:
+            string;
         }
       ) => {
         if (
@@ -1641,6 +1639,14 @@ function App() {
           setBusSubmitting(
             false
           );
+
+          if (
+            response.message
+          ) {
+            alert(
+              response.message
+            );
+          }
         }
       }
     );
@@ -1743,10 +1749,16 @@ function App() {
           bus.activeDriverId
       );
 
+    /*
+     * BELANGRIJK:
+     * Alleen de speler die
+     * daadwerkelijk in de bus zit
+     * mag bedienen.
+     */
+
     const canControl =
-      isHost ||
       bus.activeDriverId ===
-        socketId;
+      socketId;
 
     return (
       <main className="app">
@@ -2032,12 +2044,26 @@ function App() {
                 Checkpoints kiezen
               </h2>
 
-              <p>
-                {bus.checkpointFailRule ===
-                "retry"
-                  ? "Fout op een checkpoint? De eerste keer krijg je op die kaart één tweede kans. Nogmaals fout betekent terug naar kaart 1."
-                  : "Fout op een checkpoint betekent direct terug naar kaart 1."}
-              </p>
+              {bus.checkpointFailRule ===
+                "retry" && (
+                <p>
+                  Eerste fout op een checkpoint: één tweede kans. Nogmaals fout: terug naar kaart 1.
+                </p>
+              )}
+
+              {bus.checkpointFailRule ===
+                "reset" && (
+                <p>
+                  Fout op een checkpoint: direct terug naar kaart 1.
+                </p>
+              )}
+
+              {bus.checkpointFailRule ===
+                "safe" && (
+                <p>
+                  Zodra je een checkpoint bereikt, wordt dit je nieuwe beginpunt.
+                </p>
+              )}
 
               <div className="checkpoint-grid">
                 {bus.piles.map(
@@ -2051,7 +2077,7 @@ function App() {
                       }
                       disabled={
                         index === 0 ||
-                        !isHost
+                        !canControl
                       }
                       className={
                         selectedCheckpoints.includes(
@@ -2072,7 +2098,7 @@ function App() {
                 )}
               </div>
 
-              {isHost ? (
+              {canControl ? (
                 <button
                   className="start-button"
                   disabled={
@@ -2086,7 +2112,7 @@ function App() {
                 </button>
               ) : (
                 <div className="waiting-message">
-                  De host kiest de checkpoints...
+                  {driver?.name} kiest de checkpoints...
                 </div>
               )}
             </div>
@@ -2117,7 +2143,7 @@ function App() {
                 </button>
               ) : (
                 <div className="waiting-message">
-                  Wachten tot de bus wordt gestart...
+                  Wachten tot {driver?.name} de bus start...
                 </div>
               )}
             </div>
@@ -2370,18 +2396,32 @@ function App() {
                   <div className="bus-choice-panel">
                     <span className="bus-position-label">
                       KAART{" "}
-                      {bus.currentIndex +
-                        1}
+                      {bus.currentIndex + 1}
                     </span>
 
                     {currentPile?.isCheckpoint && (
-                      <p>
-                        ⚑ Dit is een checkpoint
+                      <>
                         {bus.checkpointFailRule ===
-                          "retry"
-                          ? " — je kunt hier één tweede kans krijgen."
-                          : "."}
-                      </p>
+                          "retry" && (
+                          <p>
+                            ⚑ Checkpoint — je kunt hier één tweede kans krijgen.
+                          </p>
+                        )}
+
+                        {bus.checkpointFailRule ===
+                          "reset" && (
+                          <p>
+                            ⚑ Checkpoint — fout betekent terug naar kaart 1.
+                          </p>
+                        )}
+
+                        {bus.checkpointFailRule ===
+                          "safe" && (
+                          <p>
+                            ⚑ Checkpoint — dit is vanaf nu je nieuwe beginpunt.
+                          </p>
+                        )}
+                      </>
                     )}
 
                     {currentPile?.revealed &&
@@ -2464,8 +2504,7 @@ function App() {
 
                     <p>
                       Wachten op de gok voor kaart{" "}
-                      {bus.currentIndex +
-                        1}
+                      {bus.currentIndex + 1}
                       ...
                     </p>
                   </div>
@@ -2498,7 +2537,9 @@ function App() {
                       ? "Dubbel = fout!"
                       : bus.result.secondChance
                         ? "Fout — tweede kans!"
-                        : "Fout!"}
+                        : bus.result.checkpointSafe
+                          ? "Fout — terug naar checkpoint!"
+                          : "Fout!"}
                 </h2>
 
                 <div className="bus-comparison">
@@ -2567,8 +2608,7 @@ function App() {
                             .drinks
                         }{" "}
                         {bus.result
-                          .drinks ===
-                        1
+                          .drinks === 1
                           ? "slok"
                           : "slokken"}
                       </strong>
@@ -2579,8 +2619,16 @@ function App() {
                         ⚑ Je krijgt één tweede kans en blijft op{" "}
                         <strong>
                           kaart{" "}
-                          {bus.result.position +
-                            1}
+                          {bus.result.position + 1}
+                        </strong>
+                        .
+                      </p>
+                    ) : bus.result.checkpointSafe ? (
+                      <p>
+                        ⚑ Dit checkpoint is je nieuwe beginpunt. Je blijft op{" "}
+                        <strong>
+                          kaart{" "}
+                          {bus.result.position + 1}
                         </strong>
                         .
                       </p>
@@ -2730,7 +2778,7 @@ function App() {
 
   /*
    * =========================
-   * BOOM + GELIJKSTAND
+   * BOOM / GELIJKSTAND
    * =========================
    */
 
@@ -2900,9 +2948,7 @@ function App() {
                         >
                           <div className="player-avatar">
                             {player.name
-                              .charAt(
-                                0
-                              )
+                              .charAt(0)
                               .toUpperCase()}
                           </div>
 
@@ -3207,9 +3253,7 @@ function App() {
                             >
                               <div className="player-avatar">
                                 {player.name
-                                  .charAt(
-                                    0
-                                  )
+                                  .charAt(0)
                                   .toUpperCase()}
                               </div>
 
@@ -4432,7 +4476,29 @@ function App() {
                   </strong>
 
                   <span>
-                    Eerste fout: blijf op het checkpoint. Nogmaals fout: terug naar kaart 1.
+                    Eerste fout: blijf op het checkpoint. Tweede fout: terug naar kaart 1.
+                  </span>
+                </button>
+
+                <button
+                  className={
+                    checkpointFailRule ===
+                    "safe"
+                      ? "selected"
+                      : ""
+                  }
+                  onClick={() =>
+                    setCheckpointFailRule(
+                      "safe"
+                    )
+                  }
+                >
+                  <strong>
+                    Nieuw beginpunt
+                  </strong>
+
+                  <span>
+                    Zodra je het checkpoint bereikt, wordt dit je nieuwe kaart 1.
                   </span>
                 </button>
 
@@ -4454,7 +4520,7 @@ function App() {
                   </strong>
 
                   <span>
-                    Fout op de checkpointkaart betekent direct helemaal terug naar kaart 1.
+                    Fout op het checkpoint betekent direct helemaal terug naar kaart 1.
                   </span>
                 </button>
               </div>

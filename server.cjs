@@ -8,7 +8,7 @@ const TREE_START_DELAY = 1400;
 const TIE_BREAK_RESULT_DELAY = 2500;
 const BUS_RESULT_DELAY = 2000;
 
-const SERVER_VERSION = "BUS_V5_PLAYER_DRAW_CHECKPOINT_RULE";
+const SERVER_VERSION = "BUS_V6_DRIVER_CONTROL_SAFE_CHECKPOINT";
 
 const io = new Server(PORT, {
   cors: {
@@ -121,7 +121,7 @@ function getUniqueRoomCode() {
 
 /*
  * =========================
- * STOCK / AFLEGSTAPEL
+ * STOCK
  * =========================
  */
 
@@ -201,8 +201,7 @@ function takeCard(room) {
 
 function clearResultTimer(room) {
   if (
-    room?.game
-      ?.resultTimer
+    room?.game?.resultTimer
   ) {
     clearTimeout(
       room.game.resultTimer
@@ -215,8 +214,7 @@ function clearResultTimer(room) {
 
 function clearTreeTimer(room) {
   if (
-    room?.game
-      ?.tree?.timer
+    room?.game?.tree?.timer
   ) {
     clearTimeout(
       room.game.tree.timer
@@ -229,8 +227,7 @@ function clearTreeTimer(room) {
 
 function clearBusTimer(room) {
   if (
-    room?.game
-      ?.bus?.timer
+    room?.game?.bus?.timer
   ) {
     clearTimeout(
       room.game.bus.timer
@@ -268,8 +265,7 @@ function publicTreeState(room) {
   }
 
   const currentResolverId =
-    tree.status ===
-    "resolving"
+    tree.status === "resolving"
       ? tree.pendingResolvers[
           tree.currentResolverIndex
         ] || null
@@ -345,8 +341,7 @@ function publicTreeState(room) {
 
     revealedCount:
       Math.min(
-        tree.currentSequenceIndex +
-          1,
+        tree.currentSequenceIndex + 1,
         tree.sequence.length
       ),
 
@@ -565,8 +560,7 @@ function initializeGame(roomCode) {
   );
 
   room.game = {
-    started:
-      true,
+    started: true,
 
     phase:
       "cards",
@@ -634,8 +628,7 @@ function beginTurn(roomCode) {
   }
 
   if (
-    room.game.phase !==
-      "cards" ||
+    room.game.phase !== "cards" ||
     !room.game.started ||
     room.game.finished ||
     room.game.resultShowing ||
@@ -695,7 +688,6 @@ function checkDisco(
         (card) =>
           card.suit
       ),
-
       drawnCard.suit,
     ]);
 
@@ -779,10 +771,8 @@ function checkGuess(
       guess === "binnen"
     ) {
       return (
-        card.value >
-          low &&
-        card.value <
-          high
+        card.value > low &&
+        card.value < high
       );
     }
 
@@ -790,10 +780,8 @@ function checkGuess(
       guess === "buiten"
     ) {
       return (
-        card.value <
-          low ||
-        card.value >
-          high
+        card.value < low ||
+        card.value > high
       );
     }
 
@@ -846,8 +834,7 @@ function drawTreeCard(
     }
 
     if (
-      usedValues.size >=
-        13 ||
+      usedValues.size >= 13 ||
       !usedValues.has(
         card.value
       )
@@ -865,8 +852,7 @@ function drawTreeCard(
   }
 
   if (
-    skippedCards.length >
-    0
+    skippedCards.length > 0
   ) {
     return (
       skippedCards.pop() ||
@@ -899,8 +885,7 @@ function buildTree(room) {
 
   for (
     let rowNumber = 1;
-    rowNumber <=
-    rowCount;
+    rowNumber <= rowCount;
     rowNumber++
   ) {
     const cards = [];
@@ -913,8 +898,7 @@ function buildTree(room) {
 
     for (
       let cardIndex = 0;
-      cardIndex <
-      rowNumber;
+      cardIndex < rowNumber;
       cardIndex++
     ) {
       const card =
@@ -1147,7 +1131,7 @@ function prepareUsedCardsForBus(
 
 /*
  * =========================
- * GELIJKSTAND VOOR BUS
+ * GELIJKSTAND
  * =========================
  */
 
@@ -1308,12 +1292,6 @@ function resolveTieBreakRound(
     return;
   }
 
-  /*
-   * De kaarten van deze trekking
-   * zijn nu klaar en mogen naar
-   * de aflegstapel.
-   */
-
   for (
     const draw of
     round.draws
@@ -1344,12 +1322,9 @@ function resolveTieBreakRound(
           draw.playerId
       );
 
-  /*
-   * Eén speler heeft de laagste.
-   */
-
   if (
-    lowestIds.length === 1
+    lowestIds.length ===
+    1
   ) {
     const busDriver =
       room.players.find(
@@ -1367,12 +1342,6 @@ function resolveTieBreakRound(
 
     return;
   }
-
-  /*
-   * Opnieuw gelijk.
-   * Alleen deze spelers trekken
-   * opnieuw zelf een kaart.
-   */
 
   startTieBreakRound(
     roomCode,
@@ -1413,7 +1382,8 @@ function determineBusDriver(
     );
 
   if (
-    candidates.length === 1
+    candidates.length ===
+    1
   ) {
     finishBusDriverSelection(
       roomCode,
@@ -1438,7 +1408,7 @@ function determineBusDriver(
 
 /*
  * =========================
- * BOOM KAART ONTHULLEN
+ * BOOM ONTHULLEN
  * =========================
  */
 
@@ -2075,11 +2045,6 @@ function continueBusAfterDouble(
           }
         }
 
-        /*
-         * Dubbel:
-         * altijd terug naar 1.
-         */
-
         currentBus.currentIndex =
           0;
 
@@ -2130,6 +2095,25 @@ io.on(
         const roomCode =
           getUniqueRoomCode();
 
+        let checkpointFailRule =
+          "retry";
+
+        if (
+          settings?.checkpointFailRule ===
+          "reset"
+        ) {
+          checkpointFailRule =
+            "reset";
+        }
+
+        if (
+          settings?.checkpointFailRule ===
+          "safe"
+        ) {
+          checkpointFailRule =
+            "safe";
+        }
+
         rooms[roomCode] = {
           hostId:
             socket.id,
@@ -2152,23 +2136,16 @@ io.on(
 
             checkpoints:
               Boolean(
-                settings
-                  ?.checkpoints
+                settings?.checkpoints
               ),
 
             doubleRule:
-              settings
-                ?.doubleRule ===
+              settings?.doubleRule ===
               "take-along"
                 ? "take-along"
                 : "pass",
 
-            checkpointFailRule:
-              settings
-                ?.checkpointFailRule ===
-              "reset"
-                ? "reset"
-                : "retry",
+            checkpointFailRule,
           },
 
           players: [
@@ -2375,7 +2352,7 @@ io.on(
     );
 
     /*
-     * REMOVE PLAYER
+     * REMOVE
      */
 
     socket.on(
@@ -2432,7 +2409,7 @@ io.on(
     );
 
     /*
-     * START GAME
+     * START
      */
 
     socket.on(
@@ -2605,8 +2582,7 @@ io.on(
         }
 
         const card =
-          room.game
-            .currentCard;
+          room.game.currentCard;
 
         if (!card) {
           return;
@@ -2788,8 +2764,7 @@ io.on(
           [];
 
         for (
-          const item of
-          safe
+          const item of safe
         ) {
           const receiver =
             room.players.find(
@@ -3007,10 +2982,7 @@ io.on(
     );
 
     /*
-     * =========================
-     * SPELER TREKT ZELF BIJ
-     * GELIJKSTAND
-     * =========================
+     * GELIJKSTAND TREKKEN
      */
 
     socket.on(
@@ -3161,12 +3133,6 @@ io.on(
             true,
         });
 
-        /*
-         * Pas als iedereen ZELF
-         * heeft getrokken bepalen
-         * we de laagste kaart.
-         */
-
         if (
           tree.tieBreakPendingIds.length ===
           0
@@ -3189,7 +3155,11 @@ io.on(
     );
 
     /*
+     * =========================
      * BUS LENGTE
+     *
+     * ALLEEN DE BUSSPELER.
+     * =========================
      */
 
     socket.on(
@@ -3224,20 +3194,18 @@ io.on(
         const bus =
           room.game.bus;
 
-        const canControl =
-          socket.id ===
-            bus.activeDriverId ||
-          socket.id ===
-            room.hostId;
-
         if (
-          !canControl ||
+          socket.id !==
+            bus.activeDriverId ||
           bus.status !==
             "draw-length"
         ) {
           done({
             success:
               false,
+
+            message:
+              "Alleen de speler in de bus kan deze kaart trekken.",
           });
 
           return;
@@ -3284,7 +3252,11 @@ io.on(
     );
 
     /*
-     * BUS OPEN
+     * =========================
+     * BUS OPEN KAARTEN
+     *
+     * ALLEEN DE BUSSPELER.
+     * =========================
      */
 
     socket.on(
@@ -3319,14 +3291,9 @@ io.on(
         const bus =
           room.game.bus;
 
-        const canControl =
-          socket.id ===
-            bus.activeDriverId ||
-          socket.id ===
-            room.hostId;
-
         if (
-          !canControl ||
+          socket.id !==
+            bus.activeDriverId ||
           bus.status !==
             "draw-open" ||
           !bus.lengthCard
@@ -3334,6 +3301,9 @@ io.on(
           done({
             success:
               false,
+
+            message:
+              "Alleen de speler in de bus kan deze kaart trekken.",
           });
 
           return;
@@ -3397,7 +3367,11 @@ io.on(
     );
 
     /*
+     * =========================
      * CHECKPOINTS
+     *
+     * OOK ALLEEN DE BUSSPELER.
+     * =========================
      */
 
     socket.on(
@@ -3424,9 +3398,7 @@ io.on(
           !room ||
           !room.game.bus ||
           room.game.phase !==
-            "bus-setup" ||
-          room.hostId !==
-            socket.id
+            "bus-setup"
         ) {
           done({
             success:
@@ -3440,12 +3412,17 @@ io.on(
           room.game.bus;
 
         if (
+          socket.id !==
+            bus.activeDriverId ||
           bus.status !==
-          "checkpoints"
+            "checkpoints"
         ) {
           done({
             success:
               false,
+
+            message:
+              "Alleen de speler in de bus kan de checkpoints instellen.",
           });
 
           return;
@@ -3507,8 +3484,6 @@ io.on(
         if (
           !room ||
           !room.game.bus ||
-          room.hostId !==
-            socket.id ||
           room.game.phase !==
             "bus-setup"
         ) {
@@ -3520,9 +3495,14 @@ io.on(
           return;
         }
 
+        const bus =
+          room.game.bus;
+
         if (
-          room.game.bus.status !==
-          "checkpoints"
+          socket.id !==
+            bus.activeDriverId ||
+          bus.status !==
+            "checkpoints"
         ) {
           done({
             success:
@@ -3532,7 +3512,7 @@ io.on(
           return;
         }
 
-        room.game.bus.status =
+        bus.status =
           "ready";
 
         sendGameState(
@@ -3547,7 +3527,11 @@ io.on(
     );
 
     /*
+     * =========================
      * BUS START
+     *
+     * ALLEEN DE BUSSPELER.
+     * =========================
      */
 
     socket.on(
@@ -3582,20 +3566,18 @@ io.on(
         const bus =
           room.game.bus;
 
-        const canControl =
-          socket.id ===
-            bus.activeDriverId ||
-          socket.id ===
-            room.hostId;
-
         if (
-          !canControl ||
+          socket.id !==
+            bus.activeDriverId ||
           bus.status !==
             "ready"
         ) {
           done({
             success:
               false,
+
+            message:
+              "Alleen de speler in de bus kan de bus starten.",
           });
 
           return;
@@ -3752,9 +3734,7 @@ io.on(
           true;
 
         /*
-         * =========================
          * DUBBEL
-         * =========================
          */
 
         if (
@@ -3794,6 +3774,9 @@ io.on(
 
             secondChance:
               false,
+
+            checkpointSafe:
+              false,
           };
 
           bus.status =
@@ -3823,20 +3806,10 @@ io.on(
           position + 1;
 
         /*
-         * =========================
          * GOED
-         * =========================
          */
 
         if (correct) {
-          /*
-           * Als deze checkpointkaart
-           * met een tweede poging goed
-           * is gehaald, is die tweede
-           * kans later opnieuw
-           * beschikbaar.
-           */
-
           bus.checkpointRetryUsedIndex =
             null;
 
@@ -3867,6 +3840,9 @@ io.on(
               position,
 
             secondChance:
+              false,
+
+            checkpointSafe:
               false,
           };
 
@@ -3908,33 +3884,79 @@ io.on(
         let secondChance =
           false;
 
+        let checkpointSafe =
+          false;
+
+        /*
+         * FOUT OP CHECKPOINT
+         */
+
         if (isCheckpoint) {
           /*
-           * REGEL:
-           * TWEEDE KANS
+           * REGEL 1:
+           * NIEUW BEGINPUNT
+           *
+           * Zodra checkpoint bereikt is,
+           * wordt die kaart de nieuwe
+           * kaart 1.
            */
 
           if (
             bus.checkpointFailRule ===
-              "retry" &&
-            bus.checkpointRetryUsedIndex !==
-              position
+            "safe"
           ) {
             restartIndex =
               position;
 
             secondChance =
+              false;
+
+            checkpointSafe =
               true;
 
             bus.checkpointRetryUsedIndex =
-              position;
-          } else {
-            /*
-             * - Instelling is terug naar 1
-             * OF
-             * - tweede kans is al gebruikt.
-             */
+              null;
+          }
 
+          /*
+           * REGEL 2:
+           * TWEEDE KANS
+           */
+
+          else if (
+            bus.checkpointFailRule ===
+            "retry"
+          ) {
+            if (
+              bus.checkpointRetryUsedIndex !==
+              position
+            ) {
+              restartIndex =
+                position;
+
+              secondChance =
+                true;
+
+              bus.checkpointRetryUsedIndex =
+                position;
+            } else {
+              restartIndex =
+                0;
+
+              secondChance =
+                false;
+
+              bus.checkpointRetryUsedIndex =
+                null;
+            }
+          }
+
+          /*
+           * REGEL 3:
+           * DIRECT TERUG NAAR 1
+           */
+
+          else {
             restartIndex =
               0;
 
@@ -3944,13 +3966,16 @@ io.on(
             bus.checkpointRetryUsedIndex =
               null;
           }
-        } else {
-          /*
-           * Normale fout:
-           * terug naar laatste
-           * behaalde checkpoint.
-           */
+        }
 
+        /*
+         * FOUT NA EEN CHECKPOINT.
+         *
+         * Dan ga je terug naar het
+         * laatste behaalde checkpoint.
+         */
+
+        else {
           restartIndex =
             getRestartIndex(
               bus
@@ -3985,6 +4010,8 @@ io.on(
           restartIndex,
 
           secondChance,
+
+          checkpointSafe,
         };
 
         bus.status =
@@ -4103,6 +4130,9 @@ io.on(
 
           secondChance:
             false,
+
+          checkpointSafe:
+            false,
         };
 
         bus.status =
@@ -4173,12 +4203,6 @@ io.on(
               player.id !==
               socket.id
           );
-
-        /*
-         * Als iemand tijdens een
-         * gelijkstand weggaat,
-         * halen we hem uit de wachtrij.
-         */
 
         if (
           room.game.tree
