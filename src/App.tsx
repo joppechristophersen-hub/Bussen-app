@@ -23,6 +23,7 @@ type Screen =
 type GamePhase =
   | "cards"
   | "tree"
+  | "tree-tiebreak"
   | "tree-finished"
   | "bus-setup"
   | "bus"
@@ -125,6 +126,7 @@ type TreeState = {
     | "no-match"
     | "resolving"
     | "resolved"
+    | "tie-break"
     | "finished";
 
   activeCard:
@@ -478,38 +480,22 @@ function App() {
     }
 
     function handleGameStarted() {
-      setDrawnCard(
-        null
-      );
+      setDrawnCard(null);
+      setGuessResult(null);
+      setCountdown(0);
+      setDistribution({});
+      setSelectedCheckpoints([]);
+      setTreeSubmitting(false);
+      setBusSubmitting(false);
 
-      setGuessResult(
-        null
-      );
-
-      setCountdown(
-        0
-      );
-
-      setDistribution(
-        {}
-      );
-
-      setSelectedCheckpoints(
-        []
-      );
-
-      setScreen(
-        "game"
-      );
+      setScreen("game");
     }
 
     function handleGameState(
       state:
         GameState
     ) {
-      setGameState(
-        state
-      );
+      setGameState(state);
 
       setPlayerNames(
         state.players
@@ -531,13 +517,8 @@ function App() {
           "cards" &&
         !state.resultShowing
       ) {
-        setGuessResult(
-          null
-        );
-
-        setCountdown(
-          0
-        );
+        setGuessResult(null);
+        setCountdown(0);
       }
 
       if (
@@ -546,30 +527,20 @@ function App() {
         !state.waitingForGuess &&
         !state.resultShowing
       ) {
-        setDrawnCard(
-          null
-        );
+        setDrawnCard(null);
       }
 
       if (
         state.phase !==
         "cards"
       ) {
-        setDrawnCard(
-          null
-        );
-
-        setGuessResult(
-          null
-        );
+        setDrawnCard(null);
+        setGuessResult(null);
       }
 
-      if (
-        state.bus
-      ) {
+      if (state.bus) {
         setSelectedCheckpoints(
-          state.bus
-            .checkpoints
+          state.bus.checkpoints
         );
       }
 
@@ -583,30 +554,17 @@ function App() {
     }: {
       card: Card;
     }) {
-      setDrawnCard(
-        card
-      );
-
-      setGuessResult(
-        null
-      );
+      setDrawnCard(card);
+      setGuessResult(null);
     }
 
     function handleGuessResult(
       result:
         GuessResult
     ) {
-      setGuessResult(
-        result
-      );
-
-      setDrawnCard(
-        null
-      );
-
-      setCountdown(
-        3
-      );
+      setGuessResult(result);
+      setDrawnCard(null);
+      setCountdown(3);
     }
 
     function handleRoomClosed() {
@@ -622,6 +580,10 @@ function App() {
         "Je bent uit de kamer verwijderd."
       );
 
+      resetToHome();
+    }
+
+    function handleReturnHome() {
       resetToHome();
     }
 
@@ -660,6 +622,11 @@ function App() {
       handleRemovedFromRoom
     );
 
+    socket.on(
+      "return-home",
+      handleReturnHome
+    );
+
     return () => {
       socket.off(
         "players-updated",
@@ -695,6 +662,11 @@ function App() {
         "removed-from-room",
         handleRemovedFromRoom
       );
+
+      socket.off(
+        "return-home",
+        handleReturnHome
+      );
     };
   }, []);
 
@@ -710,9 +682,7 @@ function App() {
       gameState?.phase !==
         "cards"
     ) {
-      setCountdown(
-        0
-      );
+      setCountdown(0);
 
       return;
     }
@@ -730,7 +700,7 @@ function App() {
     }
 
     function updateCountdown() {
-      const secondsLeft =
+      setCountdown(
         Math.max(
           0,
           Math.ceil(
@@ -740,10 +710,7 @@ function App() {
             ) /
               1000
           )
-        );
-
-      setCountdown(
-        secondsLeft
+        )
       );
     }
 
@@ -773,13 +740,8 @@ function App() {
    */
 
   useEffect(() => {
-    setDistribution(
-      {}
-    );
-
-    setTreeSubmitting(
-      false
-    );
+    setDistribution({});
+    setTreeSubmitting(false);
   }, [
     gameState?.tree
       ?.currentResolverId,
@@ -795,58 +757,30 @@ function App() {
    */
 
   function resetToHome() {
-    setRoomCode(
-      ""
+    setRoomCode("");
+    setPlayerNames([]);
+    setIsHost(false);
+    setGameState(null);
+    setDrawnCard(null);
+    setGuessResult(null);
+    setCountdown(0);
+    setDistribution({});
+    setSelectedCheckpoints([]);
+    setTreeSubmitting(false);
+    setBusSubmitting(false);
+
+    window.history.replaceState(
+      {},
+      "",
+      window.location.pathname
     );
 
-    setPlayerNames(
-      []
-    );
-
-    setIsHost(
-      false
-    );
-
-    setGameState(
-      null
-    );
-
-    setDrawnCard(
-      null
-    );
-
-    setGuessResult(
-      null
-    );
-
-    setCountdown(
-      0
-    );
-
-    setDistribution(
-      {}
-    );
-
-    setSelectedCheckpoints(
-      []
-    );
-
-    setTreeSubmitting(
-      false
-    );
-
-    setBusSubmitting(
-      false
-    );
-
-    setScreen(
-      "home"
-    );
+    setScreen("home");
   }
 
   /*
    * =========================
-   * CARD HELPERS
+   * KAART HELPERS
    * =========================
    */
 
@@ -938,9 +872,7 @@ function App() {
       return;
     }
 
-    if (
-      !socket.connected
-    ) {
+    if (!socket.connected) {
       socket.connect();
     }
 
@@ -996,13 +928,8 @@ function App() {
             []
         );
 
-        setIsHost(
-          true
-        );
-
-        setScreen(
-          "lobby"
-        );
+        setIsHost(true);
+        setScreen("lobby");
       }
     );
   }
@@ -1016,9 +943,7 @@ function App() {
         .trim()
         .toUpperCase();
 
-    setJoinError(
-      ""
-    );
+    setJoinError("");
 
     if (!name) {
       setJoinError(
@@ -1029,8 +954,7 @@ function App() {
     }
 
     if (
-      code.length !==
-      5
+      code.length !== 5
     ) {
       setJoinError(
         "Een kamercode bestaat uit 5 tekens."
@@ -1039,9 +963,7 @@ function App() {
       return;
     }
 
-    if (
-      !socket.connected
-    ) {
+    if (!socket.connected) {
       socket.connect();
     }
 
@@ -1092,13 +1014,8 @@ function App() {
             []
         );
 
-        setIsHost(
-          false
-        );
-
-        setScreen(
-          "lobby"
-        );
+        setIsHost(false);
+        setScreen("lobby");
       }
     );
   }
@@ -1123,6 +1040,56 @@ function App() {
 
     socket.emit(
       "start-game"
+    );
+  }
+
+  function restartGame() {
+    if (!isHost) {
+      return;
+    }
+
+    setBusSubmitting(true);
+
+    socket.emit(
+      "restart-game",
+
+      (
+        response: {
+          success:
+            boolean;
+        }
+      ) => {
+        if (
+          !response.success
+        ) {
+          setBusSubmitting(false);
+        }
+      }
+    );
+  }
+
+  function returnToHome() {
+    if (!isHost) {
+      return;
+    }
+
+    setBusSubmitting(true);
+
+    socket.emit(
+      "return-home",
+
+      (
+        response: {
+          success:
+            boolean;
+        }
+      ) => {
+        if (
+          !response.success
+        ) {
+          setBusSubmitting(false);
+        }
+      }
     );
   }
 
@@ -1201,8 +1168,7 @@ function App() {
       1
     ) {
       const card =
-        player
-          ?.cards?.[0];
+        player?.cards?.[0];
 
       return card
         ? `Hoger of lager dan ${card.name} ${card.symbol}?`
@@ -1214,12 +1180,10 @@ function App() {
       2
     ) {
       const first =
-        player
-          ?.cards?.[0];
+        player?.cards?.[0];
 
       const second =
-        player
-          ?.cards?.[1];
+        player?.cards?.[1];
 
       return first &&
         second
@@ -1227,7 +1191,7 @@ function App() {
         : "Binnen of buiten?";
     }
 
-    return "Raad het figuur, of ga voor Disco als je denkt dat je alle vier compleet maakt.";
+    return "Raad het figuur, of ga voor Disco.";
   }
 
   /*
@@ -1247,23 +1211,21 @@ function App() {
 
     setDistribution(
       (previous) => {
-        const currentTotal =
+        const total =
           Object.values(
             previous
           ).reduce(
             (
-              total,
+              sum,
               value
             ) =>
-              total +
-              value,
+              sum + value,
             0
           );
 
         if (
           difference > 0 &&
-          currentTotal >=
-            available
+          total >= available
         ) {
           return previous;
         }
@@ -1313,9 +1275,7 @@ function App() {
       return;
     }
 
-    setTreeSubmitting(
-      true
-    );
+    setTreeSubmitting(true);
 
     socket.emit(
       "tree-distribute",
@@ -1369,9 +1329,7 @@ function App() {
   }
 
   function skipTreeMatch() {
-    setTreeSubmitting(
-      true
-    );
+    setTreeSubmitting(true);
 
     socket.emit(
       "tree-skip-match",
@@ -1400,9 +1358,7 @@ function App() {
    */
 
   function drawBusLength() {
-    setBusSubmitting(
-      true
-    );
+    setBusSubmitting(true);
 
     socket.emit(
       "bus-draw-length",
@@ -1419,9 +1375,7 @@ function App() {
         if (
           !response.success
         ) {
-          setBusSubmitting(
-            false
-          );
+          setBusSubmitting(false);
 
           if (
             response.message
@@ -1436,9 +1390,7 @@ function App() {
   }
 
   function drawBusOpenCount() {
-    setBusSubmitting(
-      true
-    );
+    setBusSubmitting(true);
 
     socket.emit(
       "bus-draw-open",
@@ -1455,9 +1407,7 @@ function App() {
         if (
           !response.success
         ) {
-          setBusSubmitting(
-            false
-          );
+          setBusSubmitting(false);
 
           if (
             response.message
@@ -1510,9 +1460,7 @@ function App() {
       return;
     }
 
-    setBusSubmitting(
-      true
-    );
+    setBusSubmitting(true);
 
     socket.emit(
       "bus-checkpoints-ready"
@@ -1520,9 +1468,7 @@ function App() {
   }
 
   function startBus() {
-    setBusSubmitting(
-      true
-    );
+    setBusSubmitting(true);
 
     socket.emit(
       "bus-start",
@@ -1536,9 +1482,7 @@ function App() {
         if (
           !response.success
         ) {
-          setBusSubmitting(
-            false
-          );
+          setBusSubmitting(false);
         }
       }
     );
@@ -1549,9 +1493,7 @@ function App() {
       | "hoger"
       | "lager"
   ) {
-    setBusSubmitting(
-      true
-    );
+    setBusSubmitting(true);
 
     socket.emit(
       "bus-guess",
@@ -1572,9 +1514,7 @@ function App() {
         if (
           !response.success
         ) {
-          setBusSubmitting(
-            false
-          );
+          setBusSubmitting(false);
 
           if (
             response.message
@@ -1591,9 +1531,7 @@ function App() {
   function chooseDoublePlayer(
     playerId: string
   ) {
-    setBusSubmitting(
-      true
-    );
+    setBusSubmitting(true);
 
     socket.emit(
       "bus-double-choice",
@@ -1611,9 +1549,7 @@ function App() {
         if (
           !response.success
         ) {
-          setBusSubmitting(
-            false
-          );
+          setBusSubmitting(false);
         }
       }
     );
@@ -1717,7 +1653,7 @@ function App() {
                 </strong>
 
                 <p>
-                  Trek daarna hoeveel kaarten al open liggen.
+                  Trek hoeveel kaarten open liggen.
                 </p>
               </div>
             </div>
@@ -1830,7 +1766,7 @@ function App() {
               </h2>
 
               <p>
-                De waarde van deze kaart bepaalt hoeveel kaarten vanaf links al zichtbaar zijn.
+                De waarde bepaalt hoeveel kaarten vanaf links zichtbaar zijn.
               </p>
 
               {canControl ? (
@@ -1847,7 +1783,7 @@ function App() {
                 </button>
               ) : (
                 <div className="waiting-message">
-                  {driver?.name} trekt de volgende kaart...
+                  {driver?.name} trekt de kaart...
                 </div>
               )}
             </div>
@@ -1890,9 +1826,7 @@ function App() {
                           .filter(
                             Boolean
                           )
-                          .join(
-                            " "
-                          )}
+                          .join(" ")}
                       >
                         <span className="bus-card-number">
                           {index +
@@ -1934,7 +1868,7 @@ function App() {
               </h2>
 
               <p>
-                Bij een fout ga je terug naar het laatste behaalde checkpoint. De slokken blijven altijd tellen vanaf kaart 1.
+                Bij een normale fout ga je terug naar het laatste checkpoint. Bij dubbel altijd naar kaart 1.
               </p>
 
               <div className="checkpoint-grid">
@@ -1948,8 +1882,7 @@ function App() {
                         index
                       }
                       disabled={
-                        index ===
-                          0 ||
+                        index === 0 ||
                         !isHost
                       }
                       className={
@@ -1965,8 +1898,7 @@ function App() {
                         )
                       }
                     >
-                      {index +
-                        1}
+                      {index + 1}
                     </button>
                   )
                 )}
@@ -2163,7 +2095,7 @@ function App() {
                     "bus-card-slot",
 
                     index ===
-                    bus.currentIndex &&
+                      bus.currentIndex &&
                     gameState.phase ===
                       "bus"
                       ? "current"
@@ -2181,13 +2113,10 @@ function App() {
                     .filter(
                       Boolean
                     )
-                    .join(
-                      " "
-                    )}
+                    .join(" ")}
                 >
                   <span className="bus-card-number">
-                    {index +
-                      1}
+                    {index + 1}
                   </span>
 
                   {pile.revealed &&
@@ -2229,6 +2158,38 @@ function App() {
               <p>
                 De hele bus is goed gespeeld.
               </p>
+
+              {isHost ? (
+                <>
+                  <button
+                    className="start-button"
+                    onClick={
+                      restartGame
+                    }
+                    disabled={
+                      busSubmitting
+                    }
+                  >
+                    🔄 Nieuw spel starten
+                  </button>
+
+                  <button
+                    className="start-button secondary"
+                    onClick={
+                      returnToHome
+                    }
+                    disabled={
+                      busSubmitting
+                    }
+                  >
+                    🏠 Terug naar home
+                  </button>
+                </>
+              ) : (
+                <div className="waiting-message">
+                  De host kiest wat we hierna doen...
+                </div>
+              )}
             </div>
           )}
 
@@ -2284,7 +2245,7 @@ function App() {
                         </h2>
 
                         <p>
-                          Kies eerst hoger of lager. Daarna wordt deze dichte kaart omgedraaid en trekken we een nieuwe kaart.
+                          Kies eerst hoger of lager. Daarna wordt de kaart omgedraaid.
                         </p>
                       </>
                     )}
@@ -2347,17 +2308,17 @@ function App() {
                 }
               >
                 <div className="result-icon">
-                  {bus.result
-                    .correct
+                  {bus.result.correct
                     ? "✓"
                     : "✕"}
                 </div>
 
                 <h2>
-                  {bus.result
-                    .correct
+                  {bus.result.correct
                     ? "Goed!"
-                    : "Fout!"}
+                    : bus.result.double
+                      ? "Dubbel = fout!"
+                      : "Fout!"}
                 </h2>
 
                 <div className="bus-comparison">
@@ -2416,19 +2377,7 @@ function App() {
                   </div>
                 </div>
 
-                <p>
-                  {driver?.name} koos{" "}
-                  <strong>
-                    {
-                      bus.result
-                        .guess
-                    }
-                  </strong>
-                  .
-                </p>
-
-                {!bus.result
-                  .correct && (
+                {!bus.result.correct && (
                   <>
                     <div className="bus-drinks">
                       🥃 Neem{" "}
@@ -2457,21 +2406,6 @@ function App() {
                       </strong>
                       .
                     </p>
-
-                    {riders.length >
-                      1 && (
-                      <p>
-                        {riders
-                          .map(
-                            (player) =>
-                              player.name
-                          )
-                          .join(
-                            " en "
-                          )}{" "}
-                        drinken mee.
-                      </p>
-                    )}
                   </>
                 )}
               </div>
@@ -2535,6 +2469,18 @@ function App() {
                   </div>
                 </div>
 
+                <p>
+                  Dubbel telt als fout:{" "}
+                  <strong>
+                    {
+                      bus.result
+                        .drinks
+                    }{" "}
+                    slokken
+                  </strong>{" "}
+                  en daarna terug naar kaart 1.
+                </p>
+
                 {isDriver ? (
                   <>
                     <strong className="double-question">
@@ -2592,7 +2538,7 @@ function App() {
 
   /*
    * =========================
-   * BOOM SCHERM
+   * BOOM / GELIJKSTAND
    * =========================
    */
 
@@ -2602,6 +2548,8 @@ function App() {
     (
       gameState.phase ===
         "tree" ||
+      gameState.phase ===
+        "tree-tiebreak" ||
       gameState.phase ===
         "tree-finished"
     )
@@ -2664,6 +2612,15 @@ function App() {
           distributed
       );
 
+    const latestTieBreak =
+      tree.tieBreakRounds.length >
+      0
+        ? tree.tieBreakRounds[
+            tree.tieBreakRounds
+              .length - 1
+          ]
+        : null;
+
     return (
       <main className="app">
         <section className="card game-card tree-screen">
@@ -2674,366 +2631,449 @@ function App() {
 
             <div>
               <h1>
-                De boom
+                {gameState.phase ===
+                "tree-tiebreak"
+                  ? "Gelijkstand!"
+                  : "De boom"}
               </h1>
 
               <p className="subtitle">
-                Speel je kaarten weg en deel slokken uit
+                {gameState.phase ===
+                "tree-tiebreak"
+                  ? "De laagste kaart gaat de bus in"
+                  : "Speel je kaarten weg en deel slokken uit"}
               </p>
             </div>
           </div>
 
-          <div className="tree-progress">
-            <span>
-              Boomkaart
-            </span>
-
-            <strong>
-              {Math.min(
-                tree.revealedCount,
-                tree.totalCards
-              )}{" "}
-              /{" "}
-              {tree.totalCards}
-            </strong>
-          </div>
-
-          <div className="tree-board">
-            {tree.rows.map(
-              (row) => (
-                <div
-                  className="tree-row"
-                  key={
-                    row.rowNumber
-                  }
-                >
-                  <div className="tree-row-info">
-                    <strong>
-                      Rij{" "}
-                      {
-                        row.rowNumber
-                      }
-                    </strong>
-
-                    <span>
-                      {
-                        row.drinks
-                      }{" "}
-                      {row.drinks ===
-                      1
-                        ? "slok"
-                        : "slokken"}
-                    </span>
-                  </div>
-
-                  <div className="tree-row-cards">
-                    {row.cards.map(
-                      (
-                        treeCard
-                      ) => (
-                        <div
-                          key={
-                            treeCard.id
-                          }
-                          className={[
-                            "tree-playing-card",
-
-                            treeCard.isDouble
-                              ? "double"
-                              : "",
-                          ]
-                            .filter(
-                              Boolean
-                            )
-                            .join(
-                              " "
-                            )}
-                        >
-                          {treeCard.revealed &&
-                          treeCard.card ? (
-                            <div
-                              className={`tree-card-face ${treeCard.card.color}`}
-                            >
-                              {renderPlayingCard(
-                                treeCard.card
-                              )}
-
-                              {treeCard.isDouble && (
-                                <span className="double-badge">
-                                  2×
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="tree-card-back">
-                              <span>
-                                🚌
-                              </span>
-
-                              {treeCard.isDouble && (
-                                <strong>
-                                  2×
-                                </strong>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              )
-            )}
-          </div>
-
-          {tree.activeCard && (
-            <div className="tree-active-panel">
-              <span className="tree-active-label">
-                Huidige kaart
-              </span>
-
-              <div
-                className={`tree-active-card ${tree.activeCard.card.color}`}
-              >
-                <strong>
-                  {getCardRank(
-                    tree.activeCard
-                      .card
-                  )}
-                </strong>
-
-                <span>
-                  {
-                    tree.activeCard
-                      .card
-                      .symbol
-                  }
-                </span>
-              </div>
-
-              <h2>
-                {
-                  tree.drinksToDistribute
-                }{" "}
-                {tree.drinksToDistribute ===
-                1
-                  ? "slok"
-                  : "slokken"}
-              </h2>
-            </div>
-          )}
-
-          {tree.status ===
-            "waiting" && (
-            <div className="tree-message">
-              <strong>
-                De boom staat klaar
-              </strong>
-
-              <p>
-                De eerste kaart wordt automatisch omgedraaid...
-              </p>
-            </div>
-          )}
-
-          {tree.status ===
-            "no-match" && (
-            <div className="tree-message">
-              <strong>
-                Geen match
-              </strong>
-
-              <p>
-                Niemand heeft deze waarde.
-              </p>
-            </div>
-          )}
-
-          {tree.status ===
-            "resolving" &&
-            isMyResolution && (
+          {gameState.phase ===
+            "tree-tiebreak" &&
+            latestTieBreak && (
               <div className="tree-distribute-panel">
                 <div className="tree-match-heading">
                   <span>
-                    🎯
+                    🃏
                   </span>
 
                   <div>
                     <h2>
-                      Jij hebt een match!
+                      Trekking{" "}
+                      {
+                        latestTieBreak.round
+                      }
                     </h2>
 
                     <p>
-                      Verdeel{" "}
-                      <strong>
-                        {
-                          tree.drinksToDistribute
-                        }{" "}
-                        slokken
-                      </strong>
-                      .
+                      De speler met de laagste kaart gaat de bus in. Bij opnieuw gelijk trekken alleen die spelers nogmaals.
                     </p>
                   </div>
                 </div>
 
-                <div className="remaining-drinks">
-                  Nog te verdelen
-
-                  <strong>
-                    {remaining}
-                  </strong>
-                </div>
-
                 <div className="drink-player-list">
-                  {gameState.players
-                    .filter(
-                      (player) =>
-                        player.id !==
-                        socketId
-                    )
-                    .map(
-                      (
-                        player
-                      ) => (
-                        <div
-                          className="drink-player"
-                          key={
-                            player.id
+                  {latestTieBreak.draws.map(
+                    (
+                      draw
+                    ) => (
+                      <div
+                        className="drink-player"
+                        key={
+                          draw.playerId
+                        }
+                      >
+                        <div className="player-avatar">
+                          {draw.playerName
+                            .charAt(0)
+                            .toUpperCase()}
+                        </div>
+
+                        <span>
+                          {
+                            draw.playerName
                           }
+                        </span>
+
+                        <div
+                          className={`mini-playing-card ${draw.card.color}`}
                         >
-                          <div className="player-avatar">
-                            {player.name
-                              .charAt(
-                                0
-                              )
-                              .toUpperCase()}
-                          </div>
+                          <strong>
+                            {getCardRank(
+                              draw.card
+                            )}
+                          </strong>
 
                           <span>
                             {
-                              player.name
+                              draw.card
+                                .symbol
                             }
                           </span>
-
-                          <div className="drink-counter">
-                            <button
-                              onClick={() =>
-                                changeDistribution(
-                                  player.id,
-                                  -1
-                                )
-                              }
-                              disabled={
-                                (
-                                  distribution[
-                                    player.id
-                                  ] || 0
-                                ) ===
-                                  0 ||
-                                treeSubmitting
-                              }
-                            >
-                              −
-                            </button>
-
-                            <strong>
-                              {distribution[
-                                player.id
-                              ] ||
-                                0}
-                            </strong>
-
-                            <button
-                              onClick={() =>
-                                changeDistribution(
-                                  player.id,
-                                  1
-                                )
-                              }
-                              disabled={
-                                remaining ===
-                                  0 ||
-                                treeSubmitting
-                              }
-                            >
-                              +
-                            </button>
-                          </div>
                         </div>
-                      )
-                    )}
+                      </div>
+                    )
+                  )}
                 </div>
 
-                <button
-                  className="tree-confirm-button"
-                  disabled={
-                    remaining !==
-                      0 ||
-                    treeSubmitting
-                  }
-                  onClick={
-                    submitTreeDistribution
-                  }
-                >
-                  Kaart wegleggen & uitdelen
-                </button>
-
-                <button
-                  className="tree-skip-button"
-                  onClick={
-                    skipTreeMatch
-                  }
-                  disabled={
-                    treeSubmitting
-                  }
-                >
-                  Match bewaren / overslaan
-                </button>
+                <div className="waiting-message">
+                  De laagste kaart wordt bepaald...
+                </div>
               </div>
             )}
 
-          {tree.status ===
-            "resolving" &&
-            !isMyResolution && (
-              <div className="tree-message">
-                {iAmWaiting ? (
-                  <>
-                    <strong>
-                      Jij hebt ook een match
-                    </strong>
+          {gameState.phase !==
+            "tree-tiebreak" && (
+            <>
+              <div className="tree-progress">
+                <span>
+                  Boomkaart
+                </span>
 
-                    <p>
-                      Eerst is{" "}
-                      {resolver?.name} aan de beurt.
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <strong>
-                      {resolver?.name ||
-                        "Een speler"}{" "}
-                      heeft een match
-                    </strong>
+                <strong>
+                  {Math.min(
+                    tree.revealedCount,
+                    tree.totalCards
+                  )}{" "}
+                  /{" "}
+                  {tree.totalCards}
+                </strong>
+              </div>
 
-                    <p>
-                      Wachten tot de slokken zijn verdeeld...
-                    </p>
-                  </>
+              <div className="tree-board">
+                {tree.rows.map(
+                  (row) => (
+                    <div
+                      className="tree-row"
+                      key={
+                        row.rowNumber
+                      }
+                    >
+                      <div className="tree-row-info">
+                        <strong>
+                          Rij{" "}
+                          {
+                            row.rowNumber
+                          }
+                        </strong>
+
+                        <span>
+                          {
+                            row.drinks
+                          }{" "}
+                          {row.drinks ===
+                          1
+                            ? "slok"
+                            : "slokken"}
+                        </span>
+                      </div>
+
+                      <div className="tree-row-cards">
+                        {row.cards.map(
+                          (
+                            treeCard
+                          ) => (
+                            <div
+                              key={
+                                treeCard.id
+                              }
+                              className={[
+                                "tree-playing-card",
+
+                                treeCard.isDouble
+                                  ? "double"
+                                  : "",
+                              ]
+                                .filter(
+                                  Boolean
+                                )
+                                .join(" ")}
+                            >
+                              {treeCard.revealed &&
+                              treeCard.card ? (
+                                <div
+                                  className={`tree-card-face ${treeCard.card.color}`}
+                                >
+                                  {renderPlayingCard(
+                                    treeCard.card
+                                  )}
+
+                                  {treeCard.isDouble && (
+                                    <span className="double-badge">
+                                      2×
+                                    </span>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="tree-card-back">
+                                  <span>
+                                    🚌
+                                  </span>
+
+                                  {treeCard.isDouble && (
+                                    <strong>
+                                      2×
+                                    </strong>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  )
                 )}
               </div>
-            )}
 
-          {tree.status ===
-            "resolved" && (
-            <div className="tree-message">
-              <strong>
-                Match afgehandeld
-              </strong>
+              {tree.activeCard && (
+                <div className="tree-active-panel">
+                  <span className="tree-active-label">
+                    Huidige kaart
+                  </span>
 
-              <p>
-                De volgende boomkaart komt eraan...
-              </p>
-            </div>
+                  <div
+                    className={`tree-active-card ${tree.activeCard.card.color}`}
+                  >
+                    <strong>
+                      {getCardRank(
+                        tree.activeCard
+                          .card
+                      )}
+                    </strong>
+
+                    <span>
+                      {
+                        tree.activeCard
+                          .card
+                          .symbol
+                      }
+                    </span>
+                  </div>
+
+                  <h2>
+                    {
+                      tree.drinksToDistribute
+                    }{" "}
+                    {tree.drinksToDistribute ===
+                    1
+                      ? "slok"
+                      : "slokken"}
+                  </h2>
+                </div>
+              )}
+
+              {tree.status ===
+                "waiting" && (
+                <div className="tree-message">
+                  <strong>
+                    De boom staat klaar
+                  </strong>
+
+                  <p>
+                    De eerste kaart wordt automatisch omgedraaid...
+                  </p>
+                </div>
+              )}
+
+              {tree.status ===
+                "no-match" && (
+                <div className="tree-message">
+                  <strong>
+                    Geen match
+                  </strong>
+
+                  <p>
+                    Niemand heeft deze waarde.
+                  </p>
+                </div>
+              )}
+
+              {tree.status ===
+                "resolving" &&
+                isMyResolution && (
+                  <div className="tree-distribute-panel">
+                    <div className="tree-match-heading">
+                      <span>
+                        🎯
+                      </span>
+
+                      <div>
+                        <h2>
+                          Jij hebt een match!
+                        </h2>
+
+                        <p>
+                          Verdeel{" "}
+                          <strong>
+                            {
+                              tree.drinksToDistribute
+                            }{" "}
+                            slokken
+                          </strong>
+                          .
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="remaining-drinks">
+                      Nog te verdelen
+
+                      <strong>
+                        {remaining}
+                      </strong>
+                    </div>
+
+                    <div className="drink-player-list">
+                      {gameState.players
+                        .filter(
+                          (player) =>
+                            player.id !==
+                            socketId
+                        )
+                        .map(
+                          (
+                            player
+                          ) => (
+                            <div
+                              className="drink-player"
+                              key={
+                                player.id
+                              }
+                            >
+                              <div className="player-avatar">
+                                {player.name
+                                  .charAt(
+                                    0
+                                  )
+                                  .toUpperCase()}
+                              </div>
+
+                              <span>
+                                {
+                                  player.name
+                                }
+                              </span>
+
+                              <div className="drink-counter">
+                                <button
+                                  onClick={() =>
+                                    changeDistribution(
+                                      player.id,
+                                      -1
+                                    )
+                                  }
+                                  disabled={
+                                    (
+                                      distribution[
+                                        player.id
+                                      ] ||
+                                      0
+                                    ) ===
+                                      0 ||
+                                    treeSubmitting
+                                  }
+                                >
+                                  −
+                                </button>
+
+                                <strong>
+                                  {distribution[
+                                    player.id
+                                  ] ||
+                                    0}
+                                </strong>
+
+                                <button
+                                  onClick={() =>
+                                    changeDistribution(
+                                      player.id,
+                                      1
+                                    )
+                                  }
+                                  disabled={
+                                    remaining ===
+                                      0 ||
+                                    treeSubmitting
+                                  }
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+                          )
+                        )}
+                    </div>
+
+                    <button
+                      className="tree-confirm-button"
+                      disabled={
+                        remaining !==
+                          0 ||
+                        treeSubmitting
+                      }
+                      onClick={
+                        submitTreeDistribution
+                      }
+                    >
+                      Kaart wegleggen & uitdelen
+                    </button>
+
+                    <button
+                      className="tree-skip-button"
+                      onClick={
+                        skipTreeMatch
+                      }
+                      disabled={
+                        treeSubmitting
+                      }
+                    >
+                      Match bewaren / overslaan
+                    </button>
+                  </div>
+                )}
+
+              {tree.status ===
+                "resolving" &&
+                !isMyResolution && (
+                  <div className="tree-message">
+                    {iAmWaiting ? (
+                      <>
+                        <strong>
+                          Jij hebt ook een match
+                        </strong>
+
+                        <p>
+                          Eerst is{" "}
+                          {resolver?.name} aan de beurt.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <strong>
+                          {resolver?.name ||
+                            "Een speler"}{" "}
+                          heeft een match
+                        </strong>
+
+                        <p>
+                          Wachten tot de slokken zijn verdeeld...
+                        </p>
+                      </>
+                    )}
+                  </div>
+                )}
+
+              {tree.status ===
+                "resolved" && (
+                <div className="tree-message">
+                  <strong>
+                    Match afgehandeld
+                  </strong>
+
+                  <p>
+                    De volgende boomkaart komt eraan...
+                  </p>
+                </div>
+              )}
+            </>
           )}
 
           <div className="tree-hands">
@@ -3124,8 +3164,7 @@ function App() {
       );
 
     const myCards =
-      myPlayer?.cards ||
-      [];
+      myPlayer?.cards || [];
 
     const result =
       gameState.result ||
@@ -3197,8 +3236,7 @@ function App() {
                   }
                 >
                   <span>
-                    {step +
-                      1}
+                    {step + 1}
                   </span>
 
                   <small>
@@ -3216,8 +3254,7 @@ function App() {
           <div className="game-info">
             <span>
               Stap{" "}
-              {currentStep +
-                1}{" "}
+              {currentStep + 1}{" "}
               van 4
             </span>
 
@@ -3413,9 +3450,7 @@ function App() {
                 <div className="next-countdown">
                   Volgende speler over{" "}
                   <strong>
-                    {
-                      countdown
-                    }
+                    {countdown}
                   </strong>
                   ...
                 </div>
@@ -3667,8 +3702,7 @@ function App() {
    */
 
   if (
-    screen ===
-    "lobby"
+    screen === "lobby"
   ) {
     return (
       <main className="app">
@@ -3808,13 +3842,8 @@ function App() {
           <button
             className="back-button"
             onClick={() => {
-              setJoinError(
-                ""
-              );
-
-              setScreen(
-                "home"
-              );
+              setJoinError("");
+              setScreen("home");
             }}
           >
             ← Terug
@@ -3847,8 +3876,7 @@ function App() {
                 event
               ) =>
                 setPlayerName(
-                  event.target
-                    .value
+                  event.target.value
                 )
               }
               maxLength={15}
@@ -3888,9 +3916,7 @@ function App() {
 
           {joinError && (
             <p className="join-error">
-              {
-                joinError
-              }
+              {joinError}
             </p>
           )}
 
@@ -3958,8 +3984,7 @@ function App() {
                 event
               ) =>
                 setHostName(
-                  event.target
-                    .value
+                  event.target.value
                 )
               }
               maxLength={15}
@@ -3977,8 +4002,7 @@ function App() {
                   setPlayers(
                     Math.max(
                       2,
-                      players -
-                        1
+                      players - 1
                     )
                   )
                 }
@@ -3987,9 +4011,7 @@ function App() {
               </button>
 
               <span>
-                {
-                  players
-                }
+                {players}
               </span>
 
               <button
@@ -3997,8 +4019,7 @@ function App() {
                   setPlayers(
                     Math.min(
                       20,
-                      players +
-                        1
+                      players + 1
                     )
                   )
                 }
@@ -4034,9 +4055,7 @@ function App() {
                       )
                     }
                   >
-                    {
-                      value
-                    }
+                    {value}
                   </button>
                 )
               )}
@@ -4175,8 +4194,7 @@ function App() {
               {players} spelers ·{" "}
               {rows} rijen ·{" "}
               {decks} kaartspel
-              {decks ===
-              1
+              {decks === 1
                 ? ""
                 : "len"}{" "}
               · checkpoints{" "}
@@ -4234,21 +4252,10 @@ function App() {
         <button
           className="secondary"
           onClick={() => {
-            setJoinError(
-              ""
-            );
-
-            setPlayerName(
-              ""
-            );
-
-            setJoinCode(
-              ""
-            );
-
-            setScreen(
-              "join"
-            );
+            setJoinError("");
+            setPlayerName("");
+            setJoinCode("");
+            setScreen("join");
           }}
         >
           Meedoen met spel
