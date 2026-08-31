@@ -33,6 +33,10 @@ type DoubleRule =
   | "pass"
   | "take-along";
 
+type CheckpointFailRule =
+  | "retry"
+  | "reset";
+
 type Card = {
   id: string;
   suit: string;
@@ -155,6 +159,12 @@ type TreeState = {
 
   tieBreakRounds:
     TieBreakRound[];
+
+  tieBreakCandidateIds:
+    string[];
+
+  tieBreakPendingIds:
+    string[];
 };
 
 type BusPile = {
@@ -185,6 +195,8 @@ type BusResult = {
   drinks: number;
 
   restartIndex?: number;
+
+  secondChance?: boolean;
 };
 
 type BusState = {
@@ -217,6 +229,12 @@ type BusState = {
 
   doubleRule:
     DoubleRule;
+
+  checkpointFailRule:
+    CheckpointFailRule;
+
+  checkpointRetryUsedIndex:
+    number | null;
 
   checkpoints:
     number[];
@@ -327,6 +345,14 @@ function App() {
     );
 
   const [
+    checkpointFailRule,
+    setCheckpointFailRule,
+  ] =
+    useState<CheckpointFailRule>(
+      "retry"
+    );
+
+  const [
     hostName,
     setHostName,
   ] =
@@ -433,7 +459,7 @@ function App() {
 
   /*
    * =========================
-   * QR URL
+   * QR
    * =========================
    */
 
@@ -465,7 +491,7 @@ function App() {
 
   /*
    * =========================
-   * SOCKET EVENTS
+   * SOCKETS
    * =========================
    */
 
@@ -480,22 +506,46 @@ function App() {
     }
 
     function handleGameStarted() {
-      setDrawnCard(null);
-      setGuessResult(null);
-      setCountdown(0);
-      setDistribution({});
-      setSelectedCheckpoints([]);
-      setTreeSubmitting(false);
-      setBusSubmitting(false);
+      setDrawnCard(
+        null
+      );
 
-      setScreen("game");
+      setGuessResult(
+        null
+      );
+
+      setCountdown(
+        0
+      );
+
+      setDistribution(
+        {}
+      );
+
+      setSelectedCheckpoints(
+        []
+      );
+
+      setTreeSubmitting(
+        false
+      );
+
+      setBusSubmitting(
+        false
+      );
+
+      setScreen(
+        "game"
+      );
     }
 
     function handleGameState(
       state:
         GameState
     ) {
-      setGameState(state);
+      setGameState(
+        state
+      );
 
       setPlayerNames(
         state.players
@@ -517,8 +567,13 @@ function App() {
           "cards" &&
         !state.resultShowing
       ) {
-        setGuessResult(null);
-        setCountdown(0);
+        setGuessResult(
+          null
+        );
+
+        setCountdown(
+          0
+        );
       }
 
       if (
@@ -527,24 +582,38 @@ function App() {
         !state.waitingForGuess &&
         !state.resultShowing
       ) {
-        setDrawnCard(null);
+        setDrawnCard(
+          null
+        );
       }
 
       if (
         state.phase !==
         "cards"
       ) {
-        setDrawnCard(null);
-        setGuessResult(null);
+        setDrawnCard(
+          null
+        );
+
+        setGuessResult(
+          null
+        );
       }
 
-      if (state.bus) {
+      if (
+        state.bus
+      ) {
         setSelectedCheckpoints(
-          state.bus.checkpoints
+          state.bus
+            .checkpoints
         );
       }
 
       setBusSubmitting(
+        false
+      );
+
+      setTreeSubmitting(
         false
       );
     }
@@ -554,17 +623,30 @@ function App() {
     }: {
       card: Card;
     }) {
-      setDrawnCard(card);
-      setGuessResult(null);
+      setDrawnCard(
+        card
+      );
+
+      setGuessResult(
+        null
+      );
     }
 
     function handleGuessResult(
       result:
         GuessResult
     ) {
-      setGuessResult(result);
-      setDrawnCard(null);
-      setCountdown(3);
+      setGuessResult(
+        result
+      );
+
+      setDrawnCard(
+        null
+      );
+
+      setCountdown(
+        3
+      );
     }
 
     function handleRoomClosed() {
@@ -682,7 +764,9 @@ function App() {
       gameState?.phase !==
         "cards"
     ) {
-      setCountdown(0);
+      setCountdown(
+        0
+      );
 
       return;
     }
@@ -733,15 +817,14 @@ function App() {
     gameState?.resultEndsAt,
   ]);
 
-  /*
-   * =========================
-   * BOOM RESET
-   * =========================
-   */
-
   useEffect(() => {
-    setDistribution({});
-    setTreeSubmitting(false);
+    setDistribution(
+      {}
+    );
+
+    setTreeSubmitting(
+      false
+    );
   }, [
     gameState?.tree
       ?.currentResolverId,
@@ -752,7 +835,7 @@ function App() {
 
   /*
    * =========================
-   * RESET
+   * ALGEMEEN
    * =========================
    */
 
@@ -775,14 +858,10 @@ function App() {
       window.location.pathname
     );
 
-    setScreen("home");
+    setScreen(
+      "home"
+    );
   }
-
-  /*
-   * =========================
-   * KAART HELPERS
-   * =========================
-   */
 
   function getCardRank(
     card: Card
@@ -872,7 +951,9 @@ function App() {
       return;
     }
 
-    if (!socket.connected) {
+    if (
+      !socket.connected
+    ) {
       socket.connect();
     }
 
@@ -889,6 +970,7 @@ function App() {
           decks,
           checkpoints,
           doubleRule,
+          checkpointFailRule,
         },
       },
 
@@ -928,8 +1010,13 @@ function App() {
             []
         );
 
-        setIsHost(true);
-        setScreen("lobby");
+        setIsHost(
+          true
+        );
+
+        setScreen(
+          "lobby"
+        );
       }
     );
   }
@@ -943,7 +1030,9 @@ function App() {
         .trim()
         .toUpperCase();
 
-    setJoinError("");
+    setJoinError(
+      ""
+    );
 
     if (!name) {
       setJoinError(
@@ -963,7 +1052,9 @@ function App() {
       return;
     }
 
-    if (!socket.connected) {
+    if (
+      !socket.connected
+    ) {
       socket.connect();
     }
 
@@ -1014,8 +1105,13 @@ function App() {
             []
         );
 
-        setIsHost(false);
-        setScreen("lobby");
+        setIsHost(
+          false
+        );
+
+        setScreen(
+          "lobby"
+        );
       }
     );
   }
@@ -1048,7 +1144,9 @@ function App() {
       return;
     }
 
-    setBusSubmitting(true);
+    setBusSubmitting(
+      true
+    );
 
     socket.emit(
       "restart-game",
@@ -1062,7 +1160,9 @@ function App() {
         if (
           !response.success
         ) {
-          setBusSubmitting(false);
+          setBusSubmitting(
+            false
+          );
         }
       }
     );
@@ -1073,7 +1173,9 @@ function App() {
       return;
     }
 
-    setBusSubmitting(true);
+    setBusSubmitting(
+      true
+    );
 
     socket.emit(
       "return-home",
@@ -1087,7 +1189,9 @@ function App() {
         if (
           !response.success
         ) {
-          setBusSubmitting(false);
+          setBusSubmitting(
+            false
+          );
         }
       }
     );
@@ -1275,7 +1379,9 @@ function App() {
       return;
     }
 
-    setTreeSubmitting(true);
+    setTreeSubmitting(
+      true
+    );
 
     socket.emit(
       "tree-distribute",
@@ -1329,7 +1435,9 @@ function App() {
   }
 
   function skipTreeMatch() {
-    setTreeSubmitting(true);
+    setTreeSubmitting(
+      true
+    );
 
     socket.emit(
       "tree-skip-match",
@@ -1351,6 +1459,42 @@ function App() {
     );
   }
 
+  function drawTieBreakCard() {
+    setTreeSubmitting(
+      true
+    );
+
+    socket.emit(
+      "tree-tiebreak-draw",
+
+      (
+        response: {
+          success:
+            boolean;
+
+          message?:
+            string;
+        }
+      ) => {
+        if (
+          !response.success
+        ) {
+          setTreeSubmitting(
+            false
+          );
+
+          if (
+            response.message
+          ) {
+            alert(
+              response.message
+            );
+          }
+        }
+      }
+    );
+  }
+
   /*
    * =========================
    * BUS
@@ -1358,7 +1502,9 @@ function App() {
    */
 
   function drawBusLength() {
-    setBusSubmitting(true);
+    setBusSubmitting(
+      true
+    );
 
     socket.emit(
       "bus-draw-length",
@@ -1375,7 +1521,9 @@ function App() {
         if (
           !response.success
         ) {
-          setBusSubmitting(false);
+          setBusSubmitting(
+            false
+          );
 
           if (
             response.message
@@ -1390,7 +1538,9 @@ function App() {
   }
 
   function drawBusOpenCount() {
-    setBusSubmitting(true);
+    setBusSubmitting(
+      true
+    );
 
     socket.emit(
       "bus-draw-open",
@@ -1407,7 +1557,9 @@ function App() {
         if (
           !response.success
         ) {
-          setBusSubmitting(false);
+          setBusSubmitting(
+            false
+          );
 
           if (
             response.message
@@ -1460,7 +1612,9 @@ function App() {
       return;
     }
 
-    setBusSubmitting(true);
+    setBusSubmitting(
+      true
+    );
 
     socket.emit(
       "bus-checkpoints-ready"
@@ -1468,7 +1622,9 @@ function App() {
   }
 
   function startBus() {
-    setBusSubmitting(true);
+    setBusSubmitting(
+      true
+    );
 
     socket.emit(
       "bus-start",
@@ -1482,7 +1638,9 @@ function App() {
         if (
           !response.success
         ) {
-          setBusSubmitting(false);
+          setBusSubmitting(
+            false
+          );
         }
       }
     );
@@ -1493,7 +1651,9 @@ function App() {
       | "hoger"
       | "lager"
   ) {
-    setBusSubmitting(true);
+    setBusSubmitting(
+      true
+    );
 
     socket.emit(
       "bus-guess",
@@ -1514,7 +1674,9 @@ function App() {
         if (
           !response.success
         ) {
-          setBusSubmitting(false);
+          setBusSubmitting(
+            false
+          );
 
           if (
             response.message
@@ -1531,7 +1693,9 @@ function App() {
   function chooseDoublePlayer(
     playerId: string
   ) {
-    setBusSubmitting(true);
+    setBusSubmitting(
+      true
+    );
 
     socket.emit(
       "bus-double-choice",
@@ -1549,7 +1713,9 @@ function App() {
         if (
           !response.success
         ) {
-          setBusSubmitting(false);
+          setBusSubmitting(
+            false
+          );
         }
       }
     );
@@ -1829,8 +1995,7 @@ function App() {
                           .join(" ")}
                       >
                         <span className="bus-card-number">
-                          {index +
-                            1}
+                          {index + 1}
                         </span>
 
                         {pile.revealed &&
@@ -1868,7 +2033,10 @@ function App() {
               </h2>
 
               <p>
-                Bij een normale fout ga je terug naar het laatste checkpoint. Bij dubbel altijd naar kaart 1.
+                {bus.checkpointFailRule ===
+                "retry"
+                  ? "Fout op een checkpoint? De eerste keer krijg je op die kaart één tweede kans. Nogmaals fout betekent terug naar kaart 1."
+                  : "Fout op een checkpoint betekent direct terug naar kaart 1."}
               </p>
 
               <div className="checkpoint-grid">
@@ -2206,6 +2374,16 @@ function App() {
                         1}
                     </span>
 
+                    {currentPile?.isCheckpoint && (
+                      <p>
+                        ⚑ Dit is een checkpoint
+                        {bus.checkpointFailRule ===
+                          "retry"
+                          ? " — je kunt hier één tweede kans krijgen."
+                          : "."}
+                      </p>
+                    )}
+
                     {currentPile?.revealed &&
                     currentPile.card ? (
                       <>
@@ -2318,7 +2496,9 @@ function App() {
                     ? "Goed!"
                     : bus.result.double
                       ? "Dubbel = fout!"
-                      : "Fout!"}
+                      : bus.result.secondChance
+                        ? "Fout — tweede kans!"
+                        : "Fout!"}
                 </h2>
 
                 <div className="bus-comparison">
@@ -2394,18 +2574,30 @@ function App() {
                       </strong>
                     </div>
 
-                    <p>
-                      Terug naar{" "}
-                      <strong>
-                        kaart{" "}
-                        {(
-                          bus.result
-                            .restartIndex ??
-                          0
-                        ) + 1}
-                      </strong>
-                      .
-                    </p>
+                    {bus.result.secondChance ? (
+                      <p>
+                        ⚑ Je krijgt één tweede kans en blijft op{" "}
+                        <strong>
+                          kaart{" "}
+                          {bus.result.position +
+                            1}
+                        </strong>
+                        .
+                      </p>
+                    ) : (
+                      <p>
+                        Terug naar{" "}
+                        <strong>
+                          kaart{" "}
+                          {(
+                            bus.result
+                              .restartIndex ??
+                            0
+                          ) + 1}
+                        </strong>
+                        .
+                      </p>
+                    )}
                   </>
                 )}
               </div>
@@ -2478,7 +2670,7 @@ function App() {
                     }{" "}
                     slokken
                   </strong>{" "}
-                  en daarna terug naar kaart 1.
+                  en altijd terug naar kaart 1.
                 </p>
 
                 {isDriver ? (
@@ -2538,7 +2730,7 @@ function App() {
 
   /*
    * =========================
-   * BOOM / GELIJKSTAND
+   * BOOM + GELIJKSTAND
    * =========================
    */
 
@@ -2616,10 +2808,28 @@ function App() {
       tree.tieBreakRounds.length >
       0
         ? tree.tieBreakRounds[
-            tree.tieBreakRounds
-              .length - 1
+            tree.tieBreakRounds.length -
+              1
           ]
         : null;
+
+    const tieBreakPlayers =
+      gameState.players.filter(
+        (player) =>
+          tree.tieBreakCandidateIds.includes(
+            player.id
+          )
+      );
+
+    const iAmTieBreakCandidate =
+      tree.tieBreakCandidateIds.includes(
+        socketId
+      );
+
+    const iStillNeedToDraw =
+      tree.tieBreakPendingIds.includes(
+        socketId
+      );
 
     return (
       <main className="app">
@@ -2640,7 +2850,7 @@ function App() {
               <p className="subtitle">
                 {gameState.phase ===
                 "tree-tiebreak"
-                  ? "De laagste kaart gaat de bus in"
+                  ? "Iedere speler trekt zelf een kaart"
                   : "Speel je kaarten weg en deel slokken uit"}
               </p>
             </div>
@@ -2664,58 +2874,117 @@ function App() {
                     </h2>
 
                     <p>
-                      De speler met de laagste kaart gaat de bus in. Bij opnieuw gelijk trekken alleen die spelers nogmaals.
+                      Iedereen in de gelijkstand trekt zelf één kaart. De laagste gaat de bus in.
                     </p>
                   </div>
                 </div>
 
                 <div className="drink-player-list">
-                  {latestTieBreak.draws.map(
+                  {tieBreakPlayers.map(
                     (
-                      draw
-                    ) => (
-                      <div
-                        className="drink-player"
-                        key={
-                          draw.playerId
-                        }
-                      >
-                        <div className="player-avatar">
-                          {draw.playerName
-                            .charAt(0)
-                            .toUpperCase()}
-                        </div>
+                      player
+                    ) => {
+                      const draw =
+                        latestTieBreak.draws.find(
+                          (item) =>
+                            item.playerId ===
+                            player.id
+                        );
 
-                        <span>
-                          {
-                            draw.playerName
-                          }
-                        </span>
-
+                      return (
                         <div
-                          className={`mini-playing-card ${draw.card.color}`}
+                          className="drink-player"
+                          key={
+                            player.id
+                          }
                         >
-                          <strong>
-                            {getCardRank(
-                              draw.card
-                            )}
-                          </strong>
+                          <div className="player-avatar">
+                            {player.name
+                              .charAt(
+                                0
+                              )
+                              .toUpperCase()}
+                          </div>
 
                           <span>
                             {
-                              draw.card
-                                .symbol
+                              player.name
                             }
                           </span>
+
+                          {draw ? (
+                            <div
+                              className={`mini-playing-card ${draw.card.color}`}
+                            >
+                              <strong>
+                                {getCardRank(
+                                  draw.card
+                                )}
+                              </strong>
+
+                              <span>
+                                {
+                                  draw.card
+                                    .symbol
+                                }
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="mini-playing-card">
+                              <strong>
+                                ?
+                              </strong>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    )
+                      );
+                    }
                   )}
                 </div>
 
-                <div className="waiting-message">
-                  De laagste kaart wordt bepaald...
-                </div>
+                {iAmTieBreakCandidate &&
+                  iStillNeedToDraw && (
+                    <button
+                      className="start-button"
+                      onClick={
+                        drawTieBreakCard
+                      }
+                      disabled={
+                        treeSubmitting
+                      }
+                    >
+                      🃏 Trek mijn kaart
+                    </button>
+                  )}
+
+                {iAmTieBreakCandidate &&
+                  !iStillNeedToDraw &&
+                  tree.tieBreakPendingIds.length >
+                    0 && (
+                    <div className="waiting-message">
+                      Jij hebt getrokken. Wachten op de andere speler
+                      {tree.tieBreakPendingIds.length ===
+                      1
+                        ? ""
+                        : "s"}
+                      ...
+                    </div>
+                  )}
+
+                {!iAmTieBreakCandidate &&
+                  tree.tieBreakPendingIds.length >
+                    0 && (
+                    <div className="waiting-message">
+                      Wachten tot de spelers hun kaart trekken...
+                    </div>
+                  )}
+
+                {tree.tieBreakPendingIds.length ===
+                  0 && (
+                  <div className="waiting-message">
+                    Alle kaarten zijn getrokken. De laagste kaart wordt bepaald...
+                  </div>
+                )}
               </div>
             )}
 
@@ -2739,7 +3008,9 @@ function App() {
 
               <div className="tree-board">
                 {tree.rows.map(
-                  (row) => (
+                  (
+                    row
+                  ) => (
                     <div
                       className="tree-row"
                       key={
@@ -2852,10 +3123,7 @@ function App() {
                     {
                       tree.drinksToDistribute
                     }{" "}
-                    {tree.drinksToDistribute ===
-                    1
-                      ? "slok"
-                      : "slokken"}
+                    slokken
                   </h2>
                 </div>
               )}
@@ -2902,13 +3170,10 @@ function App() {
 
                         <p>
                           Verdeel{" "}
-                          <strong>
-                            {
-                              tree.drinksToDistribute
-                            }{" "}
-                            slokken
-                          </strong>
-                          .
+                          {
+                            tree.drinksToDistribute
+                          }{" "}
+                          slokken.
                         </p>
                       </div>
                     </div>
@@ -2917,7 +3182,9 @@ function App() {
                       Nog te verdelen
 
                       <strong>
-                        {remaining}
+                        {
+                          remaining
+                        }
                       </strong>
                     </div>
 
@@ -3018,11 +3285,11 @@ function App() {
 
                     <button
                       className="tree-skip-button"
-                      onClick={
-                        skipTreeMatch
-                      }
                       disabled={
                         treeSubmitting
+                      }
+                      onClick={
+                        skipTreeMatch
                       }
                     >
                       Match bewaren / overslaan
@@ -3164,7 +3431,8 @@ function App() {
       );
 
     const myCards =
-      myPlayer?.cards || [];
+      myPlayer?.cards ||
+      [];
 
     const result =
       gameState.result ||
@@ -3916,7 +4184,9 @@ function App() {
 
           {joinError && (
             <p className="join-error">
-              {joinError}
+              {
+                joinError
+              }
             </p>
           )}
 
@@ -4011,7 +4281,9 @@ function App() {
               </button>
 
               <span>
-                {players}
+                {
+                  players
+                }
               </span>
 
               <button
@@ -4055,7 +4327,9 @@ function App() {
                       )
                     }
                   >
-                    {value}
+                    {
+                      value
+                    }
                   </button>
                 )
               )}
@@ -4132,6 +4406,60 @@ function App() {
               </button>
             </div>
           </div>
+
+          {checkpoints && (
+            <div className="setting">
+              <label>
+                Fout op checkpoint
+              </label>
+
+              <div className="double-rule-options">
+                <button
+                  className={
+                    checkpointFailRule ===
+                    "retry"
+                      ? "selected"
+                      : ""
+                  }
+                  onClick={() =>
+                    setCheckpointFailRule(
+                      "retry"
+                    )
+                  }
+                >
+                  <strong>
+                    Tweede kans
+                  </strong>
+
+                  <span>
+                    Eerste fout: blijf op het checkpoint. Nogmaals fout: terug naar kaart 1.
+                  </span>
+                </button>
+
+                <button
+                  className={
+                    checkpointFailRule ===
+                    "reset"
+                      ? "selected"
+                      : ""
+                  }
+                  onClick={() =>
+                    setCheckpointFailRule(
+                      "reset"
+                    )
+                  }
+                >
+                  <strong>
+                    Terug naar 1
+                  </strong>
+
+                  <span>
+                    Fout op de checkpointkaart betekent direct helemaal terug naar kaart 1.
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="setting">
             <label>
