@@ -8,7 +8,7 @@ const TREE_START_DELAY = 1400;
 const TIE_BREAK_RESULT_DELAY = 2500;
 const BUS_RESULT_DELAY = 2000;
 
-const SERVER_VERSION = "BUS_V7_ACTIVE_CHECKPOINT_RULES_MENU";
+const SERVER_VERSION = "BUS_V8_TREE_RULES";
 
 const io = new Server(PORT, {
   cors: {
@@ -45,9 +45,7 @@ function shuffle(array) {
   const result = [...array];
 
   for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(
-      Math.random() * (i + 1)
-    );
+    const j = Math.floor(Math.random() * (i + 1));
 
     [result[i], result[j]] = [
       result[j],
@@ -271,6 +269,14 @@ function publicTreeState(room) {
         ] || null
       : null;
 
+  const adtCurrentResolverId =
+    tree.status === "adt" &&
+    tree.adtStatus === "resolving"
+      ? tree.adtPendingResolvers[
+          tree.adtCurrentResolverIndex
+        ] || null
+      : null;
+
   return {
     rows:
       tree.rows.map(
@@ -364,6 +370,31 @@ function publicTreeState(room) {
     tieBreakPendingIds: [
       ...tree.tieBreakPendingIds,
     ],
+
+    adtCard:
+      tree.adtCard
+        ? {
+            revealed:
+              tree.adtCard.revealed,
+
+            card:
+              tree.adtCard.revealed
+                ? tree.adtCard.card
+                : null,
+          }
+        : null,
+
+    adtStatus:
+      tree.adtStatus,
+
+    adtPendingResolverIds: [
+      ...tree.adtPendingResolvers,
+    ],
+
+    adtCurrentResolverId,
+
+    adtLastAction:
+      tree.adtLastAction,
   };
 }
 
@@ -695,7 +726,6 @@ function checkDisco(
         (card) =>
           card.suit
       ),
-
       drawnCard.suit,
     ]);
 
@@ -860,8 +890,7 @@ function drawTreeCard(
   }
 
   if (
-    skippedCards.length >
-    0
+    skippedCards.length > 0
   ) {
     return (
       skippedCards.pop() ||
@@ -900,10 +929,12 @@ function buildTree(room) {
     const cards = [];
 
     const doubleIndex =
-      Math.floor(
-        Math.random() *
-          rowNumber
-      );
+      room.settings.treeDouble
+        ? Math.floor(
+            Math.random() *
+              rowNumber
+          )
+        : -1;
 
     for (
       let cardIndex = 0;
@@ -928,8 +959,9 @@ function buildTree(room) {
           false,
 
         isDouble:
+          room.settings.treeDouble &&
           cardIndex ===
-          doubleIndex,
+            doubleIndex,
       });
 
       sequence.push({
@@ -953,6 +985,11 @@ function buildTree(room) {
       ...room.deck,
       ...skippedCards,
     ]);
+
+  const adtCard =
+    room.settings.adtCard
+      ? takeCard(room)
+      : null;
 
   return {
     rows,
@@ -993,6 +1030,31 @@ function buildTree(room) {
 
     tieBreakPendingIds:
       [],
+
+    adtCard:
+      adtCard
+        ? {
+            card:
+              adtCard,
+
+            revealed:
+              false,
+          }
+        : null,
+
+    adtStatus:
+      adtCard
+        ? "waiting"
+        : "disabled",
+
+    adtPendingResolvers:
+      [],
+
+    adtCurrentResolverIndex:
+      0,
+
+    adtLastAction:
+      null,
   };
 }
 
@@ -1069,6 +1131,210 @@ function advanceTreeResolver(
   );
 }
 
+function finishTreeAndChooseBusDriver(
+  roomCode,
+  delay = 0
+) {
+  const room =
+    rooms[roomCode];
+
+  if (
+    !room ||
+    !room.game.tree
+  ) {
+    return;
+  }
+
+  clearTreeTimer(
+    room
+  );
+
+  const finish =
+    () => {
+      const currentRoom =
+        rooms[roomCode];
+
+      if (
+        !currentRoom ||
+        !currentRoom.game.tree
+      ) {
+        return;
+      }
+
+      currentRoom.game.tree.status =
+        "finished";
+
+      if (
+        currentRoom.game.tree
+          .adtCard
+      ) {
+        currentRoom.game.tree.adtStatus =
+          "finished";
+      }
+
+      sendGameState(
+        roomCode
+      );
+
+      determineBusDriver(
+        roomCode
+      );
+    };
+
+  if (
+    delay > 0
+  ) {
+    room.game.tree.timer =
+      setTimeout(
+        finish,
+        delay
+      );
+  } else {
+    finish();
+  }
+}
+
+/*
+ * =========================
+ * ADTJE
+ * =========================
+ */
+
+function revealAdtCard(
+  roomCode
+) {
+  const room =
+    rooms[roomCode];
+
+  if (
+    !room ||
+    !room.game.tree
+  ) {
+    return;
+  }
+
+  const tree =
+    room.game.tree;
+
+  if (
+    !tree.adtCard
+  ) {
+    finishTreeAndChooseBusDriver(
+      roomCode
+    );
+
+    return;
+  }
+
+  tree.activeCard =
+    null;
+
+  tree.status =
+    "adt";
+
+  tree.adtCard.revealed =
+    true;
+
+  tree.adtLastAction =
+    null;
+
+  tree.adtPendingResolvers =
+    room.players
+      .filter(
+        (player) =>
+          player.cards.some(
+            (card) =>
+              card.value ===
+              tree.adtCard.card.value
+          )
+      )
+      .map(
+        (player) =>
+          player.id
+      );
+
+  tree.adtCurrentResolverIndex =
+    0;
+
+  if (
+    tree.adtPendingResolvers.length ===
+    0
+  ) {
+    tree.adtStatus =
+      "no-match";
+
+    sendGameState(
+      roomCode
+    );
+
+    finishTreeAndChooseBusDriver(
+      roomCode,
+      TREE_NEXT_DELAY
+    );
+
+    return;
+  }
+
+  tree.adtStatus =
+    "resolving";
+
+  sendGameState(
+    roomCode
+  );
+}
+
+function advanceAdtResolver(
+  roomCode
+) {
+  const room =
+    rooms[roomCode];
+
+  if (
+    !room ||
+    !room.game.tree
+  ) {
+    return;
+  }
+
+  const tree =
+    room.game.tree;
+
+  tree.adtCurrentResolverIndex +=
+    1;
+
+  if (
+    tree.adtCurrentResolverIndex <
+    tree.adtPendingResolvers.length
+  ) {
+    tree.adtStatus =
+      "resolving";
+
+    sendGameState(
+      roomCode
+    );
+
+    return;
+  }
+
+  tree.adtStatus =
+    "resolved";
+
+  sendGameState(
+    roomCode
+  );
+
+  finishTreeAndChooseBusDriver(
+    roomCode,
+    TREE_NEXT_DELAY
+  );
+}
+
+/*
+ * =========================
+ * GEBRUIKTE KAARTEN BUS
+ * =========================
+ */
+
 function prepareUsedCardsForBus(
   room
 ) {
@@ -1120,6 +1386,16 @@ function prepareUsedCardsForBus(
           treeCard.card
         );
       }
+    }
+
+    if (
+      room.game.tree
+        .adtCard
+    ) {
+      collect(
+        room.game.tree
+          .adtCard.card
+      );
     }
 
     for (
@@ -1451,14 +1727,18 @@ function revealNextTreeCard(
     tree.activeCard =
       null;
 
-    tree.status =
-      "finished";
+    if (
+      tree.adtCard &&
+      !tree.adtCard.revealed
+    ) {
+      revealAdtCard(
+        roomCode
+      );
 
-    sendGameState(
-      roomCode
-    );
+      return;
+    }
 
-    determineBusDriver(
+    finishTreeAndChooseBusDriver(
       roomCode
     );
 
@@ -1773,11 +2053,6 @@ function startBusSetup(
     currentIndex:
       0,
 
-    /*
-     * Wordt gebruikt bij
-     * "Nieuw beginpunt".
-     */
-
     activeCheckpointIndex:
       null,
 
@@ -1869,7 +2144,7 @@ function dealBusCards(room) {
 
 /*
  * =========================
- * CHECKPOINT HELPERS
+ * CHECKPOINTS
  * =========================
  */
 
@@ -1890,10 +2165,6 @@ function activateCheckpointIfNeeded(
   ) {
     bus.activeCheckpointIndex =
       bus.currentIndex;
-
-    console.log(
-      `Checkpoint ${bus.currentIndex + 1} is nu actief.`
-    );
   }
 }
 
@@ -1906,7 +2177,8 @@ function getRestartIndex(bus) {
     );
 
   if (
-    achieved.length === 0
+    achieved.length ===
+    0
   ) {
     return 0;
   }
@@ -2028,29 +2300,12 @@ function continueBusAfterResult(
             return;
           }
 
-          /*
-           * BELANGRIJK:
-           *
-           * Zodra de speler OP een
-           * checkpoint aankomt,
-           * wordt dit direct actief.
-           *
-           * Er hoeft dus nog NIET goed
-           * gegokt te zijn op deze kaart.
-           */
-
           activateCheckpointIfNeeded(
             currentBus
           );
         } else {
           currentBus.currentIndex =
             restartIndex;
-
-          /*
-           * Als we terugkomen op een
-           * actief checkpoint blijft
-           * dat checkpoint actief.
-           */
         }
 
         currentBus.status =
@@ -2135,19 +2390,6 @@ function continueBusAfterDouble(
           }
         }
 
-        /*
-         * BIJ NIEUW BEGINPUNT:
-         *
-         * Het laatst behaalde
-         * checkpoint blijft gelden,
-         * ook als de bus naar een
-         * andere speler gaat.
-         *
-         * Bij de andere checkpoint-
-         * regels blijft dubbel terug
-         * naar kaart 1 gaan.
-         */
-
         currentBus.currentIndex =
           currentBus.checkpointFailRule ===
             "safe"
@@ -2186,10 +2428,6 @@ io.on(
       "Speler verbonden:",
       socket.id
     );
-
-    /*
-     * ROOM MAKEN
-     */
 
     socket.on(
       "create-room",
@@ -2256,6 +2494,15 @@ io.on(
                 : "pass",
 
             checkpointFailRule,
+
+            treeDouble:
+              settings?.treeDouble !==
+              false,
+
+            adtCard:
+              Boolean(
+                settings?.adtCard
+              ),
           },
 
           players: [
@@ -2348,10 +2595,6 @@ io.on(
         });
       }
     );
-
-    /*
-     * JOIN
-     */
 
     socket.on(
       "join-room",
@@ -2462,10 +2705,6 @@ io.on(
       }
     );
 
-    /*
-     * REMOVE
-     */
-
     socket.on(
       "remove-player",
       (playerId) => {
@@ -2519,10 +2758,6 @@ io.on(
       }
     );
 
-    /*
-     * START
-     */
-
     socket.on(
       "start-game",
       () => {
@@ -2547,10 +2782,6 @@ io.on(
         );
       }
     );
-
-    /*
-     * RESTART
-     */
 
     socket.on(
       "restart-game",
@@ -2592,10 +2823,6 @@ io.on(
         });
       }
     );
-
-    /*
-     * HOME
-     */
 
     socket.on(
       "return-home",
@@ -2651,10 +2878,6 @@ io.on(
         });
       }
     );
-
-    /*
-     * KAART GOK
-     */
 
     socket.on(
       "guess-card",
@@ -2781,7 +3004,7 @@ io.on(
     );
 
     /*
-     * BOOM VERDELEN
+     * NORMALE BOOM MATCH
      */
 
     socket.on(
@@ -2998,10 +3221,6 @@ io.on(
       }
     );
 
-    /*
-     * BOOM OVERSLAAN
-     */
-
     socket.on(
       "tree-skip-match",
       (callback) => {
@@ -3094,7 +3313,179 @@ io.on(
     );
 
     /*
-     * GELIJKSTAND TREKKEN
+     * ADTJE
+     */
+
+    socket.on(
+      "tree-adt-give",
+      (
+        {
+          playerId,
+        },
+        callback
+      ) => {
+        const done =
+          typeof callback ===
+          "function"
+            ? callback
+            : () => {};
+
+        const roomCode =
+          socket.roomCode;
+
+        const room =
+          rooms[roomCode];
+
+        if (
+          !room ||
+          !room.game.tree ||
+          room.game.phase !==
+            "tree"
+        ) {
+          done({
+            success:
+              false,
+          });
+
+          return;
+        }
+
+        const tree =
+          room.game.tree;
+
+        if (
+          tree.status !==
+            "adt" ||
+          tree.adtStatus !==
+            "resolving" ||
+          !tree.adtCard
+        ) {
+          done({
+            success:
+              false,
+          });
+
+          return;
+        }
+
+        const resolverId =
+          tree.adtPendingResolvers[
+            tree.adtCurrentResolverIndex
+          ];
+
+        if (
+          resolverId !==
+          socket.id
+        ) {
+          done({
+            success:
+              false,
+
+            message:
+              "Een andere speler mag eerst zijn Adtje uitdelen.",
+          });
+
+          return;
+        }
+
+        const giver =
+          room.players.find(
+            (player) =>
+              player.id ===
+              socket.id
+          );
+
+        const receiver =
+          room.players.find(
+            (player) =>
+              player.id ===
+              playerId
+          );
+
+        if (
+          !giver ||
+          !receiver ||
+          giver.id ===
+            receiver.id
+        ) {
+          done({
+            success:
+              false,
+
+            message:
+              "Kies een andere speler.",
+          });
+
+          return;
+        }
+
+        const cardIndex =
+          giver.cards.findIndex(
+            (card) =>
+              card.value ===
+              tree.adtCard.card.value
+          );
+
+        if (
+          cardIndex === -1
+        ) {
+          done({
+            success:
+              false,
+
+            message:
+              "Je hebt geen matchende kaart meer.",
+          });
+
+          return;
+        }
+
+        const removed =
+          giver.cards.splice(
+            cardIndex,
+            1
+          );
+
+        if (
+          removed[0]
+        ) {
+          addToDiscard(
+            room,
+            removed[0]
+          );
+        }
+
+        tree.adtLastAction = {
+          giverId:
+            giver.id,
+
+          giverName:
+            giver.name,
+
+          receiverId:
+            receiver.id,
+
+          receiverName:
+            receiver.name,
+        };
+
+        done({
+          success:
+            true,
+        });
+
+        sendGameState(
+          roomCode
+        );
+
+        advanceAdtResolver(
+          roomCode
+        );
+      }
+    );
+
+    /*
+     * GELIJKSTAND
      */
 
     socket.on(
@@ -3267,7 +3658,7 @@ io.on(
     );
 
     /*
-     * BUS LENGTE
+     * BUS SETUP
      */
 
     socket.on(
@@ -3358,10 +3749,6 @@ io.on(
         });
       }
     );
-
-    /*
-     * BUS OPEN KAARTEN
-     */
 
     socket.on(
       "bus-draw-open",
@@ -3469,10 +3856,6 @@ io.on(
         });
       }
     );
-
-    /*
-     * CHECKPOINTS
-     */
 
     socket.on(
       "bus-set-checkpoints",
@@ -3626,10 +4009,6 @@ io.on(
       }
     );
 
-    /*
-     * BUS START
-     */
-
     socket.on(
       "bus-start",
       (callback) => {
@@ -3706,9 +4085,7 @@ io.on(
     );
 
     /*
-     * =========================
      * BUS GOK
-     * =========================
      */
 
     socket.on(
@@ -3762,13 +4139,6 @@ io.on(
           return;
         }
 
-        /*
-         * Extra zekerheid:
-         * als deze positie een
-         * safe checkpoint is, wordt
-         * hij vóór de gok actief.
-         */
-
         activateCheckpointIfNeeded(
           bus
         );
@@ -3798,7 +4168,9 @@ io.on(
           bus.currentIndex;
 
         const pile =
-          bus.piles[position];
+          bus.piles[
+            position
+          ];
 
         if (!pile) {
           done({
@@ -3840,10 +4212,6 @@ io.on(
 
         pile.revealed =
           true;
-
-        /*
-         * DUBBEL
-         */
 
         if (
           newCard.value ===
@@ -3921,10 +4289,6 @@ io.on(
         const drinks =
           position + 1;
 
-        /*
-         * GOED
-         */
-
         if (correct) {
           bus.checkpointRetryUsedIndex =
             null;
@@ -3983,10 +4347,6 @@ io.on(
           return;
         }
 
-        /*
-         * FOUT
-         */
-
         const isCheckpoint =
           bus.checkpoints.includes(
             position
@@ -4000,10 +4360,6 @@ io.on(
 
         let checkpointSafe =
           false;
-
-        /*
-         * NIEUW BEGINPUNT
-         */
 
         if (
           bus.checkpointFailRule ===
@@ -4023,13 +4379,7 @@ io.on(
 
           bus.checkpointRetryUsedIndex =
             null;
-        }
-
-        /*
-         * TWEEDE KANS
-         */
-
-        else if (
+        } else if (
           isCheckpoint &&
           bus.checkpointFailRule ===
             "retry"
@@ -4056,13 +4406,7 @@ io.on(
             bus.checkpointRetryUsedIndex =
               null;
           }
-        }
-
-        /*
-         * TERUG NAAR 1 OP CHECKPOINT
-         */
-
-        else if (
+        } else if (
           isCheckpoint &&
           bus.checkpointFailRule ===
             "reset"
@@ -4072,13 +4416,7 @@ io.on(
 
           bus.checkpointRetryUsedIndex =
             null;
-        }
-
-        /*
-         * NORMALE FOUT NA CHECKPOINT
-         */
-
-        else {
+        } else {
           restartIndex =
             getRestartIndex(
               bus
@@ -4136,10 +4474,6 @@ io.on(
         });
       }
     );
-
-    /*
-     * DUBBEL KEUZE
-     */
 
     socket.on(
       "bus-double-choice",
@@ -4268,10 +4602,6 @@ io.on(
       }
     );
 
-    /*
-     * DISCONNECT
-     */
-
     socket.on(
       "disconnect",
       () => {
@@ -4330,6 +4660,13 @@ io.on(
 
           room.game.tree.tieBreakPendingIds =
             room.game.tree.tieBreakPendingIds.filter(
+              (id) =>
+                id !==
+                socket.id
+            );
+
+          room.game.tree.adtPendingResolvers =
+            room.game.tree.adtPendingResolvers.filter(
               (id) =>
                 id !==
                 socket.id

@@ -126,6 +126,18 @@ type TieBreakRound = {
   }[];
 };
 
+type AdtCardState = {
+  revealed: boolean;
+  card: Card | null;
+};
+
+type AdtLastAction = {
+  giverId: string;
+  giverName: string;
+  receiverId: string;
+  receiverName: string;
+};
+
 type TreeState = {
   rows: TreeRow[];
 
@@ -134,6 +146,7 @@ type TreeState = {
     | "no-match"
     | "resolving"
     | "resolved"
+    | "adt"
     | "tie-break"
     | "finished";
 
@@ -169,6 +182,26 @@ type TreeState = {
 
   tieBreakPendingIds:
     string[];
+
+  adtCard:
+    AdtCardState | null;
+
+  adtStatus:
+    | "disabled"
+    | "waiting"
+    | "resolving"
+    | "no-match"
+    | "resolved"
+    | "finished";
+
+  adtPendingResolverIds:
+    string[];
+
+  adtCurrentResolverId:
+    string | null;
+
+  adtLastAction:
+    AdtLastAction | null;
 };
 
 type BusPile = {
@@ -295,6 +328,18 @@ function App() {
   const [
     checkpoints,
     setCheckpoints,
+  ] =
+    useState(false);
+
+  const [
+    treeDouble,
+    setTreeDouble,
+  ] =
+    useState(true);
+
+  const [
+    adtCard,
+    setAdtCard,
   ] =
     useState(false);
 
@@ -444,12 +489,6 @@ function App() {
         [],
     });
 
-  /*
-   * =========================
-   * QR
-   * =========================
-   */
-
   useEffect(() => {
     const params =
       new URLSearchParams(
@@ -475,12 +514,6 @@ function App() {
     }
   }, []);
 
-  /*
-   * =========================
-   * ANNOUNCEMENT TIMER
-   * =========================
-   */
-
   useEffect(() => {
     if (!announcement) {
       return;
@@ -504,12 +537,6 @@ function App() {
   }, [
     announcement,
   ]);
-
-  /*
-   * =========================
-   * SOCKET EVENTS
-   * =========================
-   */
 
   useEffect(() => {
     function handlePlayersUpdated(
@@ -559,22 +586,10 @@ function App() {
         state.players
       );
 
-      /*
-       * =========================
-       * BUS ANNOUNCEMENTS
-       * =========================
-       */
-
       const previousBus =
         previousBusRef.current;
 
       if (state.bus) {
-        /*
-         * Eerste keer dat de bus
-         * wordt aangemaakt:
-         * chauffeur bekend.
-         */
-
         if (
           !previousBus.exists &&
           state.phase ===
@@ -597,13 +612,7 @@ function App() {
                 driver.name,
             });
           }
-        }
-
-        /*
-         * Chauffeur verandert.
-         */
-
-        else if (
+        } else if (
           previousBus.activeDriverId &&
           previousBus.activeDriverId !==
             state.bus
@@ -626,13 +635,7 @@ function App() {
                 newDriver.name,
             });
           }
-        }
-
-        /*
-         * Nieuwe passagier.
-         */
-
-        else if (
+        } else if (
           state.bus.riders.length >
           previousBus.riders.length
         ) {
@@ -688,12 +691,6 @@ function App() {
         };
       }
 
-      /*
-       * =========================
-       * KAARTFASE
-       * =========================
-       */
-
       if (
         state.phase ===
           "cards" &&
@@ -718,13 +715,6 @@ function App() {
           0
         );
       }
-
-      /*
-       * BELANGRIJK:
-       * drawnCard niet zomaar
-       * wissen als resultShowing
-       * false is.
-       */
 
       if (
         state.phase ===
@@ -902,12 +892,6 @@ function App() {
     };
   }, []);
 
-  /*
-   * =========================
-   * COUNTDOWN
-   * =========================
-   */
-
   useEffect(() => {
     if (
       !guessResult ||
@@ -981,13 +965,10 @@ function App() {
 
     gameState?.tree
       ?.activeCard?.card.id,
-  ]);
 
-  /*
-   * =========================
-   * HELPERS
-   * =========================
-   */
+    gameState?.tree
+      ?.adtCurrentResolverId,
+  ]);
 
   function resetToHome() {
     setRoomCode("");
@@ -1246,6 +1227,8 @@ function App() {
           checkpoints,
           doubleRule,
           checkpointFailRule,
+          treeDouble,
+          adtCard,
         },
       },
 
@@ -1733,6 +1716,48 @@ function App() {
     );
   }
 
+  function giveAdt(
+    playerId: string
+  ) {
+    setTreeSubmitting(
+      true
+    );
+
+    socket.emit(
+      "tree-adt-give",
+
+      {
+        playerId,
+      },
+
+      (
+        response: {
+          success:
+            boolean;
+
+          message?:
+            string;
+        }
+      ) => {
+        if (
+          !response.success
+        ) {
+          setTreeSubmitting(
+            false
+          );
+
+          if (
+            response.message
+          ) {
+            alert(
+              response.message
+            );
+          }
+        }
+      }
+    );
+  }
+
   function drawTieBreakCard() {
     setTreeSubmitting(
       true
@@ -1771,7 +1796,7 @@ function App() {
 
   /*
    * =========================
-   * BUS FUNCTIES
+   * BUS
    * =========================
    */
 
@@ -3166,6 +3191,17 @@ function App() {
           tree.currentResolverId
       );
 
+    const isMyAdtResolution =
+      tree.adtCurrentResolverId ===
+      socketId;
+
+    const adtResolver =
+      gameState.players.find(
+        (player) =>
+          player.id ===
+          tree.adtCurrentResolverId
+      );
+
     const distributed =
       Object.values(
         distribution
@@ -3471,6 +3507,41 @@ function App() {
                     </div>
                   )
                 )}
+
+                {tree.adtCard && (
+                  <div className="tree-row">
+                    <div className="tree-row-info">
+                      <strong>
+                        🍺 Adtje
+                      </strong>
+
+                      <span>
+                        Hele drankje
+                      </span>
+                    </div>
+
+                    <div className="tree-row-cards">
+                      <div className="tree-playing-card">
+                        {tree.adtCard.revealed &&
+                        tree.adtCard.card ? (
+                          <div
+                            className={`tree-card-face ${tree.adtCard.card.color}`}
+                          >
+                            {renderPlayingCard(
+                              tree.adtCard.card
+                            )}
+                          </div>
+                        ) : (
+                          <div className="tree-card-back">
+                            <span>
+                              🍺
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {tree.activeCard && (
@@ -3506,6 +3577,42 @@ function App() {
                   </h2>
                 </div>
               )}
+
+              {tree.status ===
+                "adt" &&
+                tree.adtCard
+                  ?.revealed &&
+                tree.adtCard
+                  .card && (
+                  <div className="tree-active-panel">
+                    <span className="tree-active-label">
+                      ADTJE
+                    </span>
+
+                    <div
+                      className={`tree-active-card ${tree.adtCard.card.color}`}
+                    >
+                      <strong>
+                        {getCardRank(
+                          tree.adtCard
+                            .card
+                        )}
+                      </strong>
+
+                      <span>
+                        {
+                          tree.adtCard
+                            .card
+                            .symbol
+                        }
+                      </span>
+                    </div>
+
+                    <h2>
+                      🍺 Adtje!
+                    </h2>
+                  </div>
+                )}
 
               {tree.status ===
                 "waiting" && (
@@ -3717,6 +3824,131 @@ function App() {
                   </p>
                 </div>
               )}
+
+              {tree.status ===
+                "adt" &&
+                tree.adtStatus ===
+                  "no-match" && (
+                  <div className="tree-message">
+                    <strong>
+                      Geen Adtje
+                    </strong>
+
+                    <p>
+                      Niemand heeft dezelfde kaartwaarde.
+                    </p>
+                  </div>
+                )}
+
+              {tree.status ===
+                "adt" &&
+                tree.adtStatus ===
+                  "resolving" &&
+                isMyAdtResolution && (
+                  <div className="tree-distribute-panel">
+                    <div className="tree-match-heading">
+                      <span>
+                        🍺
+                      </span>
+
+                      <div>
+                        <h2>
+                          ADTJEEE!
+                        </h2>
+
+                        <p>
+                          Jij kunt de Adtje-kaart wegleggen. Kies wie zijn hele drankje moet opdrinken.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="double-player-list">
+                      {gameState.players
+                        .filter(
+                          (player) =>
+                            player.id !==
+                            socketId
+                        )
+                        .map(
+                          (
+                            player
+                          ) => (
+                            <button
+                              key={
+                                player.id
+                              }
+                              disabled={
+                                treeSubmitting
+                              }
+                              onClick={() =>
+                                giveAdt(
+                                  player.id
+                                )
+                              }
+                            >
+                              <span className="player-avatar">
+                                {player.name
+                                  .charAt(
+                                    0
+                                  )
+                                  .toUpperCase()}
+                              </span>
+
+                              <span>
+                                🍺 Adtje aan{" "}
+                                {
+                                  player.name
+                                }
+                              </span>
+                            </button>
+                          )
+                        )}
+                    </div>
+                  </div>
+                )}
+
+              {tree.status ===
+                "adt" &&
+                tree.adtStatus ===
+                  "resolving" &&
+                !isMyAdtResolution && (
+                  <div className="tree-message">
+                    <strong>
+                      {adtResolver?.name ||
+                        "Een speler"}{" "}
+                      heeft een Adtje!
+                    </strong>
+
+                    <p>
+                      Wachten tot er iemand wordt gekozen...
+                    </p>
+                  </div>
+                )}
+
+              {tree.status ===
+                "adt" &&
+                tree.adtStatus ===
+                  "resolved" && (
+                  <div className="tree-message">
+                    <strong>
+                      🍺 Adtje uitgedeeld
+                    </strong>
+
+                    {tree.adtLastAction ? (
+                      <p>
+                        {
+                          tree.adtLastAction
+                            .receiverName
+                        }{" "}
+                        moet zijn/haar hele drankje opdrinken.
+                      </p>
+                    ) : (
+                      <p>
+                        De boom is klaar.
+                      </p>
+                    )}
+                  </div>
+                )}
             </>
           )}
 
@@ -4582,7 +4814,7 @@ function App() {
 
   /*
    * =========================
-   * UITLEG SPELREGELS
+   * UITLEG
    * =========================
    */
 
@@ -4627,29 +4859,11 @@ function App() {
                 </h2>
 
                 <p>
-                  Iedere speler krijgt vier kaarten door vier keer een voorspelling te maken.
+                  Iedere speler krijgt vier kaarten door rood/zwart, hoger/lager, binnen/buiten en het figuur te voorspellen.
                 </p>
 
-                <div className="rule-chips">
-                  <span>
-                    Rood / zwart
-                  </span>
-
-                  <span>
-                    Hoger / lager
-                  </span>
-
-                  <span>
-                    Binnen / buiten
-                  </span>
-
-                  <span>
-                    Figuur
-                  </span>
-                </div>
-
                 <p>
-                  Een verkeerde voorspelling betekent één slok. Bij de vierde kaart kun je ook voor <strong>Disco</strong> kiezen. Heb je daarna alle vier de kaartsoorten, dan drinkt iedereen behalve jij.
+                  Een verkeerde voorspelling betekent één slok. Bij de vierde kaart kun je ook voor Disco kiezen.
                 </p>
               </div>
             </div>
@@ -4665,16 +4879,16 @@ function App() {
                 </h2>
 
                 <p>
-                  Daarna verschijnt de boom. De kaarten worden één voor één omgedraaid.
+                  De boomkaarten worden één voor één omgedraaid. Heb jij dezelfde kaartwaarde, dan kun je die kaart wegleggen en slokken uitdelen.
                 </p>
 
                 <p>
-                  Heb jij een kaart met dezelfde waarde? Dan mag je die kaart wegleggen en de slokken van die rij uitdelen aan andere spelers.
+                  De groep kan vooraf kiezen of er horizontale 2×-kaarten worden gebruikt.
                 </p>
 
-                <div className="rule-highlight">
-                  Horizontale kaarten tellen dubbel.
-                </div>
+                <p>
+                  Optioneel kan er ook een Adtje-kaart onder de boom liggen. Een match daarop betekent dat je iemand zijn hele drankje mag laten opdrinken.
+                </p>
               </div>
             </div>
 
@@ -4689,11 +4903,7 @@ function App() {
                 </h2>
 
                 <p>
-                  Na de boom gaat de speler met de meeste kaarten over de bus in.
-                </p>
-
-                <p>
-                  Is er een gelijkstand? Dan trekken de betrokken spelers allemaal zelf een kaart. De laagste kaart gaat de bus in. Bij opnieuw gelijk trekken alleen die spelers opnieuw.
+                  De speler met de meeste kaarten over gaat de bus in. Bij gelijkstand trekken de betrokken spelers zelf een kaart; de laagste verliest.
                 </p>
               </div>
             </div>
@@ -4705,141 +4915,12 @@ function App() {
 
               <div>
                 <h2>
-                  De bus opbouwen
+                  De bus
                 </h2>
 
                 <p>
-                  De chauffeur trekt eerst een kaart voor de lengte van de bus.
+                  De chauffeur trekt eerst de lengte van de bus en daarna hoeveel kaarten open liggen. Vervolgens wordt steeds hoger of lager gespeeld.
                 </p>
-
-                <div className="rule-values">
-                  <span>
-                    2–10
-                    <small>
-                      eigen waarde
-                    </small>
-                  </span>
-
-                  <span>
-                    B
-                    <small>
-                      11
-                    </small>
-                  </span>
-
-                  <span>
-                    V
-                    <small>
-                      12
-                    </small>
-                  </span>
-
-                  <span>
-                    H
-                    <small>
-                      13
-                    </small>
-                  </span>
-
-                  <span>
-                    A
-                    <small>
-                      14
-                    </small>
-                  </span>
-                </div>
-
-                <p>
-                  Daarna wordt een tweede kaart getrokken die bepaalt hoeveel kaarten vanaf links al open liggen.
-                </p>
-              </div>
-            </div>
-
-            <div className="rule-guide-item">
-              <div className="rule-number">
-                5
-              </div>
-
-              <div>
-                <h2>
-                  Hoger of lager
-                </h2>
-
-                <p>
-                  De chauffeur gaat van links naar rechts door de bus en kiest steeds hoger of lager.
-                </p>
-
-                <p>
-                  Bij een dichte kaart wordt eerst gekozen en daarna pas de nieuwe kaart getrokken.
-                </p>
-
-                <p>
-                  Goed? Dan ga je verder. Fout? Dan drink je evenveel slokken als de positie van de kaart waarop het fout ging.
-                </p>
-
-                <div className="rule-example">
-                  Fout op kaart 5 = 5 slokken.
-                </div>
-              </div>
-            </div>
-
-            <div className="rule-guide-item">
-              <div className="rule-number">
-                6
-              </div>
-
-              <div>
-                <h2>
-                  Checkpoints
-                </h2>
-
-                <p>
-                  Checkpoints zijn optioneel en kunnen iedere ronde op andere plekken worden gezet.
-                </p>
-
-                <p>
-                  Afhankelijk van de gekozen regels kan een checkpoint een nieuw beginpunt worden, één tweede kans geven of juist alsnog terugsturen naar kaart 1.
-                </p>
-              </div>
-            </div>
-
-            <div className="rule-guide-item">
-              <div className="rule-number">
-                7
-              </div>
-
-              <div>
-                <h2>
-                  Dubbele kaart
-                </h2>
-
-                <p>
-                  Trek je exact dezelfde kaartwaarde als de kaart waarop je gokt? Dan is het dubbel en telt de gok als fout.
-                </p>
-
-                <p>
-                  Voor het spel kiest de groep één van twee regels:
-                </p>
-
-                <div className="rule-option-preview">
-                  <strong>
-                    🚌 Bus doorgeven
-                  </strong>
-
-                  <span>
-                    Een andere speler neemt de bus over.
-                  </span>
-                </div>
-
-                <div className="rule-option-preview">
-                  <strong>
-                    🙋 Iemand meenemen
-                  </strong>
-
-                  <span>
-                    Een nieuwe passagier moet mee de bus in.
-                  </span>
-                </div>
               </div>
             </div>
 
@@ -4854,7 +4935,7 @@ function App() {
                 </h2>
 
                 <p>
-                  Het spel is afgelopen wanneer de hele bus succesvol is uitgespeeld.
+                  Het spel eindigt wanneer de hele bus succesvol is uitgespeeld.
                 </p>
               </div>
             </div>
@@ -4943,6 +5024,90 @@ function App() {
                 )
               )}
             </div>
+          </div>
+
+          <div className="setting">
+            <label>
+              ✨ 2×-kaart in de boom
+            </label>
+
+            <div className="options">
+              <button
+                className={
+                  !treeDouble
+                    ? "selected"
+                    : ""
+                }
+                onClick={() =>
+                  setTreeDouble(
+                    false
+                  )
+                }
+              >
+                Uit
+              </button>
+
+              <button
+                className={
+                  treeDouble
+                    ? "selected"
+                    : ""
+                }
+                onClick={() =>
+                  setTreeDouble(
+                    true
+                  )
+                }
+              >
+                Aan
+              </button>
+            </div>
+
+            <p>
+              Met 2× aan ligt er in iedere rij één horizontale kaart die dubbel zoveel slokken waard is.
+            </p>
+          </div>
+
+          <div className="setting">
+            <label>
+              🍺 Adtje-kaart
+            </label>
+
+            <div className="options">
+              <button
+                className={
+                  !adtCard
+                    ? "selected"
+                    : ""
+                }
+                onClick={() =>
+                  setAdtCard(
+                    false
+                  )
+                }
+              >
+                Uit
+              </button>
+
+              <button
+                className={
+                  adtCard
+                    ? "selected"
+                    : ""
+                }
+                onClick={() =>
+                  setAdtCard(
+                    true
+                  )
+                }
+              >
+                Aan
+              </button>
+            </div>
+
+            <p>
+              Met Adtje aan ligt er onder de boom een extra kaart. Heb je dezelfde waarde, dan mag je iemand zijn/haar hele drankje laten opdrinken.
+            </p>
           </div>
 
           <div className="setting">
@@ -5041,7 +5206,7 @@ function App() {
                   </strong>
 
                   <span>
-                    Zodra je op het checkpoint aankomt, wordt dit direct je nieuwe kaart 1. Dit blijft ook gelden als de bus wordt doorgegeven.
+                    Zodra je op het checkpoint aankomt, wordt dit direct je nieuwe kaart 1.
                   </span>
                 </button>
 
@@ -5063,7 +5228,7 @@ function App() {
                   </strong>
 
                   <span>
-                    Eerste fout op de checkpointkaart: blijf staan. Tweede fout: terug naar kaart 1.
+                    Eerste fout: blijf staan. Tweede fout: terug naar kaart 1.
                   </span>
                 </button>
 
@@ -5085,7 +5250,7 @@ function App() {
                   </strong>
 
                   <span>
-                    Een fout op de checkpointkaart betekent direct helemaal terug naar kaart 1.
+                    Een fout op de checkpointkaart betekent direct terug naar kaart 1.
                   </span>
                 </button>
               </div>
@@ -5151,33 +5316,38 @@ function App() {
 
             <p>
               Boom: {rows} rijen
-              {" · "}
+            </p>
+
+            <p>
+              2×-kaart:{" "}
+              {treeDouble
+                ? "Aan"
+                : "Uit"}
+            </p>
+
+            <p>
+              Adtje-kaart:{" "}
+              {adtCard
+                ? "Aan"
+                : "Uit"}
+            </p>
+
+            <p>
               {decks} kaartspel
               {decks === 1
                 ? ""
                 : "len"}
-              {" · "}
-              checkpoints{" "}
-              {checkpoints
-                ? "aan"
-                : "uit"}
             </p>
 
-            {checkpoints && (
-              <p>
-                Checkpointregel:{" "}
-                {checkpointFailRule ===
-                "safe"
-                  ? "Nieuw beginpunt"
-                  : checkpointFailRule ===
-                      "retry"
-                    ? "Tweede kans"
-                    : "Terug naar 1"}
-              </p>
-            )}
+            <p>
+              Checkpoints:{" "}
+              {checkpoints
+                ? "Aan"
+                : "Uit"}
+            </p>
 
             <p>
-              Dubbel:{" "}
+              Dubbel in bus:{" "}
               {doubleRule ===
               "pass"
                 ? "Bus doorgeven"
@@ -5332,6 +5502,18 @@ function App() {
             </p>
 
             <p>
+              2× boom:{" "}
+              {treeDouble
+                ? "aan"
+                : "uit"}
+              {" · "}
+              Adtje:{" "}
+              {adtCard
+                ? "aan"
+                : "uit"}
+            </p>
+
+            <p>
               Checkpoints:{" "}
               {checkpoints
                 ? checkpointFailRule ===
@@ -5365,12 +5547,6 @@ function App() {
       </main>
     );
   }
-
-  /*
-   * =========================
-   * HOME
-   * =========================
-   */
 
   return (
     <main className="app">
