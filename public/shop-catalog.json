@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "updatedAt": "2026-09-01",
+  "items": [
+    {
+      "id": "theme-classic",
+      "name": "Busbaas Classic",
+      "category": "themes",
+      "type": "theme",
+      "equipSlot": "theme",
+      "description": "De originele frisse Busbaas-look.",
+      "priceLabel": "Gratis",
+      "free": true,
+      "featured": true,
+      "effect": {
+        "palette": {
+          "background": "#edf1ee",
+          "surface": "#ffffff",
+          "surfaceSoft": "#f3f6f4",
+          "accent": "#11866a",
+          "accentStrong": "#087158",
+          "text": "#14211c",
+          "muted": "#6f7d77",
+          "border": "#dce5e0"
+        }
+      }
+    },
+    {
+      "id": "theme-night-ride",
+      "name": "Night Ride",
+      "category": "themes",
+      "type": "theme",
+      "equipSlot": "theme",
+      "description": "Donker, strak en gemaakt voor late avonden.",
+      "priceLabel": "€0,99",
+      "free": false,
+      "effect": {
+        "palette": {
+          "background": "#090d0c",
+          "surface": "#121816",
+          "surfaceSoft": "#1a211f",
+          "accent": "#33d6a6",
+          "accentStrong": "#1aa37e",
+          "text": "#f3f7f5",
+          "muted": "#94a39e",
+          "border": "#29332f"
+        }
+      }
+    },
+    {
+      "id": "theme-disco",
+      "name": "Disco",
+      "category": "themes",
+      "type": "theme",
+      "equipSlot": "theme",
+      "description": "Paars, neon en gemaakt voor de Disco-gok.",
+      "priceLabel": "€1,49",
+      "free": false,
+      "featured": true,
+      "effect": {
+        "palette": {
+          "background": "#13091d",
+          "surface": "#22102e",
+          "surfaceSoft": "#301641",
+          "accent": "#e84cff",
+          "accentStrong": "#a832c7",
+          "text": "#fff4ff",
+          "muted": "#c5a8ca",
+          "border": "#4a2855"
+        }
+      }
+    },
+    {
+      "id": "theme-summer",
+      "name": "Summer Ride",
+      "category": "themes",
+      "type": "theme",
+      "equipSlot": "theme",
+      "description": "Een lichte zomerse look voor vakanties en festivals.",
+      "priceLabel": "€0,99",
+      "free": false,
+      "effect": {
+        "palette": {
+          "background": "#fff3d6",
+          "surface": "#fffdf7",
+          "surfaceSoft": "#ffebbd",
+          "accent": "#e67b36",
+          "accentStrong": "#bd5520",
+          "text": "#3f2c1e",
+          "muted": "#8a705e",
+          "border": "#efd6a8"
+        }
+      }
+    },
+    {
+      "id": "cardback-gold",
+      "name": "Gold Cards",
+      "category": "cards",
+      "type": "card_back",
+      "equipSlot": "cardBack",
+      "description": "Geef alle gesloten kaarten een gouden achterkant.",
+      "priceLabel": "€0,79",
+      "free": false,
+      "effect": {
+        "cardBack": "gold"
+      }
+    },
+    {
+      "id": "cardback-neon",
+      "name": "Neon Cards",
+      "category": "cards",
+      "type": "card_back",
+      "equipSlot": "cardBack",
+      "description": "Donkere kaarten met een felle neonrand.",
+      "priceLabel": "€0,79",
+      "free": false,
+      "effect": {
+        "cardBack": "neon"
+      }
+    },
+    {
+      "id": "animation-party",
+      "name": "Party Effects",
+      "category": "animations",
+      "type": "animation_pack",
+      "equipSlot": "animation",
+      "description": "Extra beweging en feestelijke effecten aan het einde van een potje.",
+      "priceLabel": "€0,99",
+      "free": false,
+      "effect": {
+        "animation": "party"
+      }
+    },
+    {
+      "id": "extra-future-pack",
+      "name": "Binnenkort...",
+      "category": "extras",
+      "type": "extra",
+      "equipSlot": "extra",
+      "description": "Hier kunnen later nieuwe Busbaas-extra's komen.",
+      "priceLabel": "Binnenkort",
+      "free": false,
+      "effect": {
+        "extra": "future"
+      }
+    }
+  ]
+}
