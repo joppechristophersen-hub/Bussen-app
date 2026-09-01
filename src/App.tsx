@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -17,6 +18,7 @@ type Screen =
   | "home"
   | "settings"
   | "rules"
+  | "howto"
   | "join"
   | "lobby"
   | "game";
@@ -184,23 +186,14 @@ type BusResult = {
     | "double";
 
   guess: string;
-
   position: number;
-
   fromCard: Card;
-
   newCard: Card;
-
   correct: boolean;
-
   double: boolean;
-
   drinks: number;
-
   restartIndex?: number;
-
   secondChance?: boolean;
-
   checkpointSafe?: boolean;
 };
 
@@ -222,82 +215,43 @@ type BusState = {
     Card | null;
 
   length: number;
-
-  initialOpenCount:
-    number;
-
-  activeDriverId:
-    string;
-
-  riders:
-    string[];
-
-  doubleRule:
-    DoubleRule;
-
-  checkpointFailRule:
-    CheckpointFailRule;
-
-  checkpointRetryUsedIndex:
-    number | null;
-
-  activeCheckpointIndex:
-    number | null;
-
-  checkpoints:
-    number[];
-
-  currentIndex:
-    number;
-
-  piles:
-    BusPile[];
-
-  result:
-    BusResult | null;
-
-  finished:
-    boolean;
+  initialOpenCount: number;
+  activeDriverId: string;
+  riders: string[];
+  doubleRule: DoubleRule;
+  checkpointFailRule: CheckpointFailRule;
+  checkpointRetryUsedIndex: number | null;
+  activeCheckpointIndex: number | null;
+  checkpoints: number[];
+  currentIndex: number;
+  piles: BusPile[];
+  result: BusResult | null;
+  finished: boolean;
 };
 
 type GameState = {
   serverVersion?: string;
+  phase: GamePhase;
+  players: Player[];
+  currentPlayerIndex: number;
+  currentStep: number;
+  currentCard: Card | null;
+  waitingForGuess: boolean;
+  resultShowing: boolean;
+  result?: GuessResult | null;
+  resultEndsAt?: number | null;
+  gameFinished: boolean;
+  tree: TreeState | null;
+  bus: BusState | null;
+};
 
-  phase:
-    GamePhase;
+type Announcement = {
+  kind:
+    | "driver"
+    | "new-driver"
+    | "passenger";
 
-  players:
-    Player[];
-
-  currentPlayerIndex:
-    number;
-
-  currentStep:
-    number;
-
-  currentCard:
-    Card | null;
-
-  waitingForGuess:
-    boolean;
-
-  resultShowing:
-    boolean;
-
-  result?:
-    GuessResult | null;
-
-  resultEndsAt?:
-    number | null;
-
-  gameFinished:
-    boolean;
-
-  tree:
-    TreeState | null;
-
-  bus:
-    BusState | null;
+  name: string;
 };
 
 const socket = io(
@@ -465,6 +419,31 @@ function App() {
   ] =
     useState(false);
 
+  const [
+    announcement,
+    setAnnouncement,
+  ] =
+    useState<Announcement | null>(
+      null
+    );
+
+  const previousBusRef =
+    useRef<{
+      exists: boolean;
+      activeDriverId:
+        string | null;
+      riders: string[];
+    }>({
+      exists:
+        false,
+
+      activeDriverId:
+        null,
+
+      riders:
+        [],
+    });
+
   /*
    * =========================
    * QR
@@ -498,7 +477,37 @@ function App() {
 
   /*
    * =========================
-   * SOCKETS
+   * ANNOUNCEMENT TIMER
+   * =========================
+   */
+
+  useEffect(() => {
+    if (!announcement) {
+      return;
+    }
+
+    const timer =
+      window.setTimeout(
+        () => {
+          setAnnouncement(
+            null
+          );
+        },
+        2600
+      );
+
+    return () => {
+      window.clearTimeout(
+        timer
+      );
+    };
+  }, [
+    announcement,
+  ]);
+
+  /*
+   * =========================
+   * SOCKET EVENTS
    * =========================
    */
 
@@ -520,6 +529,18 @@ function App() {
       setSelectedCheckpoints([]);
       setTreeSubmitting(false);
       setBusSubmitting(false);
+      setAnnouncement(null);
+
+      previousBusRef.current = {
+        exists:
+          false,
+
+        activeDriverId:
+          null,
+
+        riders:
+          [],
+      };
 
       setScreen(
         "game"
@@ -537,6 +558,141 @@ function App() {
       setPlayerNames(
         state.players
       );
+
+      /*
+       * =========================
+       * BUS ANNOUNCEMENTS
+       * =========================
+       */
+
+      const previousBus =
+        previousBusRef.current;
+
+      if (state.bus) {
+        /*
+         * Eerste keer dat de bus
+         * wordt aangemaakt:
+         * chauffeur bekend.
+         */
+
+        if (
+          !previousBus.exists &&
+          state.phase ===
+            "bus-setup"
+        ) {
+          const driver =
+            state.players.find(
+              (player) =>
+                player.id ===
+                state.bus
+                  ?.activeDriverId
+            );
+
+          if (driver) {
+            setAnnouncement({
+              kind:
+                "driver",
+
+              name:
+                driver.name,
+            });
+          }
+        }
+
+        /*
+         * Chauffeur verandert.
+         */
+
+        else if (
+          previousBus.activeDriverId &&
+          previousBus.activeDriverId !==
+            state.bus
+              .activeDriverId
+        ) {
+          const newDriver =
+            state.players.find(
+              (player) =>
+                player.id ===
+                state.bus
+                  ?.activeDriverId
+            );
+
+          if (newDriver) {
+            setAnnouncement({
+              kind:
+                "new-driver",
+
+              name:
+                newDriver.name,
+            });
+          }
+        }
+
+        /*
+         * Nieuwe passagier.
+         */
+
+        else if (
+          state.bus.riders.length >
+          previousBus.riders.length
+        ) {
+          const newRiderId =
+            state.bus.riders.find(
+              (id) =>
+                !previousBus.riders.includes(
+                  id
+                )
+            );
+
+          const newRider =
+            state.players.find(
+              (player) =>
+                player.id ===
+                newRiderId
+            );
+
+          if (newRider) {
+            setAnnouncement({
+              kind:
+                "passenger",
+
+              name:
+                newRider.name,
+            });
+          }
+        }
+
+        previousBusRef.current = {
+          exists:
+            true,
+
+          activeDriverId:
+            state.bus
+              .activeDriverId,
+
+          riders: [
+            ...state.bus
+              .riders,
+          ],
+        };
+      } else {
+        previousBusRef.current = {
+          exists:
+            false,
+
+          activeDriverId:
+            null,
+
+          riders:
+            [],
+        };
+      }
+
+      /*
+       * =========================
+       * KAARTFASE
+       * =========================
+       */
 
       if (
         state.phase ===
@@ -562,6 +718,13 @@ function App() {
           0
         );
       }
+
+      /*
+       * BELANGRIJK:
+       * drawnCard niet zomaar
+       * wissen als resultShowing
+       * false is.
+       */
 
       if (
         state.phase ===
@@ -838,6 +1001,18 @@ function App() {
     setSelectedCheckpoints([]);
     setTreeSubmitting(false);
     setBusSubmitting(false);
+    setAnnouncement(null);
+
+    previousBusRef.current = {
+      exists:
+        false,
+
+      activeDriverId:
+        null,
+
+      riders:
+        [],
+    };
 
     window.history.replaceState(
       {},
@@ -917,6 +1092,119 @@ function App() {
           </span>
         </div>
       </>
+    );
+  }
+
+  function renderAnnouncement() {
+    if (
+      !announcement
+    ) {
+      return null;
+    }
+
+    let icon =
+      "🚌";
+
+    let label =
+      "DE BUS";
+
+    let title =
+      "We hebben een chauffeur!";
+
+    let text =
+      `${announcement.name} moet de bus in.`;
+
+    if (
+      announcement.kind ===
+      "new-driver"
+    ) {
+      icon =
+        "🔄";
+
+      label =
+        "BUS DOORGEGEVEN";
+
+      title =
+        "Nieuwe chauffeur!";
+
+      text =
+        `${announcement.name} neemt de bus over.`;
+    }
+
+    if (
+      announcement.kind ===
+      "passenger"
+    ) {
+      icon =
+        "🙋";
+
+      label =
+        "NIEUWE PASSAGIER";
+
+      title =
+        "Er stapt iemand in!";
+
+      text =
+        `${announcement.name} gaat mee de bus in.`;
+    }
+
+    return (
+      <div className="announcement-layer">
+        <div className="game-announcement">
+          <div className="announcement-icon">
+            {icon}
+          </div>
+
+          <span className="announcement-label">
+            {label}
+          </span>
+
+          <h2>
+            {title}
+          </h2>
+
+          <strong className="announcement-name">
+            {announcement.name}
+          </strong>
+
+          <p>
+            {text}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  function renderConfetti() {
+    return (
+      <div className="confetti-layer">
+        {Array.from({
+          length:
+            42,
+        }).map(
+          (
+            _,
+            index
+          ) => (
+            <span
+              key={
+                index
+              }
+              className={`confetti-piece confetti-${index % 6}`}
+              style={{
+                left:
+                  `${(index * 37) % 100}%`,
+
+                animationDelay:
+                  `${(index % 10) * 0.11}s`,
+
+                animationDuration:
+                  `${2.5 + (index % 6) * 0.18}s`,
+              }}
+            />
+          )
+        )}
+      </div>
     );
   }
 
@@ -1762,6 +2050,8 @@ function App() {
 
     return (
       <main className="app">
+        {renderAnnouncement()}
+
         <section className="card game-card bus-screen">
           <div className="game-top">
             <div className="logo small-logo">
@@ -2212,6 +2502,12 @@ function App() {
 
     return (
       <main className="app">
+        {renderAnnouncement()}
+
+        {gameState.phase ===
+          "bus-finished" &&
+          renderConfetti()}
+
         <section className="card game-card bus-screen">
           <div className="game-top">
             <div className="logo small-logo">
@@ -2263,11 +2559,11 @@ function App() {
               null && (
               <div className="bus-riders">
                 <span>
-                  ⚑ Actief checkpoint:{" "}
+                  ⚑ Actief checkpoint
                 </span>
 
                 <strong>
-                  kaart{" "}
+                  Kaart{" "}
                   {bus.activeCheckpointIndex +
                     1}
                 </strong>
@@ -2278,7 +2574,7 @@ function App() {
             1 && (
             <div className="bus-riders">
               <span>
-                In de bus:{" "}
+                In de bus
               </span>
 
               <strong>
@@ -2362,9 +2658,13 @@ function App() {
           {gameState.phase ===
             "bus-finished" && (
             <div className="bus-finished-panel">
-              <div>
-                🏁
+              <div className="finish-trophy">
+                🏆
               </div>
+
+              <span className="finish-label">
+                EINDE VAN DE RIT
+              </span>
 
               <h2>
                 Uit de bus!
@@ -4282,7 +4582,302 @@ function App() {
 
   /*
    * =========================
-   * SPELREGELS
+   * UITLEG SPELREGELS
+   * =========================
+   */
+
+  if (
+    screen === "howto"
+  ) {
+    return (
+      <main className="app">
+        <section className="card rules-guide-card">
+          <button
+            className="back-button"
+            onClick={() =>
+              setScreen(
+                "home"
+              )
+            }
+          >
+            ← Terug
+          </button>
+
+          <div className="logo small-logo">
+            📖
+          </div>
+
+          <h1>
+            Spelregels
+          </h1>
+
+          <p className="subtitle">
+            Zo speel je Bussen
+          </p>
+
+          <div className="rules-guide">
+            <div className="rule-guide-item">
+              <div className="rule-number">
+                1
+              </div>
+
+              <div>
+                <h2>
+                  Vier kaarten verzamelen
+                </h2>
+
+                <p>
+                  Iedere speler krijgt vier kaarten door vier keer een voorspelling te maken.
+                </p>
+
+                <div className="rule-chips">
+                  <span>
+                    Rood / zwart
+                  </span>
+
+                  <span>
+                    Hoger / lager
+                  </span>
+
+                  <span>
+                    Binnen / buiten
+                  </span>
+
+                  <span>
+                    Figuur
+                  </span>
+                </div>
+
+                <p>
+                  Een verkeerde voorspelling betekent één slok. Bij de vierde kaart kun je ook voor <strong>Disco</strong> kiezen. Heb je daarna alle vier de kaartsoorten, dan drinkt iedereen behalve jij.
+                </p>
+              </div>
+            </div>
+
+            <div className="rule-guide-item">
+              <div className="rule-number">
+                2
+              </div>
+
+              <div>
+                <h2>
+                  De boom
+                </h2>
+
+                <p>
+                  Daarna verschijnt de boom. De kaarten worden één voor één omgedraaid.
+                </p>
+
+                <p>
+                  Heb jij een kaart met dezelfde waarde? Dan mag je die kaart wegleggen en de slokken van die rij uitdelen aan andere spelers.
+                </p>
+
+                <div className="rule-highlight">
+                  Horizontale kaarten tellen dubbel.
+                </div>
+              </div>
+            </div>
+
+            <div className="rule-guide-item">
+              <div className="rule-number">
+                3
+              </div>
+
+              <div>
+                <h2>
+                  Wie moet de bus in?
+                </h2>
+
+                <p>
+                  Na de boom gaat de speler met de meeste kaarten over de bus in.
+                </p>
+
+                <p>
+                  Is er een gelijkstand? Dan trekken de betrokken spelers allemaal zelf een kaart. De laagste kaart gaat de bus in. Bij opnieuw gelijk trekken alleen die spelers opnieuw.
+                </p>
+              </div>
+            </div>
+
+            <div className="rule-guide-item">
+              <div className="rule-number">
+                4
+              </div>
+
+              <div>
+                <h2>
+                  De bus opbouwen
+                </h2>
+
+                <p>
+                  De chauffeur trekt eerst een kaart voor de lengte van de bus.
+                </p>
+
+                <div className="rule-values">
+                  <span>
+                    2–10
+                    <small>
+                      eigen waarde
+                    </small>
+                  </span>
+
+                  <span>
+                    B
+                    <small>
+                      11
+                    </small>
+                  </span>
+
+                  <span>
+                    V
+                    <small>
+                      12
+                    </small>
+                  </span>
+
+                  <span>
+                    H
+                    <small>
+                      13
+                    </small>
+                  </span>
+
+                  <span>
+                    A
+                    <small>
+                      14
+                    </small>
+                  </span>
+                </div>
+
+                <p>
+                  Daarna wordt een tweede kaart getrokken die bepaalt hoeveel kaarten vanaf links al open liggen.
+                </p>
+              </div>
+            </div>
+
+            <div className="rule-guide-item">
+              <div className="rule-number">
+                5
+              </div>
+
+              <div>
+                <h2>
+                  Hoger of lager
+                </h2>
+
+                <p>
+                  De chauffeur gaat van links naar rechts door de bus en kiest steeds hoger of lager.
+                </p>
+
+                <p>
+                  Bij een dichte kaart wordt eerst gekozen en daarna pas de nieuwe kaart getrokken.
+                </p>
+
+                <p>
+                  Goed? Dan ga je verder. Fout? Dan drink je evenveel slokken als de positie van de kaart waarop het fout ging.
+                </p>
+
+                <div className="rule-example">
+                  Fout op kaart 5 = 5 slokken.
+                </div>
+              </div>
+            </div>
+
+            <div className="rule-guide-item">
+              <div className="rule-number">
+                6
+              </div>
+
+              <div>
+                <h2>
+                  Checkpoints
+                </h2>
+
+                <p>
+                  Checkpoints zijn optioneel en kunnen iedere ronde op andere plekken worden gezet.
+                </p>
+
+                <p>
+                  Afhankelijk van de gekozen regels kan een checkpoint een nieuw beginpunt worden, één tweede kans geven of juist alsnog terugsturen naar kaart 1.
+                </p>
+              </div>
+            </div>
+
+            <div className="rule-guide-item">
+              <div className="rule-number">
+                7
+              </div>
+
+              <div>
+                <h2>
+                  Dubbele kaart
+                </h2>
+
+                <p>
+                  Trek je exact dezelfde kaartwaarde als de kaart waarop je gokt? Dan is het dubbel en telt de gok als fout.
+                </p>
+
+                <p>
+                  Voor het spel kiest de groep één van twee regels:
+                </p>
+
+                <div className="rule-option-preview">
+                  <strong>
+                    🚌 Bus doorgeven
+                  </strong>
+
+                  <span>
+                    Een andere speler neemt de bus over.
+                  </span>
+                </div>
+
+                <div className="rule-option-preview">
+                  <strong>
+                    🙋 Iemand meenemen
+                  </strong>
+
+                  <span>
+                    Een nieuwe passagier moet mee de bus in.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="rule-guide-item final-rule">
+              <div className="rule-number">
+                🏁
+              </div>
+
+              <div>
+                <h2>
+                  Uit de bus
+                </h2>
+
+                <p>
+                  Het spel is afgelopen wanneer de hele bus succesvol is uitgespeeld.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            className="start-button"
+            onClick={() =>
+              setScreen(
+                "home"
+              )
+            }
+          >
+            Begrepen ✓
+          </button>
+        </section>
+      </main>
+    );
+  }
+
+  /*
+   * =========================
+   * SPELREGELS INSTELLEN
    * =========================
    */
 
@@ -4607,7 +5202,7 @@ function App() {
 
   /*
    * =========================
-   * NIEUW SPEL INSTELLEN
+   * NIEUW SPEL
    * =========================
    */
 
@@ -4815,8 +5410,15 @@ function App() {
           Meedoen met spel
         </button>
 
-        <button className="secondary">
-          Spelregels
+        <button
+          className="secondary"
+          onClick={() =>
+            setScreen(
+              "howto"
+            )
+          }
+        >
+          📖 Spelregels
         </button>
       </section>
     </main>
