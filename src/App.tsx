@@ -110,6 +110,13 @@ type TreeLastAction = {
     TreeReceiver[];
 };
 
+type TreeResolutionSummary = {
+  receivers:
+    TreeReceiver[];
+
+  total: number;
+};
+
 type BusDriver = {
   id: string;
   name: string;
@@ -170,6 +177,9 @@ type TreeState = {
 
   lastAction:
     TreeLastAction | null;
+
+  resolutionSummary:
+    TreeResolutionSummary | null;
 
   busDriver:
     BusDriver | null;
@@ -285,6 +295,10 @@ type Announcement = {
     | "passenger";
 
   name: string;
+};
+
+type StockShuffleNotice = {
+  count: number;
 };
 
 const socket = io(
@@ -480,6 +494,14 @@ function App() {
       null
     );
 
+  const [
+    stockShuffleNotice,
+    setStockShuffleNotice,
+  ] =
+    useState<StockShuffleNotice | null>(
+      null
+    );
+
   const previousBusRef =
     useRef<{
       exists: boolean;
@@ -590,6 +612,36 @@ function App() {
 
   /*
    * =========================
+   * STOCK SCHUD POPUP
+   * =========================
+   */
+
+  useEffect(() => {
+    if (!stockShuffleNotice) {
+      return;
+    }
+
+    const timer =
+      window.setTimeout(
+        () => {
+          setStockShuffleNotice(
+            null
+          );
+        },
+        1600
+      );
+
+    return () => {
+      window.clearTimeout(
+        timer
+      );
+    };
+  }, [
+    stockShuffleNotice,
+  ]);
+
+  /*
+   * =========================
    * SOCKET EVENTS
    * =========================
    */
@@ -636,6 +688,7 @@ function App() {
       setBusSubmitting(false);
       setAnnouncement(null);
       setDiscoCelebration(null);
+      setStockShuffleNotice(null);
 
       previousBusRef.current = {
         exists:
@@ -871,11 +924,6 @@ function App() {
         3
       );
 
-      /*
-       * Disco geslaagd:
-       * animatie op ALLE apparaten.
-       */
-
       if (
         result.isDisco &&
         result.correct
@@ -884,6 +932,18 @@ function App() {
           result.playerName
         );
       }
+    }
+
+    function handleStockReshuffled(
+      notice:
+        StockShuffleNotice
+    ) {
+      setStockShuffleNotice({
+        count:
+          Number(
+            notice?.count
+          ) || 0,
+      });
     }
 
     function handleRoomClosed() {
@@ -932,6 +992,11 @@ function App() {
     );
 
     socket.on(
+      "stock-reshuffled",
+      handleStockReshuffled
+    );
+
+    socket.on(
       "room-closed",
       handleRoomClosed
     );
@@ -970,6 +1035,11 @@ function App() {
       socket.off(
         "guess-result",
         handleGuessResult
+      );
+
+      socket.off(
+        "stock-reshuffled",
+        handleStockReshuffled
       );
 
       socket.off(
@@ -1093,6 +1163,7 @@ function App() {
     setBusSubmitting(false);
     setAnnouncement(null);
     setDiscoCelebration(null);
+    setStockShuffleNotice(null);
 
     previousBusRef.current = {
       exists:
@@ -1260,6 +1331,160 @@ function App() {
 
           <p>
             {text}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  /*
+   * =========================
+   * STOCK SCHUDDEN POPUP
+   * =========================
+   */
+
+  function renderStockShufflePopup() {
+    if (
+      !stockShuffleNotice
+    ) {
+      return null;
+    }
+
+    return (
+      <div className="announcement-layer">
+        <div className="game-announcement">
+          <div className="announcement-icon">
+            🔀
+          </div>
+
+          <span className="announcement-label">
+            TREKSTAPEL LEEG
+          </span>
+
+          <h2>
+            Opnieuw schudden!
+          </h2>
+
+          <strong className="announcement-name">
+            🃏 Nieuwe trekstapel
+          </strong>
+
+          <p>
+            {stockShuffleNotice.count >
+            0
+              ? `${stockShuffleNotice.count} kaarten van de aflegstapel zijn opnieuw geschud.`
+              : "De aflegstapel is opnieuw geschud."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  /*
+   * =========================
+   * BOOM RESULTAAT POPUP
+   * =========================
+   */
+
+  function renderTreeResolutionPopup(
+    tree:
+      TreeState
+  ) {
+    if (
+      tree.status !==
+        "resolved" ||
+      !tree.resolutionSummary ||
+      tree.resolutionSummary
+        .receivers.length ===
+        0
+    ) {
+      return null;
+    }
+
+    return (
+      <div className="announcement-layer">
+        <div className="game-announcement">
+          <div className="announcement-icon">
+            🥃
+          </div>
+
+          <span className="announcement-label">
+            SLOKKEN UITGEDEELD
+          </span>
+
+          <h2>
+            Drinken maar!
+          </h2>
+
+          <div
+            style={{
+              width:
+                "100%",
+
+              display:
+                "grid",
+
+              gap:
+                "8px",
+
+              marginTop:
+                "6px",
+            }}
+          >
+            {tree.resolutionSummary.receivers.map(
+              (
+                receiver
+              ) => (
+                <div
+                  key={
+                    receiver.playerId
+                  }
+                  style={{
+                    display:
+                      "flex",
+
+                    justifyContent:
+                      "space-between",
+
+                    alignItems:
+                      "center",
+
+                    gap:
+                      "20px",
+
+                    padding:
+                      "10px 14px",
+
+                    borderRadius:
+                      "14px",
+
+                    background:
+                      "rgba(255,255,255,.08)",
+                  }}
+                >
+                  <strong>
+                    {
+                      receiver.playerName
+                    }
+                  </strong>
+
+                  <span>
+                    🥃{" "}
+                    {
+                      receiver.count
+                    }{" "}
+                    {receiver.count ===
+                    1
+                      ? "slok"
+                      : "slokken"}
+                  </span>
+                </div>
+              )
+            )}
+          </div>
+
+          <p>
+            Volgende kaart komt eraan...
           </p>
         </div>
       </div>
@@ -2695,6 +2920,7 @@ function App() {
     return (
       <main className="app">
         {renderAnnouncement()}
+        {renderStockShufflePopup()}
 
         <section className="card game-card bus-screen">
           <div className="game-top">
@@ -3147,6 +3373,7 @@ function App() {
     return (
       <main className="app">
         {renderAnnouncement()}
+        {renderStockShufflePopup()}
 
         {gameState.phase ===
           "bus-finished" &&
@@ -3895,6 +4122,10 @@ function App() {
 
     return (
       <main className="app">
+        {renderTreeResolutionPopup(
+          tree
+        )}
+
         <section className="card game-card tree-screen">
           <div className="game-top">
             <div className="logo small-logo">
@@ -4461,7 +4692,7 @@ function App() {
                 "resolved" && (
                 <div className="tree-message">
                   <strong>
-                    Match afgehandeld
+                    Slokken uitgedeeld
                   </strong>
 
                   <p>
@@ -5567,6 +5798,10 @@ function App() {
 
                 <p>
                   De chauffeur trekt eerst de lengte van de bus en daarna hoeveel kaarten open liggen. Vervolgens wordt steeds hoger of lager gespeeld.
+                </p>
+
+                <p>
+                  Gebruikte kaarten gaan op de aflegstapel. Pas wanneer de trekstapel leeg is, wordt de aflegstapel opnieuw geschud.
                 </p>
               </div>
             </div>

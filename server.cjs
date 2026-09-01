@@ -4,11 +4,12 @@ const PORT = process.env.PORT || 3001;
 
 const RESULT_DELAY = 3000;
 const TREE_NEXT_DELAY = 1800;
+const TREE_RESOLUTION_DELAY = 2600;
 const TREE_START_DELAY = 1400;
 const TIE_BREAK_RESULT_DELAY = 2500;
 const BUS_RESULT_DELAY = 2000;
 
-const SERVER_VERSION = "BUS_V9_DISCO_LEAVE";
+const SERVER_VERSION = "BUS_V10_TREE_SUMMARY_STOCK";
 
 const io = new Server(PORT, {
   cors: {
@@ -119,7 +120,7 @@ function getUniqueRoomCode() {
 
 /*
  * =========================
- * STOCK
+ * STOCK + AFLEGSTAPEL
  * =========================
  */
 
@@ -153,10 +154,14 @@ function addToDiscard(room, card) {
 }
 
 function refillStock(room) {
+  /*
+   * Zolang er nog kaarten in de stock liggen,
+   * gebeurt er helemaal niets met de aflegstapel.
+   */
   if (
     room.deck.length > 0
   ) {
-    return;
+    return false;
   }
 
   if (
@@ -167,19 +172,54 @@ function refillStock(room) {
       "WAARSCHUWING: stock en aflegstapel zijn leeg."
     );
 
-    return;
+    return false;
   }
 
-  console.log(
-    `Stock leeg. ${room.discardPile.length} kaarten opnieuw geschud.`
-  );
+  const recycledCards =
+    room.discardPile.length;
 
+  /*
+   * PAS NU:
+   * - aflegstapel schudden
+   * - terugzetten als nieuwe stock
+   * - aflegstapel leegmaken
+   */
   room.deck =
-    shuffle(
-      room.discardPile
-    );
+    shuffle([
+      ...room.discardPile,
+    ]);
 
   room.discardPile = [];
+
+  console.log(
+    `Trekstapel leeg. ${recycledCards} kaarten van de aflegstapel opnieuw geschud.`
+  );
+
+  /*
+   * Tijdens de bus laten we dit aan
+   * alle spelers zien.
+   */
+  if (
+    room.roomCode &&
+    (
+      room.game?.phase ===
+        "bus" ||
+      room.game?.phase ===
+        "bus-setup"
+    )
+  ) {
+    io.to(
+      room.roomCode
+    ).emit(
+      "stock-reshuffled",
+      {
+        count:
+          recycledCards,
+      }
+    );
+  }
+
+  return true;
 }
 
 function takeCard(room) {
@@ -246,6 +286,78 @@ function getCurrentPlayer(room) {
   return room.players[
     room.game.currentPlayerIndex
   ];
+}
+
+/*
+ * =========================
+ * BOOM RESULTAAT SAMENVATTEN
+ * =========================
+ */
+
+function createTreeResolutionSummary(tree) {
+  const totals =
+    new Map();
+
+  for (
+    const action of
+    tree.currentCardActions
+  ) {
+    for (
+      const receiver of
+      action.receivers
+    ) {
+      const existing =
+        totals.get(
+          receiver.playerId
+        );
+
+      if (existing) {
+        existing.count +=
+          receiver.count;
+      } else {
+        totals.set(
+          receiver.playerId,
+          {
+            playerId:
+              receiver.playerId,
+
+            playerName:
+              receiver.playerName,
+
+            count:
+              receiver.count,
+          }
+        );
+      }
+    }
+  }
+
+  const receivers =
+    Array.from(
+      totals.values()
+    );
+
+  const total =
+    receivers.reduce(
+      (
+        sum,
+        receiver
+      ) =>
+        sum +
+        receiver.count,
+      0
+    );
+
+  if (
+    receivers.length === 0
+  ) {
+    return null;
+  }
+
+  return {
+    receivers,
+    total,
+  };
 }
 
 /*
@@ -356,6 +468,9 @@ function publicTreeState(room) {
 
     lastAction:
       tree.lastAction,
+
+    resolutionSummary:
+      tree.resolutionSummary,
 
     busDriver:
       tree.busDriver,
@@ -847,7 +962,7 @@ function checkGuess(
 
 /*
  * =========================
- * BOOM
+ * BOOM BOUWEN
  * =========================
  */
 
@@ -1016,6 +1131,12 @@ function buildTree(room) {
     lastAction:
       null,
 
+    currentCardActions:
+      [],
+
+    resolutionSummary:
+      null,
+
     timer:
       null,
 
@@ -1119,6 +1240,16 @@ function advanceTreeResolver(
     return;
   }
 
+  /*
+   * Alle spelers met een match zijn klaar.
+   * Nu maken we één gezamenlijk overzicht
+   * van alle uitgedeelde slokken.
+   */
+  tree.resolutionSummary =
+    createTreeResolutionSummary(
+      tree
+    );
+
   tree.status =
     "resolved";
 
@@ -1126,8 +1257,15 @@ function advanceTreeResolver(
     roomCode
   );
 
+  /*
+   * Als er slokken zijn uitgedeeld:
+   * langer wachten zodat de popup leesbaar is.
+   */
   queueNextTreeCard(
-    roomCode
+    roomCode,
+    tree.resolutionSummary
+      ? TREE_RESOLUTION_DELAY
+      : TREE_NEXT_DELAY
   );
 }
 
@@ -1353,6 +1491,13 @@ function prepareUsedCardsForBus(
       card.id
     );
 
+    /*
+     * Deze kaarten gaan ALLEEN naar
+     * de aflegstapel.
+     *
+     * Ze gaan dus NIET direct terug
+     * naar room.deck.
+     */
     addToDiscard(
       room,
       card
@@ -1727,6 +1872,12 @@ function revealNextTreeCard(
     tree.activeCard =
       null;
 
+    tree.resolutionSummary =
+      null;
+
+    tree.currentCardActions =
+      [];
+
     if (
       tree.adtCard &&
       !tree.adtCard.revealed
@@ -1762,6 +1913,16 @@ function revealNextTreeCard(
 
   treeCard.revealed =
     true;
+
+  /*
+   * Nieuwe boomkaart:
+   * oude samenvatting weg.
+   */
+  tree.currentCardActions =
+    [];
+
+  tree.resolutionSummary =
+    null;
 
   tree.activeCard = {
     rowIndex:
@@ -2429,10 +2590,6 @@ io.on(
       socket.id
     );
 
-    /*
-     * ROOM MAKEN
-     */
-
     socket.on(
       "create-room",
       (
@@ -2465,6 +2622,8 @@ io.on(
         }
 
         rooms[roomCode] = {
+          roomCode,
+
           hostId:
             socket.id,
 
@@ -2600,10 +2759,6 @@ io.on(
       }
     );
 
-    /*
-     * JOIN
-     */
-
     socket.on(
       "join-room",
       (
@@ -2713,10 +2868,6 @@ io.on(
       }
     );
 
-    /*
-     * REMOVE
-     */
-
     socket.on(
       "remove-player",
       (playerId) => {
@@ -2770,10 +2921,6 @@ io.on(
       }
     );
 
-    /*
-     * START
-     */
-
     socket.on(
       "start-game",
       () => {
@@ -2798,10 +2945,6 @@ io.on(
         );
       }
     );
-
-    /*
-     * RESTART
-     */
 
     socket.on(
       "restart-game",
@@ -2859,10 +3002,6 @@ io.on(
       }
     );
 
-    /*
-     * TERUG HOME
-     */
-
     socket.on(
       "return-home",
       (callback) => {
@@ -2917,12 +3056,6 @@ io.on(
         });
       }
     );
-
-    /*
-     * =========================
-     * SPELER VERLAAT NA AFLOOP
-     * =========================
-     */
 
     socket.on(
       "leave-after-game",
@@ -2989,11 +3122,6 @@ io.on(
         socket.roomCode =
           null;
 
-        /*
-         * Niemand meer over:
-         * kamer kan weg.
-         */
-
         if (
           room.players.length ===
           0
@@ -3013,12 +3141,6 @@ io.on(
 
           return;
         }
-
-        /*
-         * Host vertrekt:
-         * eerstvolgende speler
-         * wordt nieuwe host.
-         */
 
         if (wasHost) {
           room.hostId =
@@ -3052,7 +3174,9 @@ io.on(
     );
 
     /*
+     * =========================
      * KAART GOK
+     * =========================
      */
 
     socket.on(
@@ -3180,7 +3304,9 @@ io.on(
     );
 
     /*
-     * NORMALE BOOM MATCH
+     * =========================
+     * BOOM UITDELEN
+     * =========================
      */
 
     socket.on(
@@ -3367,7 +3493,7 @@ io.on(
           );
         }
 
-        tree.lastAction = {
+        const action = {
           type:
             "distributed",
 
@@ -3381,6 +3507,31 @@ io.on(
 
           receivers,
         };
+
+        tree.lastAction =
+          action;
+
+        /*
+         * Bewaar deze actie voor de popup
+         * nadat ALLE matches op deze kaart
+         * zijn afgehandeld.
+         */
+        tree.currentCardActions.push(
+          {
+            giverId:
+              giver.id,
+
+            giverName:
+              giver.name,
+
+            receivers:
+              receivers.map(
+                (receiver) => ({
+                  ...receiver,
+                })
+              ),
+          }
+        );
 
         done({
           success:
@@ -3489,7 +3640,9 @@ io.on(
     );
 
     /*
+     * =========================
      * ADTJE
+     * =========================
      */
 
     socket.on(
@@ -3661,7 +3814,9 @@ io.on(
     );
 
     /*
+     * =========================
      * GELIJKSTAND
+     * =========================
      */
 
     socket.on(
@@ -3834,7 +3989,9 @@ io.on(
     );
 
     /*
+     * =========================
      * BUS SETUP
+     * =========================
      */
 
     socket.on(
@@ -3907,6 +4064,10 @@ io.on(
         bus.length =
           card.value;
 
+        /*
+         * Deze setupkaart is gebruikt en
+         * gaat op de aflegstapel.
+         */
         addToDiscard(
           room,
           card
@@ -4261,7 +4422,9 @@ io.on(
     );
 
     /*
+     * =========================
      * BUS GOK
+     * =========================
      */
 
     socket.on(
@@ -4363,6 +4526,13 @@ io.on(
         const referenceCard =
           pile.card;
 
+        /*
+         * takeCard() gebruikt ALTIJD eerst
+         * de bestaande stock.
+         *
+         * Alleen als die volledig leeg is,
+         * wordt refillStock() uitgevoerd.
+         */
         const newCard =
           takeCard(room);
 
@@ -4378,11 +4548,22 @@ io.on(
           return;
         }
 
+        /*
+         * De oude bovenste buskaart is nu
+         * echt gebruikt.
+         *
+         * Hij gaat dus op de AFLEGSTAPEL,
+         * niet direct terug in de stock.
+         */
         addToDiscard(
           room,
           referenceCard
         );
 
+        /*
+         * De nieuwe kaart blijft bovenop
+         * deze buspositie liggen.
+         */
         pile.card =
           newCard;
 
@@ -4779,7 +4960,9 @@ io.on(
     );
 
     /*
+     * =========================
      * DISCONNECT
+     * =========================
      */
 
     socket.on(
