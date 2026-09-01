@@ -9,7 +9,7 @@ const TREE_START_DELAY = 1400;
 const TIE_BREAK_RESULT_DELAY = 2500;
 const BUS_RESULT_DELAY = 2000;
 
-const SERVER_VERSION = "BUS_V11_FULL_BUS";
+const SERVER_VERSION = "BUS_V12_REPEAT_STOCK";
 
 const io = new Server(PORT, {
   cors: {
@@ -60,19 +60,13 @@ function shuffle(array) {
 function createDeck(numberOfDecks = 1) {
   const deck = [];
 
-  for (
-    let deckNumber = 0;
-    deckNumber < numberOfDecks;
-    deckNumber++
-  ) {
+  for (let deckNumber = 0; deckNumber < numberOfDecks; deckNumber++) {
     for (const suit of SUITS) {
       for (const cardValue of VALUES) {
         deck.push({
           id:
             `${deckNumber}-${suit.name}-${cardValue.value}-` +
-            Math.random()
-              .toString(36)
-              .substring(2, 9),
+            Math.random().toString(36).substring(2, 9),
 
           suit: suit.name,
           symbol: suit.symbol,
@@ -88,31 +82,24 @@ function createDeck(numberOfDecks = 1) {
 }
 
 function createRoomCode() {
-  const characters =
-    "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
   let code = "";
 
   for (let i = 0; i < 5; i++) {
-    code +=
-      characters[
-        Math.floor(
-          Math.random() *
-            characters.length
-        )
-      ];
+    code += characters[
+      Math.floor(Math.random() * characters.length)
+    ];
   }
 
   return code;
 }
 
 function getUniqueRoomCode() {
-  let code =
-    createRoomCode();
+  let code = createRoomCode();
 
   while (rooms[code]) {
-    code =
-      createRoomCode();
+    code = createRoomCode();
   }
 
   return code;
@@ -124,83 +111,90 @@ function getUniqueRoomCode() {
  * =========================
  */
 
+/*
+ * Een kaart die gebruikt is, wordt echt VERPLAATST
+ * naar de aflegstapel.
+ *
+ * Mocht dezelfde kaart door oude state toch nog
+ * in room.deck staan, dan verwijderen we hem daar
+ * eerst uit. Zo kan iedere fysieke kaart maar één
+ * keer in de stock/aflegstapel zitten.
+ */
 function addToDiscard(room, card) {
   if (!card) {
     return;
   }
 
+  room.deck = room.deck.filter(
+    (deckCard) => deckCard.id !== card.id
+  );
+
   const alreadyInDiscard =
     room.discardPile.some(
-      (item) =>
-        item.id === card.id
+      (discardCard) => discardCard.id === card.id
     );
 
-  const stillInStock =
-    room.deck.some(
-      (item) =>
-        item.id === card.id
-    );
-
-  if (
-    alreadyInDiscard ||
-    stillInStock
-  ) {
+  if (alreadyInDiscard) {
     return;
   }
 
-  room.discardPile.push(
-    card
-  );
+  room.discardPile.push(card);
 }
 
+/*
+ * Deze functie mag onbeperkt vaak uitgevoerd worden.
+ *
+ * Iedere keer wanneer:
+ * room.deck.length === 0
+ *
+ * wordt ALLES van de aflegstapel:
+ * 1. gekopieerd
+ * 2. aflegstapel geleegd
+ * 3. geschud
+ * 4. nieuwe stock
+ */
 function refillStock(room) {
-  if (
-    room.deck.length > 0
-  ) {
+  if (room.deck.length > 0) {
     return false;
   }
 
-  if (
-    room.discardPile.length ===
-    0
-  ) {
+  if (room.discardPile.length === 0) {
     console.log(
-      "WAARSCHUWING: stock en aflegstapel zijn leeg."
+      "WAARSCHUWING: trekstapel en aflegstapel zijn beide leeg."
     );
 
     return false;
   }
 
-  const recycledCards =
-    room.discardPile.length;
-
-  room.deck =
-    shuffle([
-      ...room.discardPile,
-    ]);
+  const cardsToRecycle = [
+    ...room.discardPile,
+  ];
 
   room.discardPile = [];
 
+  room.deck = shuffle(
+    cardsToRecycle
+  );
+
+  room.stockCycle =
+    (room.stockCycle || 0) + 1;
+
   console.log(
-    `Trekstapel leeg. ${recycledCards} kaarten van de aflegstapel opnieuw geschud.`
+    `Stock opnieuw gevuld - ronde ${room.stockCycle}: ${room.deck.length} kaarten geschud.`
   );
 
   if (
     room.roomCode &&
     (
-      room.game?.phase ===
-        "bus" ||
-      room.game?.phase ===
-        "bus-setup"
+      room.game?.phase === "bus" ||
+      room.game?.phase === "bus-setup"
     )
   ) {
-    io.to(
-      room.roomCode
-    ).emit(
+    io.to(room.roomCode).emit(
       "stock-reshuffled",
       {
-        count:
-          recycledCards,
+        count: room.deck.length,
+        cycle: room.stockCycle,
       }
     );
   }
@@ -208,13 +202,21 @@ function refillStock(room) {
   return true;
 }
 
+/*
+ * Iedere trekactie controleert opnieuw of de stock
+ * leeg is. Hierdoor werkt recyclen niet alleen één
+ * keer, maar iedere volgende keer opnieuw.
+ */
 function takeCard(room) {
-  refillStock(room);
+  if (room.deck.length === 0) {
+    refillStock(room);
+  }
 
-  return (
-    room.deck.pop() ||
-    null
-  );
+  if (room.deck.length === 0) {
+    return null;
+  }
+
+  return room.deck.pop() || null;
 }
 
 /*
@@ -224,41 +226,23 @@ function takeCard(room) {
  */
 
 function clearResultTimer(room) {
-  if (
-    room?.game?.resultTimer
-  ) {
-    clearTimeout(
-      room.game.resultTimer
-    );
-
-    room.game.resultTimer =
-      null;
+  if (room?.game?.resultTimer) {
+    clearTimeout(room.game.resultTimer);
+    room.game.resultTimer = null;
   }
 }
 
 function clearTreeTimer(room) {
-  if (
-    room?.game?.tree?.timer
-  ) {
-    clearTimeout(
-      room.game.tree.timer
-    );
-
-    room.game.tree.timer =
-      null;
+  if (room?.game?.tree?.timer) {
+    clearTimeout(room.game.tree.timer);
+    room.game.tree.timer = null;
   }
 }
 
 function clearBusTimer(room) {
-  if (
-    room?.game?.bus?.timer
-  ) {
-    clearTimeout(
-      room.game.bus.timer
-    );
-
-    room.game.bus.timer =
-      null;
+  if (room?.game?.bus?.timer) {
+    clearTimeout(room.game.bus.timer);
+    room.game.bus.timer = null;
   }
 }
 
@@ -281,37 +265,22 @@ function getCurrentPlayer(room) {
  */
 
 function createTreeResolutionSummary(tree) {
-  const totals =
-    new Map();
+  const totals = new Map();
 
-  for (
-    const action of
-    tree.currentCardActions
-  ) {
-    for (
-      const receiver of
-      action.receivers
-    ) {
+  for (const action of tree.currentCardActions) {
+    for (const receiver of action.receivers) {
       const existing =
-        totals.get(
-          receiver.playerId
-        );
+        totals.get(receiver.playerId);
 
       if (existing) {
-        existing.count +=
-          receiver.count;
+        existing.count += receiver.count;
       } else {
         totals.set(
           receiver.playerId,
           {
-            playerId:
-              receiver.playerId,
-
-            playerName:
-              receiver.playerName,
-
-            count:
-              receiver.count,
+            playerId: receiver.playerId,
+            playerName: receiver.playerName,
+            count: receiver.count,
           }
         );
       }
@@ -319,24 +288,16 @@ function createTreeResolutionSummary(tree) {
   }
 
   const receivers =
-    Array.from(
-      totals.values()
-    );
+    Array.from(totals.values());
 
   const total =
     receivers.reduce(
-      (
-        sum,
-        receiver
-      ) =>
-        sum +
-        receiver.count,
+      (sum, receiver) =>
+        sum + receiver.count,
       0
     );
 
-  if (
-    receivers.length === 0
-  ) {
+  if (receivers.length === 0) {
     return null;
   }
 
@@ -353,8 +314,7 @@ function createTreeResolutionSummary(tree) {
  */
 
 function publicTreeState(room) {
-  const tree =
-    room.game.tree;
+  const tree = room.game.tree;
 
   if (!tree) {
     return null;
@@ -376,61 +336,45 @@ function publicTreeState(room) {
       : null;
 
   return {
-    rows:
-      tree.rows.map(
-        (row) => ({
-          rowNumber:
-            row.rowNumber,
+    rows: tree.rows.map(
+      (row) => ({
+        rowNumber: row.rowNumber,
+        drinks: row.rowNumber,
 
-          drinks:
-            row.rowNumber,
+        cards: row.cards.map(
+          (treeCard) => ({
+            id: treeCard.card.id,
+            revealed: treeCard.revealed,
+            isDouble: treeCard.isDouble,
 
-          cards:
-            row.cards.map(
-              (treeCard) => ({
-                id:
-                  treeCard.card.id,
+            card:
+              treeCard.revealed
+                ? treeCard.card
+                : null,
+          })
+        ),
+      })
+    ),
 
-                revealed:
-                  treeCard.revealed,
-
-                isDouble:
-                  treeCard.isDouble,
-
-                card:
-                  treeCard.revealed
-                    ? treeCard.card
-                    : null,
-              })
-            ),
-        })
-      ),
-
-    status:
-      tree.status,
+    status: tree.status,
 
     activeCard:
       tree.activeCard
         ? {
             rowIndex:
-              tree.activeCard
-                .rowIndex,
+              tree.activeCard.rowIndex,
 
             cardIndex:
-              tree.activeCard
-                .cardIndex,
+              tree.activeCard.cardIndex,
 
             rowNumber:
-              tree.activeCard
-                .rowNumber,
+              tree.activeCard.rowNumber,
 
             isDouble:
-              tree.activeCard
-                .isDouble,
+              tree.activeCard.isDouble,
 
             card:
-              tree.activeCard
-                .card,
+              tree.activeCard.card,
           }
         : null,
 
@@ -506,8 +450,7 @@ function publicTreeState(room) {
  */
 
 function publicBusState(room) {
-  const bus =
-    room.game.bus;
+  const bus = room.game.bus;
 
   if (!bus) {
     return null;
@@ -557,10 +500,7 @@ function publicBusState(room) {
 
     piles:
       bus.piles.map(
-        (
-          pile,
-          index
-        ) => ({
+        (pile, index) => ({
           index,
 
           revealed:
@@ -572,9 +512,7 @@ function publicBusState(room) {
               : null,
 
           isCheckpoint:
-            bus.checkpoints.includes(
-              index
-            ),
+            bus.checkpoints.includes(index),
 
           isActiveCheckpoint:
             bus.activeCheckpointIndex ===
@@ -607,17 +545,10 @@ function publicGameState(room) {
     players:
       room.players.map(
         (player) => ({
-          id:
-            player.id,
-
-          name:
-            player.name,
-
-          isHost:
-            player.isHost,
-
-          cards:
-            player.cards || [],
+          id: player.id,
+          name: player.name,
+          isHost: player.isHost,
+          cards: player.cards || [],
         })
       ),
 
@@ -661,9 +592,7 @@ function sendGameState(roomCode) {
     return;
   }
 
-  io.to(
-    roomCode
-  ).emit(
+  io.to(roomCode).emit(
     "game-state",
     publicGameState(room)
   );
@@ -691,6 +620,12 @@ function initializeGame(roomCode) {
     );
 
   room.discardPile = [];
+
+  /*
+   * Houdt alleen bij hoeveel keer tijdens deze
+   * speelronde de aflegstapel opnieuw geschud is.
+   */
+  room.stockCycle = 0;
 
   room.players.forEach(
     (player) => {
@@ -741,15 +676,11 @@ function initializeGame(roomCode) {
       null,
   };
 
-  io.to(
-    roomCode
-  ).emit(
+  io.to(roomCode).emit(
     "game-started"
   );
 
-  beginTurn(
-    roomCode
-  );
+  beginTurn(roomCode);
 }
 
 /*
@@ -796,13 +727,9 @@ function beginTurn(roomCode) {
   room.game.waitingForGuess =
     true;
 
-  sendGameState(
-    roomCode
-  );
+  sendGameState(roomCode);
 
-  io.to(
-    currentPlayer.id
-  ).emit(
+  io.to(currentPlayer.id).emit(
     "card-drawn",
     {
       card,
@@ -815,8 +742,7 @@ function checkDisco(
   drawnCard
 ) {
   if (
-    player.cards.length !==
-    3
+    player.cards.length !== 3
   ) {
     return false;
   }
@@ -824,15 +750,13 @@ function checkDisco(
   const suits =
     new Set([
       ...player.cards.map(
-        (card) =>
-          card.suit
+        (card) => card.suit
       ),
+
       drawnCard.suit,
     ]);
 
-  return (
-    suits.size === 4
-  );
+  return suits.size === 4;
 }
 
 function checkGuess(
@@ -845,10 +769,7 @@ function checkGuess(
     room.game.currentStep;
 
   if (step === 0) {
-    return (
-      guess ===
-      card.color
-    );
+    return guess === card.color;
   }
 
   if (step === 1) {
@@ -859,22 +780,12 @@ function checkGuess(
       return false;
     }
 
-    if (
-      guess === "hoger"
-    ) {
-      return (
-        card.value >
-        first.value
-      );
+    if (guess === "hoger") {
+      return card.value > first.value;
     }
 
-    if (
-      guess === "lager"
-    ) {
-      return (
-        card.value <
-        first.value
-      );
+    if (guess === "lager") {
+      return card.value < first.value;
     }
 
     return false;
@@ -906,18 +817,14 @@ function checkGuess(
         second.value
       );
 
-    if (
-      guess === "binnen"
-    ) {
+    if (guess === "binnen") {
       return (
         card.value > low &&
         card.value < high
       );
     }
 
-    if (
-      guess === "buiten"
-    ) {
+    if (guess === "buiten") {
       return (
         card.value < low ||
         card.value > high
@@ -928,19 +835,14 @@ function checkGuess(
   }
 
   if (step === 3) {
-    if (
-      guess === "disco"
-    ) {
+    if (guess === "disco") {
       return checkDisco(
         player,
         card
       );
     }
 
-    return (
-      guess ===
-      card.suit
-    );
+    return guess === card.suit;
   }
 
   return false;
@@ -948,7 +850,7 @@ function checkGuess(
 
 /*
  * =========================
- * BOOM
+ * BOOM BOUWEN
  * =========================
  */
 
@@ -974,9 +876,7 @@ function drawTreeCard(
 
     if (
       usedValues.size >= 13 ||
-      !usedValues.has(
-        card.value
-      )
+      !usedValues.has(card.value)
     ) {
       usedValues.add(
         card.value
@@ -993,10 +893,7 @@ function drawTreeCard(
   if (
     skippedCards.length > 0
   ) {
-    return (
-      skippedCards.pop() ||
-      null
-    );
+    return skippedCards.pop() || null;
   }
 
   return takeCard(room);
@@ -1141,11 +1038,8 @@ function buildTree(room) {
     adtCard:
       adtCard
         ? {
-            card:
-              adtCard,
-
-            revealed:
-              false,
+            card: adtCard,
+            revealed: false,
           }
         : null,
 
@@ -1167,8 +1061,7 @@ function buildTree(room) {
 
 function queueNextTreeCard(
   roomCode,
-  delay =
-    TREE_NEXT_DELAY
+  delay = TREE_NEXT_DELAY
 ) {
   const room =
     rooms[roomCode];
@@ -1209,8 +1102,7 @@ function advanceTreeResolver(
   const tree =
     room.game.tree;
 
-  tree.currentResolverIndex +=
-    1;
+  tree.currentResolverIndex += 1;
 
   if (
     tree.currentResolverIndex <
@@ -1260,9 +1152,7 @@ function finishTreeAndChooseBusDriver(
     return;
   }
 
-  clearTreeTimer(
-    room
-  );
+  clearTreeTimer(room);
 
   const finish =
     () => {
@@ -1280,25 +1170,20 @@ function finishTreeAndChooseBusDriver(
         "finished";
 
       if (
-        currentRoom.game.tree
-          .adtCard
+        currentRoom.game.tree.adtCard
       ) {
         currentRoom.game.tree.adtStatus =
           "finished";
       }
 
-      sendGameState(
-        roomCode
-      );
+      sendGameState(roomCode);
 
       determineBusDriver(
         roomCode
       );
     };
 
-  if (
-    delay > 0
-  ) {
+  if (delay > 0) {
     room.game.tree.timer =
       setTimeout(
         finish,
@@ -1331,9 +1216,7 @@ function revealAdtCard(
   const tree =
     room.game.tree;
 
-  if (
-    !tree.adtCard
-  ) {
+  if (!tree.adtCard) {
     finishTreeAndChooseBusDriver(
       roomCode
     );
@@ -1414,8 +1297,7 @@ function advanceAdtResolver(
   const tree =
     room.game.tree;
 
-  tree.adtCurrentResolverIndex +=
-    1;
+  tree.adtCurrentResolverIndex += 1;
 
   if (
     tree.adtCurrentResolverIndex <
@@ -1446,7 +1328,7 @@ function advanceAdtResolver(
 
 /*
  * =========================
- * GEBRUIKTE KAARTEN BUS
+ * KAARTEN NAAR BUS
  * =========================
  */
 
@@ -1464,9 +1346,7 @@ function prepareUsedCardsForBus(
       return;
     }
 
-    seen.add(
-      card.id
-    );
+    seen.add(card.id);
 
     addToDiscard(
       room,
@@ -1486,9 +1366,7 @@ function prepareUsedCardsForBus(
     }
   }
 
-  if (
-    room.game.tree
-  ) {
+  if (room.game.tree) {
     for (
       const row of
       room.game.tree.rows
@@ -1504,8 +1382,7 @@ function prepareUsedCardsForBus(
     }
 
     if (
-      room.game.tree
-        .adtCard
+      room.game.tree.adtCard
     ) {
       collect(
         room.game.tree
@@ -1516,16 +1393,13 @@ function prepareUsedCardsForBus(
     for (
       const round of
       room.game.tree
-        .tieBreakRounds ||
-      []
+        .tieBreakRounds || []
     ) {
       for (
         const draw of
         round.draws || []
       ) {
-        collect(
-          draw.card
-        );
+        collect(draw.card);
       }
     }
   }
@@ -1533,7 +1407,7 @@ function prepareUsedCardsForBus(
 
 /*
  * =========================
- * GELIJKSTAND
+ * BUS DRIVER
  * =========================
  */
 
@@ -1616,8 +1490,7 @@ function startTieBreakRound(
     );
 
   if (
-    validCandidates.length ===
-    1
+    validCandidates.length === 1
   ) {
     finishBusDriverSelection(
       roomCode,
@@ -1659,9 +1532,7 @@ function startTieBreakRound(
   room.game.phase =
     "tree-tiebreak";
 
-  sendGameState(
-    roomCode
-  );
+  sendGameState(roomCode);
 }
 
 function resolveTieBreakRound(
@@ -1682,14 +1553,12 @@ function resolveTieBreakRound(
 
   const round =
     tree.tieBreakRounds[
-      tree.tieBreakRounds.length -
-        1
+      tree.tieBreakRounds.length - 1
     ];
 
   if (
     !round ||
-    round.draws.length ===
-      0
+    round.draws.length === 0
   ) {
     return;
   }
@@ -1725,8 +1594,7 @@ function resolveTieBreakRound(
       );
 
   if (
-    lowestIds.length ===
-    1
+    lowestIds.length === 1
   ) {
     const busDriver =
       room.players.find(
@@ -1784,8 +1652,7 @@ function determineBusDriver(
     );
 
   if (
-    candidates.length ===
-    1
+    candidates.length === 1
   ) {
     finishBusDriverSelection(
       roomCode,
@@ -1823,8 +1690,7 @@ function revealNextTreeCard(
   if (
     !room ||
     !room.game.tree ||
-    room.game.phase !==
-      "tree"
+    room.game.phase !== "tree"
   ) {
     return;
   }
@@ -1832,8 +1698,7 @@ function revealNextTreeCard(
   const tree =
     room.game.tree;
 
-  tree.currentSequenceIndex +=
-    1;
+  tree.currentSequenceIndex += 1;
 
   if (
     tree.currentSequenceIndex >=
@@ -2010,7 +1875,7 @@ function startTree(
 
 /*
  * =========================
- * VOLGENDE BEURT
+ * VOLGENDE SPELER
  * =========================
  */
 
@@ -2045,8 +1910,7 @@ function advanceTurn(
     room.game.currentPlayerIndex <
     room.players.length - 1
   ) {
-    room.game.currentPlayerIndex +=
-      1;
+    room.game.currentPlayerIndex += 1;
 
     beginTurn(
       roomCode
@@ -2058,12 +1922,10 @@ function advanceTurn(
   room.game.currentPlayerIndex =
     0;
 
-  room.game.currentStep +=
-    1;
+  room.game.currentStep += 1;
 
   if (
-    room.game.currentStep >=
-    4
+    room.game.currentStep >= 4
   ) {
     startTree(
       roomCode
@@ -2089,8 +1951,7 @@ function startResultTimer(
 
   clearResultTimer(room);
 
-  room.game.resultSequence +=
-    1;
+  room.game.resultSequence += 1;
 
   const sequence =
     room.game.resultSequence;
@@ -2191,12 +2052,10 @@ function startBusSetup(
     ],
 
     doubleRule:
-      room.settings
-        .doubleRule,
+      room.settings.doubleRule,
 
     checkpointFailRule:
-      room.settings
-        .checkpointFailRule,
+      room.settings.checkpointFailRule,
 
     checkpointRetryUsedIndex:
       null,
@@ -2304,8 +2163,7 @@ function getRestartIndex(bus) {
     );
 
   if (
-    achieved.length ===
-    0
+    achieved.length === 0
   ) {
     return 0;
   }
@@ -2324,9 +2182,7 @@ function getSafeRestartIndex(
     bus.activeCheckpointIndex !==
       null
   ) {
-    return (
-      bus.activeCheckpointIndex
-    );
+    return bus.activeCheckpointIndex;
   }
 
   return 0;
@@ -2413,8 +2269,7 @@ function continueBusAfterResult(
           null;
 
         if (correct) {
-          currentBus.currentIndex +=
-            1;
+          currentBus.currentIndex += 1;
 
           if (
             currentBus.currentIndex >=
@@ -2611,13 +2466,11 @@ io.on(
 
             checkpoints:
               Boolean(
-                settings
-                  ?.checkpoints
+                settings?.checkpoints
               ),
 
             doubleRule:
-              settings
-                ?.doubleRule ===
+              settings?.doubleRule ===
               "take-along"
                 ? "take-along"
                 : "pass",
@@ -2658,6 +2511,9 @@ io.on(
 
           discardPile:
             [],
+
+          stockCycle:
+            0,
 
           game: {
             started:
@@ -2736,8 +2592,7 @@ io.on(
       ) => {
         const code =
           String(
-            roomCode ||
-              ""
+            roomCode || ""
           )
             .trim()
             .toUpperCase();
@@ -2825,9 +2680,7 @@ io.on(
             room.players,
         });
 
-        io.to(
-          code
-        ).emit(
+        io.to(code).emit(
           "players-updated",
           room.players
         );
@@ -2845,8 +2698,7 @@ io.on(
 
         if (
           !room ||
-          room.hostId !==
-            socket.id
+          room.hostId !== socket.id
         ) {
           return;
         }
@@ -2872,15 +2724,11 @@ io.on(
               playerId
           );
 
-        io.to(
-          playerId
-        ).emit(
+        io.to(playerId).emit(
           "removed-from-room"
         );
 
-        io.to(
-          roomCode
-        ).emit(
+        io.to(roomCode).emit(
           "players-updated",
           room.players
         );
@@ -2898,10 +2746,8 @@ io.on(
 
         if (
           !room ||
-          room.hostId !==
-            socket.id ||
-          room.players.length <
-            2
+          room.hostId !== socket.id ||
+          room.players.length < 2
         ) {
           return;
         }
@@ -2929,22 +2775,19 @@ io.on(
 
         if (
           !room ||
-          room.hostId !==
-            socket.id ||
+          room.hostId !== socket.id ||
           room.game.phase !==
             "bus-finished"
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
         }
 
         if (
-          room.players.length <
-          2
+          room.players.length < 2
         ) {
           done({
             success:
@@ -2962,8 +2805,7 @@ io.on(
         );
 
         done({
-          success:
-            true,
+          success: true,
         });
       }
     );
@@ -2985,30 +2827,22 @@ io.on(
 
         if (
           !room ||
-          room.hostId !==
-            socket.id
+          room.hostId !== socket.id
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
         }
 
-        clearAllTimers(
-          room
-        );
+        clearAllTimers(room);
 
-        io.to(
-          roomCode
-        ).emit(
+        io.to(roomCode).emit(
           "return-home"
         );
 
-        io.in(
-          roomCode
-        ).socketsLeave(
+        io.in(roomCode).socketsLeave(
           roomCode
         );
 
@@ -3017,8 +2851,7 @@ io.on(
         ];
 
         done({
-          success:
-            true,
+          success: true,
         });
       }
     );
@@ -3063,16 +2896,14 @@ io.on(
 
         if (!player) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
         }
 
         const wasHost =
-          room.hostId ===
-          socket.id;
+          room.hostId === socket.id;
 
         room.players =
           room.players.filter(
@@ -3089,20 +2920,16 @@ io.on(
           null;
 
         if (
-          room.players.length ===
-          0
+          room.players.length === 0
         ) {
-          clearAllTimers(
-            room
-          );
+          clearAllTimers(room);
 
           delete rooms[
             roomCode
           ];
 
           done({
-            success:
-              true,
+            success: true,
           });
 
           return;
@@ -3121,9 +2948,7 @@ io.on(
           );
         }
 
-        io.to(
-          roomCode
-        ).emit(
+        io.to(roomCode).emit(
           "players-updated",
           room.players
         );
@@ -3133,8 +2958,7 @@ io.on(
         );
 
         done({
-          success:
-            true,
+          success: true,
         });
       }
     );
@@ -3147,9 +2971,7 @@ io.on(
 
     socket.on(
       "guess-card",
-      ({
-        guess,
-      }) => {
+      ({ guess }) => {
         const roomCode =
           socket.roomCode;
 
@@ -3158,25 +2980,19 @@ io.on(
 
         if (
           !room ||
-          room.game.phase !==
-            "cards" ||
-          !room.game
-            .waitingForGuess ||
-          room.game
-            .resultShowing
+          room.game.phase !== "cards" ||
+          !room.game.waitingForGuess ||
+          room.game.resultShowing
         ) {
           return;
         }
 
         const player =
-          getCurrentPlayer(
-            room
-          );
+          getCurrentPlayer(room);
 
         if (
           !player ||
-          player.id !==
-            socket.id
+          player.id !== socket.id
         ) {
           return;
         }
@@ -3204,15 +3020,10 @@ io.on(
           );
 
         const isDisco =
-          room.game
-            .currentStep ===
-            3 &&
-          normalizedGuess ===
-            "disco";
+          room.game.currentStep === 3 &&
+          normalizedGuess === "disco";
 
-        player.cards.push(
-          card
-        );
+        player.cards.push(card);
 
         const result = {
           playerId:
@@ -3222,8 +3033,7 @@ io.on(
             player.name,
 
           step:
-            room.game
-              .currentStep,
+            room.game.currentStep,
 
           card,
 
@@ -3256,9 +3066,7 @@ io.on(
           roomCode
         );
 
-        io.to(
-          roomCode
-        ).emit(
+        io.to(roomCode).emit(
           "guess-result",
           result
         );
@@ -3278,9 +3086,7 @@ io.on(
     socket.on(
       "tree-distribute",
       (
-        {
-          distribution,
-        },
+        { distribution },
         callback
       ) => {
         const done =
@@ -3298,12 +3104,10 @@ io.on(
         if (
           !room ||
           !room.game.tree ||
-          room.game.phase !==
-            "tree"
+          room.game.phase !== "tree"
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -3318,10 +3122,8 @@ io.on(
           ];
 
         if (
-          tree.status !==
-            "resolving" ||
-          resolverId !==
-            socket.id
+          tree.status !== "resolving" ||
+          resolverId !== socket.id
         ) {
           done({
             success:
@@ -3337,8 +3139,7 @@ io.on(
         const giver =
           room.players.find(
             (player) =>
-              player.id ===
-              socket.id
+              player.id === socket.id
           );
 
         if (
@@ -3346,28 +3147,23 @@ io.on(
           !tree.activeCard
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
         }
 
         const safe =
-          Array.isArray(
-            distribution
-          )
+          Array.isArray(distribution)
             ? distribution
             : [];
 
         let total = 0;
 
-        const receivers =
-          [];
+        const receivers = [];
 
         for (
-          const item of
-          safe
+          const item of safe
         ) {
           const receiver =
             room.players.find(
@@ -3383,18 +3179,14 @@ io.on(
 
           if (
             !receiver ||
-            receiver.id ===
-              giver.id ||
-            !Number.isInteger(
-              count
-            ) ||
+            receiver.id === giver.id ||
+            !Number.isInteger(count) ||
             count <= 0
           ) {
             continue;
           }
 
-          total +=
-            count;
+          total += count;
 
           receivers.push({
             playerId:
@@ -3426,8 +3218,7 @@ io.on(
           giver.cards.findIndex(
             (card) =>
               card.value ===
-              tree.activeCard
-                .card.value
+              tree.activeCard.card.value
           );
 
         if (
@@ -3450,16 +3241,14 @@ io.on(
             1
           );
 
-        if (
-          removed[0]
-        ) {
+        if (removed[0]) {
           addToDiscard(
             room,
             removed[0]
           );
         }
 
-        const action = {
+        tree.lastAction = {
           type:
             "distributed",
 
@@ -3473,9 +3262,6 @@ io.on(
 
           receivers,
         };
-
-        tree.lastAction =
-          action;
 
         tree.currentCardActions.push(
           {
@@ -3495,8 +3281,7 @@ io.on(
         );
 
         done({
-          success:
-            true,
+          success: true,
         });
 
         sendGameState(
@@ -3527,12 +3312,10 @@ io.on(
         if (
           !room ||
           !room.game.tree ||
-          room.game.phase !==
-            "tree"
+          room.game.phase !== "tree"
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -3547,14 +3330,11 @@ io.on(
           ];
 
         if (
-          tree.status !==
-            "resolving" ||
-          resolverId !==
-            socket.id
+          tree.status !== "resolving" ||
+          resolverId !== socket.id
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -3563,8 +3343,7 @@ io.on(
         const player =
           room.players.find(
             (item) =>
-              item.id ===
-              socket.id
+              item.id === socket.id
           );
 
         tree.lastAction = {
@@ -3586,8 +3365,7 @@ io.on(
         };
 
         done({
-          success:
-            true,
+          success: true,
         });
 
         sendGameState(
@@ -3609,9 +3387,7 @@ io.on(
     socket.on(
       "tree-adt-give",
       (
-        {
-          playerId,
-        },
+        { playerId },
         callback
       ) => {
         const done =
@@ -3629,12 +3405,10 @@ io.on(
         if (
           !room ||
           !room.game.tree ||
-          room.game.phase !==
-            "tree"
+          room.game.phase !== "tree"
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -3644,15 +3418,12 @@ io.on(
           room.game.tree;
 
         if (
-          tree.status !==
-            "adt" ||
-          tree.adtStatus !==
-            "resolving" ||
+          tree.status !== "adt" ||
+          tree.adtStatus !== "resolving" ||
           !tree.adtCard
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -3664,8 +3435,7 @@ io.on(
           ];
 
         if (
-          resolverId !==
-          socket.id
+          resolverId !== socket.id
         ) {
           done({
             success:
@@ -3681,22 +3451,19 @@ io.on(
         const giver =
           room.players.find(
             (player) =>
-              player.id ===
-              socket.id
+              player.id === socket.id
           );
 
         const receiver =
           room.players.find(
             (player) =>
-              player.id ===
-              playerId
+              player.id === playerId
           );
 
         if (
           !giver ||
           !receiver ||
-          giver.id ===
-            receiver.id
+          giver.id === receiver.id
         ) {
           done({
             success:
@@ -3736,9 +3503,7 @@ io.on(
             1
           );
 
-        if (
-          removed[0]
-        ) {
+        if (removed[0]) {
           addToDiscard(
             room,
             removed[0]
@@ -3760,8 +3525,7 @@ io.on(
         };
 
         done({
-          success:
-            true,
+          success: true,
         });
 
         sendGameState(
@@ -3802,8 +3566,7 @@ io.on(
             "tree-tiebreak"
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -3813,12 +3576,10 @@ io.on(
           room.game.tree;
 
         if (
-          tree.status !==
-            "tie-break"
+          tree.status !== "tie-break"
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -3859,14 +3620,12 @@ io.on(
         const player =
           room.players.find(
             (item) =>
-              item.id ===
-              socket.id
+              item.id === socket.id
           );
 
         if (!player) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -3889,14 +3648,12 @@ io.on(
 
         const round =
           tree.tieBreakRounds[
-            tree.tieBreakRounds.length -
-              1
+            tree.tieBreakRounds.length - 1
           ];
 
         if (!round) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -3915,8 +3672,7 @@ io.on(
         tree.tieBreakPendingIds =
           tree.tieBreakPendingIds.filter(
             (id) =>
-              id !==
-              socket.id
+              id !== socket.id
           );
 
         sendGameState(
@@ -3924,17 +3680,14 @@ io.on(
         );
 
         done({
-          success:
-            true,
+          success: true,
         });
 
         if (
           tree.tieBreakPendingIds.length ===
           0
         ) {
-          clearTreeTimer(
-            room
-          );
+          clearTreeTimer(room);
 
           tree.timer =
             setTimeout(
@@ -3977,8 +3730,7 @@ io.on(
             "bus-setup"
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -4038,8 +3790,7 @@ io.on(
         );
 
         done({
-          success:
-            true,
+          success: true,
         });
       }
     );
@@ -4066,8 +3817,7 @@ io.on(
             "bus-setup"
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -4124,9 +3874,7 @@ io.on(
         );
 
         const success =
-          dealBusCards(
-            room
-          );
+          dealBusCards(room);
 
         if (!success) {
           done({
@@ -4145,8 +3893,7 @@ io.on(
         );
 
         done({
-          success:
-            true,
+          success: true,
         });
       }
     );
@@ -4154,9 +3901,7 @@ io.on(
     socket.on(
       "bus-set-checkpoints",
       (
-        {
-          checkpoints,
-        },
+        { checkpoints },
         callback
       ) => {
         const done =
@@ -4178,8 +3923,7 @@ io.on(
             "bus-setup"
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -4206,9 +3950,7 @@ io.on(
         }
 
         const safe =
-          Array.isArray(
-            checkpoints
-          )
+          Array.isArray(checkpoints)
             ? checkpoints
             : [];
 
@@ -4219,17 +3961,13 @@ io.on(
                 .map(Number)
                 .filter(
                   (index) =>
-                    Number.isInteger(
-                      index
-                    ) &&
+                    Number.isInteger(index) &&
                     index > 0 &&
-                    index <
-                      bus.length
+                    index < bus.length
                 )
             ),
           ].sort(
-            (a, b) =>
-              a - b
+            (a, b) => a - b
           );
 
         sendGameState(
@@ -4237,8 +3975,7 @@ io.on(
         );
 
         done({
-          success:
-            true,
+          success: true,
         });
       }
     );
@@ -4265,8 +4002,7 @@ io.on(
             "bus-setup"
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -4282,8 +4018,7 @@ io.on(
             "checkpoints"
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -4297,8 +4032,7 @@ io.on(
         );
 
         done({
-          success:
-            true,
+          success: true,
         });
       }
     );
@@ -4325,8 +4059,7 @@ io.on(
             "bus-setup"
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -4372,8 +4105,7 @@ io.on(
         );
 
         done({
-          success:
-            true,
+          success: true,
         });
       }
     );
@@ -4387,9 +4119,7 @@ io.on(
     socket.on(
       "bus-guess",
       (
-        {
-          guess,
-        },
+        { guess },
         callback
       ) => {
         const done =
@@ -4407,12 +4137,10 @@ io.on(
         if (
           !room ||
           !room.game.bus ||
-          room.game.phase !==
-            "bus"
+          room.game.phase !== "bus"
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -4422,14 +4150,11 @@ io.on(
           room.game.bus;
 
         if (
-          bus.status !==
-            "playing" ||
-          bus.activeDriverId !==
-            socket.id
+          bus.status !== "playing" ||
+          bus.activeDriverId !== socket.id
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -4447,14 +4172,11 @@ io.on(
             .toLowerCase();
 
         if (
-          normalizedGuess !==
-            "hoger" &&
-          normalizedGuess !==
-            "lager"
+          normalizedGuess !== "hoger" &&
+          normalizedGuess !== "lager"
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -4464,14 +4186,11 @@ io.on(
           bus.currentIndex;
 
         const pile =
-          bus.piles[
-            position
-          ];
+          bus.piles[position];
 
         if (!pile) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -4483,6 +4202,17 @@ io.on(
         const referenceCard =
           pile.card;
 
+        /*
+         * BELANGRIJK:
+         *
+         * takeCard() controleert bij IEDERE gok opnieuw:
+         *
+         * stock leeg?
+         * -> aflegstapel volledig schudden
+         * -> nieuwe stock
+         *
+         * Dat kan ronde 1, 2, 3, 4, 5... onbeperkt.
+         */
         const newCard =
           takeCard(room);
 
@@ -4498,22 +4228,24 @@ io.on(
           return;
         }
 
+        /*
+         * De oude bovenste kaart is nu gebruikt.
+         * Die verhuist naar de aflegstapel.
+         */
         addToDiscard(
           room,
           referenceCard
         );
 
+        /*
+         * De nieuwe kaart blijft bovenop
+         * de buspositie liggen.
+         */
         pile.card =
           newCard;
 
         pile.revealed =
           true;
-
-        /*
-         * =========================
-         * DUBBEL
-         * =========================
-         */
 
         if (
           newCard.value ===
@@ -4525,26 +4257,12 @@ io.on(
           const doubleRestartIndex =
             bus.checkpointFailRule ===
               "safe"
-              ? getSafeRestartIndex(
-                  bus
-                )
+              ? getSafeRestartIndex(bus)
               : 0;
 
           bus.checkpointRetryUsedIndex =
             null;
 
-          /*
-           * NIEUW:
-           *
-           * Bij "iemand meenemen" kijken we
-           * of letterlijk iedere speler al
-           * in bus.riders staat.
-           *
-           * Zo ja:
-           * - geen speler meer kiezen
-           * - popup "Bus zit vol"
-           * - automatisch verder
-           */
           const busIsFull =
             bus.doubleRule ===
               "take-along" &&
@@ -4608,17 +4326,12 @@ io.on(
             );
 
             done({
-              success:
-                true,
+              success: true,
             });
 
             return;
           }
 
-          /*
-           * Er kunnen nog spelers instappen:
-           * normale keuze tonen.
-           */
           bus.result = {
             type:
               "double",
@@ -4662,16 +4375,14 @@ io.on(
           );
 
           done({
-            success:
-              true,
+            success: true,
           });
 
           return;
         }
 
         const correct =
-          normalizedGuess ===
-          "hoger"
+          normalizedGuess === "hoger"
             ? newCard.value >
               referenceCard.value
             : newCard.value <
@@ -4734,8 +4445,7 @@ io.on(
           );
 
           done({
-            success:
-              true,
+            success: true,
           });
 
           return;
@@ -4746,14 +4456,9 @@ io.on(
             position
           );
 
-        let restartIndex =
-          0;
-
-        let secondChance =
-          false;
-
-        let checkpointSafe =
-          false;
+        let restartIndex = 0;
+        let secondChance = false;
+        let checkpointSafe = false;
 
         if (
           bus.checkpointFailRule ===
@@ -4866,8 +4571,7 @@ io.on(
         );
 
         done({
-          success:
-            true,
+          success: true,
         });
       }
     );
@@ -4875,9 +4579,7 @@ io.on(
     socket.on(
       "bus-double-choice",
       (
-        {
-          playerId,
-        },
+        { playerId },
         callback
       ) => {
         const done =
@@ -4895,12 +4597,10 @@ io.on(
         if (
           !room ||
           !room.game.bus ||
-          room.game.phase !==
-            "bus"
+          room.game.phase !== "bus"
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -4917,8 +4617,7 @@ io.on(
           !bus.result
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
@@ -4937,18 +4636,12 @@ io.on(
             socket.id
         ) {
           done({
-            success:
-              false,
+            success: false,
           });
 
           return;
         }
 
-        /*
-         * Extra controle:
-         * bij meenemen mag iemand die al
-         * in de bus zit niet opnieuw gekozen worden.
-         */
         if (
           bus.doubleRule ===
             "take-along" &&
@@ -5019,8 +4712,7 @@ io.on(
         );
 
         done({
-          success:
-            true,
+          success: true,
         });
       }
     );
@@ -5039,9 +4731,7 @@ io.on(
 
         if (
           !roomCode ||
-          !rooms[
-            roomCode
-          ]
+          !rooms[roomCode]
         ) {
           return;
         }
@@ -5050,16 +4740,11 @@ io.on(
           rooms[roomCode];
 
         if (
-          room.hostId ===
-          socket.id
+          room.hostId === socket.id
         ) {
-          clearAllTimers(
-            room
-          );
+          clearAllTimers(room);
 
-          io.to(
-            roomCode
-          ).emit(
+          io.to(roomCode).emit(
             "room-closed"
           );
 
@@ -5077,28 +4762,23 @@ io.on(
               socket.id
           );
 
-        if (
-          room.game.tree
-        ) {
+        if (room.game.tree) {
           room.game.tree.tieBreakCandidateIds =
             room.game.tree.tieBreakCandidateIds.filter(
               (id) =>
-                id !==
-                socket.id
+                id !== socket.id
             );
 
           room.game.tree.tieBreakPendingIds =
             room.game.tree.tieBreakPendingIds.filter(
               (id) =>
-                id !==
-                socket.id
+                id !== socket.id
             );
 
           room.game.tree.adtPendingResolvers =
             room.game.tree.adtPendingResolvers.filter(
               (id) =>
-                id !==
-                socket.id
+                id !== socket.id
             );
         }
 
