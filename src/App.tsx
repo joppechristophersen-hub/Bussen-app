@@ -472,6 +472,14 @@ function App() {
       null
     );
 
+  const [
+    discoCelebration,
+    setDiscoCelebration,
+  ] =
+    useState<string | null>(
+      null
+    );
+
   const previousBusRef =
     useRef<{
       exists: boolean;
@@ -488,6 +496,12 @@ function App() {
       riders:
         [],
     });
+
+  /*
+   * =========================
+   * QR
+   * =========================
+   */
 
   useEffect(() => {
     const params =
@@ -514,6 +528,12 @@ function App() {
     }
   }, []);
 
+  /*
+   * =========================
+   * ANNOUNCEMENT TIMER
+   * =========================
+   */
+
   useEffect(() => {
     if (!announcement) {
       return;
@@ -538,12 +558,70 @@ function App() {
     announcement,
   ]);
 
+  /*
+   * =========================
+   * DISCO TIMER
+   * =========================
+   */
+
   useEffect(() => {
+    if (!discoCelebration) {
+      return;
+    }
+
+    const timer =
+      window.setTimeout(
+        () => {
+          setDiscoCelebration(
+            null
+          );
+        },
+        2400
+      );
+
+    return () => {
+      window.clearTimeout(
+        timer
+      );
+    };
+  }, [
+    discoCelebration,
+  ]);
+
+  /*
+   * =========================
+   * SOCKET EVENTS
+   * =========================
+   */
+
+  useEffect(() => {
+    function syncHost(
+      updatedPlayers:
+        Player[]
+    ) {
+      const me =
+        updatedPlayers.find(
+          (player) =>
+            player.id ===
+            socket.id
+        );
+
+      setIsHost(
+        Boolean(
+          me?.isHost
+        )
+      );
+    }
+
     function handlePlayersUpdated(
       updatedPlayers:
         Player[]
     ) {
       setPlayerNames(
+        updatedPlayers
+      );
+
+      syncHost(
         updatedPlayers
       );
     }
@@ -557,6 +635,7 @@ function App() {
       setTreeSubmitting(false);
       setBusSubmitting(false);
       setAnnouncement(null);
+      setDiscoCelebration(null);
 
       previousBusRef.current = {
         exists:
@@ -583,6 +662,10 @@ function App() {
       );
 
       setPlayerNames(
+        state.players
+      );
+
+      syncHost(
         state.players
       );
 
@@ -787,6 +870,20 @@ function App() {
       setCountdown(
         3
       );
+
+      /*
+       * Disco geslaagd:
+       * animatie op ALLE apparaten.
+       */
+
+      if (
+        result.isDisco &&
+        result.correct
+      ) {
+        setDiscoCelebration(
+          result.playerName
+        );
+      }
     }
 
     function handleRoomClosed() {
@@ -892,6 +989,12 @@ function App() {
     };
   }, []);
 
+  /*
+   * =========================
+   * COUNTDOWN
+   * =========================
+   */
+
   useEffect(() => {
     if (
       !guessResult ||
@@ -970,6 +1073,12 @@ function App() {
       ?.adtCurrentResolverId,
   ]);
 
+  /*
+   * =========================
+   * HELPERS
+   * =========================
+   */
+
   function resetToHome() {
     setRoomCode("");
     setPlayerNames([]);
@@ -983,6 +1092,7 @@ function App() {
     setTreeSubmitting(false);
     setBusSubmitting(false);
     setAnnouncement(null);
+    setDiscoCelebration(null);
 
     previousBusRef.current = {
       exists:
@@ -1186,6 +1296,460 @@ function App() {
           )
         )}
       </div>
+    );
+  }
+
+  /*
+   * =========================
+   * DISCO ANIMATIE
+   * =========================
+   */
+
+  function renderDiscoCelebration() {
+    if (
+      !discoCelebration
+    ) {
+      return null;
+    }
+
+    return (
+      <>
+        <style>
+          {`
+            @keyframes discoOverlayIn {
+              from {
+                opacity: 0;
+              }
+
+              to {
+                opacity: 1;
+              }
+            }
+
+            @keyframes discoBallSpin {
+              from {
+                transform: rotate(0deg);
+              }
+
+              to {
+                transform: rotate(360deg);
+              }
+            }
+
+            @keyframes discoBallPulse {
+              from {
+                box-shadow:
+                  0 0 25px rgba(255,255,255,.7),
+                  0 0 60px rgba(180,100,255,.45);
+              }
+
+              to {
+                box-shadow:
+                  0 0 45px rgba(255,255,255,1),
+                  0 0 100px rgba(70,220,255,.75);
+              }
+            }
+
+            @keyframes discoBeamOne {
+              from {
+                transform: rotate(-32deg);
+              }
+
+              to {
+                transform: rotate(32deg);
+              }
+            }
+
+            @keyframes discoBeamTwo {
+              from {
+                transform: rotate(35deg);
+              }
+
+              to {
+                transform: rotate(-35deg);
+              }
+            }
+
+            @keyframes discoTextPop {
+              0% {
+                opacity: 0;
+                transform: translateY(25px) scale(.75);
+              }
+
+              70% {
+                transform: translateY(-4px) scale(1.08);
+              }
+
+              100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+              }
+            }
+
+            @keyframes discoSparkle {
+              0%, 100% {
+                opacity: .25;
+                transform: scale(.7);
+              }
+
+              50% {
+                opacity: 1;
+                transform: scale(1.25);
+              }
+            }
+          `}
+        </style>
+
+        <div
+          style={{
+            position:
+              "fixed",
+
+            inset:
+              0,
+
+            zIndex:
+              1500,
+
+            overflow:
+              "hidden",
+
+            pointerEvents:
+              "none",
+
+            display:
+              "flex",
+
+            alignItems:
+              "center",
+
+            justifyContent:
+              "center",
+
+            background:
+              "radial-gradient(circle at center, rgba(74,25,110,.72), rgba(4,5,12,.94))",
+
+            backdropFilter:
+              "blur(5px)",
+
+            animation:
+              "discoOverlayIn .2s ease-out",
+          }}
+        >
+          <div
+            style={{
+              position:
+                "absolute",
+
+              width:
+                "150vw",
+
+              height:
+                "90px",
+
+              left:
+                "50%",
+
+              top:
+                "35%",
+
+              transformOrigin:
+                "0 50%",
+
+              background:
+                "linear-gradient(90deg, rgba(255,58,150,.7), rgba(255,58,150,0))",
+
+              filter:
+                "blur(10px)",
+
+              animation:
+                "discoBeamOne .65s ease-in-out infinite alternate",
+            }}
+          />
+
+          <div
+            style={{
+              position:
+                "absolute",
+
+              width:
+                "150vw",
+
+              height:
+                "90px",
+
+              left:
+                "50%",
+
+              top:
+                "36%",
+
+              transformOrigin:
+                "0 50%",
+
+              background:
+                "linear-gradient(90deg, rgba(50,220,255,.65), rgba(50,220,255,0))",
+
+              filter:
+                "blur(10px)",
+
+              animation:
+                "discoBeamTwo .8s ease-in-out infinite alternate",
+            }}
+          />
+
+          <div
+            style={{
+              position:
+                "absolute",
+
+              width:
+                "120vw",
+
+              height:
+                "70px",
+
+              right:
+                "50%",
+
+              top:
+                "30%",
+
+              transformOrigin:
+                "100% 50%",
+
+              background:
+                "linear-gradient(270deg, rgba(255,210,40,.55), rgba(255,210,40,0))",
+
+              filter:
+                "blur(12px)",
+
+              animation:
+                "discoBeamTwo .7s ease-in-out infinite alternate",
+            }}
+          />
+
+          {[
+            ["12%", "18%", "✦", "0s"],
+            ["80%", "18%", "✧", ".2s"],
+            ["18%", "68%", "✦", ".4s"],
+            ["85%", "72%", "✧", ".1s"],
+            ["7%", "45%", "✦", ".3s"],
+            ["92%", "46%", "✦", ".5s"],
+          ].map(
+            (
+              item,
+              index
+            ) => (
+              <span
+                key={
+                  index
+                }
+                style={{
+                  position:
+                    "absolute",
+
+                  left:
+                    item[0],
+
+                  top:
+                    item[1],
+
+                  color:
+                    "#fff",
+
+                  fontSize:
+                    "2rem",
+
+                  animation:
+                    `discoSparkle .75s ${item[3]} ease-in-out infinite`,
+                }}
+              >
+                {item[2]}
+              </span>
+            )
+          )}
+
+          <div
+            style={{
+              position:
+                "relative",
+
+              zIndex:
+                2,
+
+              width:
+                "min(90vw, 420px)",
+
+              textAlign:
+                "center",
+
+              color:
+                "#ffffff",
+
+              animation:
+                "discoTextPop .45s cubic-bezier(.2,.9,.25,1.2)",
+            }}
+          >
+            <div
+              style={{
+                width:
+                  "14px",
+
+                height:
+                  "120px",
+
+                margin:
+                  "-70px auto 0",
+
+                background:
+                  "linear-gradient(#555, #ddd)",
+
+                borderRadius:
+                  "10px",
+              }}
+            />
+
+            <div
+              style={{
+                position:
+                  "relative",
+
+                width:
+                  "120px",
+
+                height:
+                  "120px",
+
+                margin:
+                  "0 auto 22px",
+
+                borderRadius:
+                  "50%",
+
+                border:
+                  "3px solid rgba(255,255,255,.85)",
+
+                background:
+                  `
+                    repeating-conic-gradient(
+                      from 0deg,
+                      #ffffff 0deg 10deg,
+                      #9fe8ff 10deg 20deg,
+                      #d39cff 20deg 30deg,
+                      #ffffff 30deg 40deg
+                    )
+                  `,
+
+                animation:
+                  "discoBallSpin 2s linear infinite, discoBallPulse .5s ease-in-out infinite alternate",
+              }}
+            >
+              <div
+                style={{
+                  position:
+                    "absolute",
+
+                  inset:
+                    "12px",
+
+                  borderRadius:
+                    "50%",
+
+                  border:
+                    "1px solid rgba(255,255,255,.65)",
+                }}
+              />
+
+              <div
+                style={{
+                  position:
+                    "absolute",
+
+                  inset:
+                    "36px 0",
+
+                  borderTop:
+                    "1px solid rgba(255,255,255,.65)",
+
+                  borderBottom:
+                    "1px solid rgba(255,255,255,.65)",
+                }}
+              />
+
+              <div
+                style={{
+                  position:
+                    "absolute",
+
+                  inset:
+                    "0 36px",
+
+                  borderLeft:
+                    "1px solid rgba(255,255,255,.65)",
+
+                  borderRight:
+                    "1px solid rgba(255,255,255,.65)",
+                }}
+              />
+            </div>
+
+            <div
+              style={{
+                fontSize:
+                  "clamp(2.7rem, 15vw, 4.7rem)",
+
+                fontWeight:
+                  950,
+
+                lineHeight:
+                  .9,
+
+                letterSpacing:
+                  "-0.06em",
+
+                textShadow:
+                  "0 0 30px rgba(255,255,255,.55)",
+              }}
+            >
+              DISCO!
+            </div>
+
+            <div
+              style={{
+                marginTop:
+                  "14px",
+
+                fontSize:
+                  "1.2rem",
+
+                fontWeight:
+                  800,
+
+                color:
+                  "#f5e8ff",
+              }}
+            >
+              🪩 {discoCelebration} heeft Disco!
+            </div>
+
+            <div
+              style={{
+                marginTop:
+                  "8px",
+
+                color:
+                  "rgba(255,255,255,.8)",
+
+                fontSize:
+                  ".9rem",
+              }}
+            >
+              Iedereen behalve {discoCelebration} neemt 1 slok
+            </div>
+          </div>
+        </div>
+      </>
     );
   }
 
@@ -1412,6 +1976,9 @@ function App() {
         response: {
           success:
             boolean;
+
+          message?:
+            string;
         }
       ) => {
         if (
@@ -1420,6 +1987,14 @@ function App() {
           setBusSubmitting(
             false
           );
+
+          if (
+            response.message
+          ) {
+            alert(
+              response.message
+            );
+          }
         }
       }
     );
@@ -1450,6 +2025,50 @@ function App() {
             false
           );
         }
+      }
+    );
+  }
+
+  function leaveFinishedGame() {
+    if (
+      gameState?.phase !==
+      "bus-finished"
+    ) {
+      return;
+    }
+
+    setBusSubmitting(
+      true
+    );
+
+    socket.emit(
+      "leave-after-game",
+
+      (
+        response: {
+          success:
+            boolean;
+
+          message?:
+            string;
+        }
+      ) => {
+        if (
+          !response.success
+        ) {
+          setBusSubmitting(
+            false
+          );
+
+          alert(
+            response.message ||
+              "Verlaten is niet gelukt."
+          );
+
+          return;
+        }
+
+        resetToHome();
       }
     );
   }
@@ -2724,11 +3343,37 @@ function App() {
                   >
                     🏠 Terug naar home
                   </button>
+
+                  <button
+                    className="start-button secondary"
+                    onClick={
+                      leaveFinishedGame
+                    }
+                    disabled={
+                      busSubmitting
+                    }
+                  >
+                    🚪 Spel verlaten
+                  </button>
                 </>
               ) : (
-                <div className="waiting-message">
-                  De host kiest wat we hierna doen...
-                </div>
+                <>
+                  <div className="waiting-message">
+                    De host kiest wat we hierna doen...
+                  </div>
+
+                  <button
+                    className="start-button secondary"
+                    onClick={
+                      leaveFinishedGame
+                    }
+                    disabled={
+                      busSubmitting
+                    }
+                  >
+                    🚪 Spel verlaten
+                  </button>
+                </>
               )}
             </div>
           )}
@@ -4076,6 +4721,8 @@ function App() {
 
     return (
       <main className="app">
+        {renderDiscoCelebration()}
+
         <section className="card game-card">
           <div className="game-top">
             <div className="logo small-logo">
@@ -5547,6 +6194,12 @@ function App() {
       </main>
     );
   }
+
+  /*
+   * =========================
+   * HOME
+   * =========================
+   */
 
   return (
     <main className="app">

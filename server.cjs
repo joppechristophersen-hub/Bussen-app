@@ -8,7 +8,7 @@ const TREE_START_DELAY = 1400;
 const TIE_BREAK_RESULT_DELAY = 2500;
 const BUS_RESULT_DELAY = 2000;
 
-const SERVER_VERSION = "BUS_V8_TREE_RULES";
+const SERVER_VERSION = "BUS_V9_DISCO_LEAVE";
 
 const io = new Server(PORT, {
   cors: {
@@ -2429,6 +2429,10 @@ io.on(
       socket.id
     );
 
+    /*
+     * ROOM MAKEN
+     */
+
     socket.on(
       "create-room",
       (
@@ -2596,6 +2600,10 @@ io.on(
       }
     );
 
+    /*
+     * JOIN
+     */
+
     socket.on(
       "join-room",
       (
@@ -2705,6 +2713,10 @@ io.on(
       }
     );
 
+    /*
+     * REMOVE
+     */
+
     socket.on(
       "remove-player",
       (playerId) => {
@@ -2758,6 +2770,10 @@ io.on(
       }
     );
 
+    /*
+     * START
+     */
+
     socket.on(
       "start-game",
       () => {
@@ -2782,6 +2798,10 @@ io.on(
         );
       }
     );
+
+    /*
+     * RESTART
+     */
 
     socket.on(
       "restart-game",
@@ -2813,6 +2833,21 @@ io.on(
           return;
         }
 
+        if (
+          room.players.length <
+          2
+        ) {
+          done({
+            success:
+              false,
+
+            message:
+              "Er zijn minimaal 2 spelers nodig voor een nieuw spel.",
+          });
+
+          return;
+        }
+
         initializeGame(
           roomCode
         );
@@ -2823,6 +2858,10 @@ io.on(
         });
       }
     );
+
+    /*
+     * TERUG HOME
+     */
 
     socket.on(
       "return-home",
@@ -2878,6 +2917,143 @@ io.on(
         });
       }
     );
+
+    /*
+     * =========================
+     * SPELER VERLAAT NA AFLOOP
+     * =========================
+     */
+
+    socket.on(
+      "leave-after-game",
+      (callback) => {
+        const done =
+          typeof callback ===
+          "function"
+            ? callback
+            : () => {};
+
+        const roomCode =
+          socket.roomCode;
+
+        const room =
+          rooms[roomCode];
+
+        if (
+          !room ||
+          room.game.phase !==
+            "bus-finished"
+        ) {
+          done({
+            success:
+              false,
+
+            message:
+              "Je kunt het spel nu niet verlaten.",
+          });
+
+          return;
+        }
+
+        const player =
+          room.players.find(
+            (item) =>
+              item.id ===
+              socket.id
+          );
+
+        if (!player) {
+          done({
+            success:
+              false,
+          });
+
+          return;
+        }
+
+        const wasHost =
+          room.hostId ===
+          socket.id;
+
+        room.players =
+          room.players.filter(
+            (item) =>
+              item.id !==
+              socket.id
+          );
+
+        socket.leave(
+          roomCode
+        );
+
+        socket.roomCode =
+          null;
+
+        /*
+         * Niemand meer over:
+         * kamer kan weg.
+         */
+
+        if (
+          room.players.length ===
+          0
+        ) {
+          clearAllTimers(
+            room
+          );
+
+          delete rooms[
+            roomCode
+          ];
+
+          done({
+            success:
+              true,
+          });
+
+          return;
+        }
+
+        /*
+         * Host vertrekt:
+         * eerstvolgende speler
+         * wordt nieuwe host.
+         */
+
+        if (wasHost) {
+          room.hostId =
+            room.players[0].id;
+
+          room.players.forEach(
+            (remainingPlayer) => {
+              remainingPlayer.isHost =
+                remainingPlayer.id ===
+                room.hostId;
+            }
+          );
+        }
+
+        io.to(
+          roomCode
+        ).emit(
+          "players-updated",
+          room.players
+        );
+
+        sendGameState(
+          roomCode
+        );
+
+        done({
+          success:
+            true,
+        });
+      }
+    );
+
+    /*
+     * KAART GOK
+     */
 
     socket.on(
       "guess-card",
@@ -4601,6 +4777,10 @@ io.on(
         });
       }
     );
+
+    /*
+     * DISCONNECT
+     */
 
     socket.on(
       "disconnect",
