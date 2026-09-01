@@ -234,6 +234,7 @@ type BusResult = {
   newCard: Card;
   correct: boolean;
   double: boolean;
+  busFull?: boolean;
   drinks: number;
   restartIndex?: number;
   secondChance?: boolean;
@@ -519,12 +520,6 @@ function App() {
         [],
     });
 
-  /*
-   * =========================
-   * QR
-   * =========================
-   */
-
   useEffect(() => {
     const params =
       new URLSearchParams(
@@ -550,12 +545,6 @@ function App() {
     }
   }, []);
 
-  /*
-   * =========================
-   * ANNOUNCEMENT TIMER
-   * =========================
-   */
-
   useEffect(() => {
     if (!announcement) {
       return;
@@ -579,12 +568,6 @@ function App() {
   }, [
     announcement,
   ]);
-
-  /*
-   * =========================
-   * DISCO TIMER
-   * =========================
-   */
 
   useEffect(() => {
     if (!discoCelebration) {
@@ -610,12 +593,6 @@ function App() {
     discoCelebration,
   ]);
 
-  /*
-   * =========================
-   * STOCK SCHUD POPUP
-   * =========================
-   */
-
   useEffect(() => {
     if (!stockShuffleNotice) {
       return;
@@ -639,12 +616,6 @@ function App() {
   }, [
     stockShuffleNotice,
   ]);
-
-  /*
-   * =========================
-   * SOCKET EVENTS
-   * =========================
-   */
 
   useEffect(() => {
     function syncHost(
@@ -1059,12 +1030,6 @@ function App() {
     };
   }, []);
 
-  /*
-   * =========================
-   * COUNTDOWN
-   * =========================
-   */
-
   useEffect(() => {
     if (
       !guessResult ||
@@ -1142,12 +1107,6 @@ function App() {
     gameState?.tree
       ?.adtCurrentResolverId,
   ]);
-
-  /*
-   * =========================
-   * HELPERS
-   * =========================
-   */
 
   function resetToHome() {
     setRoomCode("");
@@ -1337,12 +1296,6 @@ function App() {
     );
   }
 
-  /*
-   * =========================
-   * STOCK SCHUDDEN POPUP
-   * =========================
-   */
-
   function renderStockShufflePopup() {
     if (
       !stockShuffleNotice
@@ -1379,12 +1332,6 @@ function App() {
       </div>
     );
   }
-
-  /*
-   * =========================
-   * BOOM RESULTAAT POPUP
-   * =========================
-   */
 
   function renderTreeResolutionPopup(
     tree:
@@ -1491,6 +1438,43 @@ function App() {
     );
   }
 
+  function renderBusFullPopup(
+    bus:
+      BusState
+  ) {
+    if (
+      !bus.result?.busFull
+    ) {
+      return null;
+    }
+
+    return (
+      <div className="announcement-layer">
+        <div className="game-announcement">
+          <div className="announcement-icon">
+            🚌
+          </div>
+
+          <span className="announcement-label">
+            IEDEREEN AAN BOORD
+          </span>
+
+          <h2>
+            De bus zit vol!
+          </h2>
+
+          <strong className="announcement-name">
+            Geen plek meer
+          </strong>
+
+          <p>
+            Iedereen zit al in de bus. We gaan automatisch verder.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   function renderConfetti() {
     return (
       <div className="confetti-layer">
@@ -1524,12 +1508,6 @@ function App() {
     );
   }
 
-  /*
-   * =========================
-   * DISCO ANIMATIE
-   * =========================
-   */
-
   function renderDiscoCelebration() {
     if (
       !discoCelebration
@@ -1542,23 +1520,13 @@ function App() {
         <style>
           {`
             @keyframes discoOverlayIn {
-              from {
-                opacity: 0;
-              }
-
-              to {
-                opacity: 1;
-              }
+              from { opacity: 0; }
+              to { opacity: 1; }
             }
 
             @keyframes discoBallSpin {
-              from {
-                transform: rotate(0deg);
-              }
-
-              to {
-                transform: rotate(360deg);
-              }
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
             }
 
             @keyframes discoBallPulse {
@@ -1576,23 +1544,13 @@ function App() {
             }
 
             @keyframes discoBeamOne {
-              from {
-                transform: rotate(-32deg);
-              }
-
-              to {
-                transform: rotate(32deg);
-              }
+              from { transform: rotate(-32deg); }
+              to { transform: rotate(32deg); }
             }
 
             @keyframes discoBeamTwo {
-              from {
-                transform: rotate(35deg);
-              }
-
-              to {
-                transform: rotate(-35deg);
-              }
+              from { transform: rotate(35deg); }
+              to { transform: rotate(-35deg); }
             }
 
             @keyframes discoTextPop {
@@ -1978,12 +1936,6 @@ function App() {
     );
   }
 
-  /*
-   * =========================
-   * ROOM
-   * =========================
-   */
-
   function startLobby() {
     const name =
       hostName.trim();
@@ -2302,12 +2254,6 @@ function App() {
     return `${window.location.origin}/?room=${roomCode}`;
   }
 
-  /*
-   * =========================
-   * KAARTFASE
-   * =========================
-   */
-
   const stepNames = [
     "Kleur",
     "Hoger of lager",
@@ -2398,12 +2344,6 @@ function App() {
 
     return "Raad het figuur, of ga voor Disco.";
   }
-
-  /*
-   * =========================
-   * BOOM
-   * =========================
-   */
 
   function changeDistribution(
     playerId: string,
@@ -2637,12 +2577,6 @@ function App() {
       }
     );
   }
-
-  /*
-   * =========================
-   * BUS
-   * =========================
-   */
 
   function drawBusLength() {
     setBusSubmitting(
@@ -2878,6 +2812,9 @@ function App() {
         response: {
           success:
             boolean;
+
+          message?:
+            string;
         }
       ) => {
         if (
@@ -2886,6 +2823,14 @@ function App() {
           setBusSubmitting(
             false
           );
+
+          if (
+            response.message
+          ) {
+            alert(
+              response.message
+            );
+          }
         }
       }
     );
@@ -3165,6 +3110,10 @@ function App() {
                             Boolean
                           )
                           .join(" ")}
+                        style={{
+                          position:
+                            "relative",
+                        }}
                       >
                         <span className="bus-card-number">
                           {index + 1}
@@ -3186,7 +3135,27 @@ function App() {
                         )}
 
                         {pile.isCheckpoint && (
-                          <small>
+                          <small
+                            style={{
+                              position:
+                                "absolute",
+
+                              left:
+                                "50%",
+
+                              top:
+                                "calc(100% + 4px)",
+
+                              transform:
+                                "translateX(-50%)",
+
+                              whiteSpace:
+                                "nowrap",
+
+                              zIndex:
+                                2,
+                            }}
+                          >
                             ⚑
                           </small>
                         )}
@@ -3374,6 +3343,9 @@ function App() {
       <main className="app">
         {renderAnnouncement()}
         {renderStockShufflePopup()}
+        {renderBusFullPopup(
+          bus
+        )}
 
         {gameState.phase ===
           "bus-finished" &&
@@ -3492,6 +3464,10 @@ function App() {
                       Boolean
                     )
                     .join(" ")}
+                  style={{
+                    position:
+                      "relative",
+                  }}
                 >
                   <span className="bus-card-number">
                     {index + 1}
@@ -3513,11 +3489,51 @@ function App() {
                   )}
 
                   {pile.isActiveCheckpoint ? (
-                    <small>
+                    <small
+                      style={{
+                        position:
+                          "absolute",
+
+                        left:
+                          "50%",
+
+                        top:
+                          "calc(100% + 4px)",
+
+                        transform:
+                          "translateX(-50%)",
+
+                        whiteSpace:
+                          "nowrap",
+
+                        zIndex:
+                          2,
+                      }}
+                    >
                       ⚑ ACTIEF
                     </small>
                   ) : pile.isCheckpoint ? (
-                    <small>
+                    <small
+                      style={{
+                        position:
+                          "absolute",
+
+                        left:
+                          "50%",
+
+                        top:
+                          "calc(100% + 4px)",
+
+                        transform:
+                          "translateX(-50%)",
+
+                        whiteSpace:
+                          "nowrap",
+
+                        zIndex:
+                          2,
+                      }}
+                    >
                       ⚑
                     </small>
                   ) : null}
@@ -3747,19 +3763,23 @@ function App() {
                 <div className="result-icon">
                   {bus.result.correct
                     ? "✓"
-                    : "✕"}
+                    : bus.result.busFull
+                      ? "🚌"
+                      : "✕"}
                 </div>
 
                 <h2>
                   {bus.result.correct
                     ? "Goed!"
-                    : bus.result.double
-                      ? "Dubbel = fout!"
-                      : bus.result.secondChance
-                        ? "Fout — tweede kans!"
-                        : bus.result.checkpointSafe
-                          ? "Fout — terug naar checkpoint!"
-                          : "Fout!"}
+                    : bus.result.busFull
+                      ? "De bus zit vol!"
+                      : bus.result.double
+                        ? "Dubbel = fout!"
+                        : bus.result.secondChance
+                          ? "Fout — tweede kans!"
+                          : bus.result.checkpointSafe
+                            ? "Fout — terug naar checkpoint!"
+                            : "Fout!"}
                 </h2>
 
                 <div className="bus-comparison">
@@ -3833,6 +3853,12 @@ function App() {
                           : "slokken"}
                       </strong>
                     </div>
+
+                    {bus.result.busFull && (
+                      <p>
+                        🚌 Iedereen zit al in de bus. Er hoeft niemand meer gekozen te worden.
+                      </p>
+                    )}
 
                     {bus.result.secondChance ? (
                       <p>
@@ -4253,12 +4279,7 @@ function App() {
                   tree.tieBreakPendingIds.length >
                     0 && (
                     <div className="waiting-message">
-                      Jij hebt getrokken. Wachten op de andere speler
-                      {tree.tieBreakPendingIds.length ===
-                      1
-                        ? ""
-                        : "s"}
-                      ...
+                      Jij hebt getrokken. Wachten op de andere spelers...
                     </div>
                   )}
 
@@ -5450,12 +5471,6 @@ function App() {
     );
   }
 
-  /*
-   * =========================
-   * LOBBY
-   * =========================
-   */
-
   if (
     screen === "lobby"
   ) {
@@ -5582,12 +5597,6 @@ function App() {
     );
   }
 
-  /*
-   * =========================
-   * JOIN
-   * =========================
-   */
-
   if (
     screen === "join"
   ) {
@@ -5690,12 +5699,6 @@ function App() {
     );
   }
 
-  /*
-   * =========================
-   * UITLEG
-   * =========================
-   */
-
   if (
     screen === "howto"
   ) {
@@ -5765,7 +5768,7 @@ function App() {
                 </p>
 
                 <p>
-                  Optioneel kan er ook een Adtje-kaart onder de boom liggen. Een match daarop betekent dat je iemand zijn hele drankje mag laten opdrinken.
+                  Optioneel kan er ook een Adtje-kaart onder de boom liggen.
                 </p>
               </div>
             </div>
@@ -5837,12 +5840,6 @@ function App() {
       </main>
     );
   }
-
-  /*
-   * =========================
-   * SPELREGELS INSTELLEN
-   * =========================
-   */
 
   if (
     screen === "rules"
@@ -5988,7 +5985,7 @@ function App() {
             </div>
 
             <p>
-              Met Adtje aan ligt er onder de boom een extra kaart. Heb je dezelfde waarde, dan mag je iemand zijn/haar hele drankje laten opdrinken.
+              Met Adtje aan ligt er onder de boom een extra kaart.
             </p>
           </div>
 
@@ -6252,12 +6249,6 @@ function App() {
     );
   }
 
-  /*
-   * =========================
-   * NIEUW SPEL
-   * =========================
-   */
-
   if (
     screen ===
     "settings"
@@ -6429,12 +6420,6 @@ function App() {
       </main>
     );
   }
-
-  /*
-   * =========================
-   * HOME
-   * =========================
-   */
 
   return (
     <main className="app">

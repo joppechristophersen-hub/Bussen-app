@@ -9,7 +9,7 @@ const TREE_START_DELAY = 1400;
 const TIE_BREAK_RESULT_DELAY = 2500;
 const BUS_RESULT_DELAY = 2000;
 
-const SERVER_VERSION = "BUS_V10_TREE_SUMMARY_STOCK";
+const SERVER_VERSION = "BUS_V11_FULL_BUS";
 
 const io = new Server(PORT, {
   cors: {
@@ -154,10 +154,6 @@ function addToDiscard(room, card) {
 }
 
 function refillStock(room) {
-  /*
-   * Zolang er nog kaarten in de stock liggen,
-   * gebeurt er helemaal niets met de aflegstapel.
-   */
   if (
     room.deck.length > 0
   ) {
@@ -178,12 +174,6 @@ function refillStock(room) {
   const recycledCards =
     room.discardPile.length;
 
-  /*
-   * PAS NU:
-   * - aflegstapel schudden
-   * - terugzetten als nieuwe stock
-   * - aflegstapel leegmaken
-   */
   room.deck =
     shuffle([
       ...room.discardPile,
@@ -195,10 +185,6 @@ function refillStock(room) {
     `Trekstapel leeg. ${recycledCards} kaarten van de aflegstapel opnieuw geschud.`
   );
 
-  /*
-   * Tijdens de bus laten we dit aan
-   * alle spelers zien.
-   */
   if (
     room.roomCode &&
     (
@@ -290,7 +276,7 @@ function getCurrentPlayer(room) {
 
 /*
  * =========================
- * BOOM RESULTAAT SAMENVATTEN
+ * BOOM RESULTAAT
  * =========================
  */
 
@@ -962,7 +948,7 @@ function checkGuess(
 
 /*
  * =========================
- * BOOM BOUWEN
+ * BOOM
  * =========================
  */
 
@@ -1240,11 +1226,6 @@ function advanceTreeResolver(
     return;
   }
 
-  /*
-   * Alle spelers met een match zijn klaar.
-   * Nu maken we één gezamenlijk overzicht
-   * van alle uitgedeelde slokken.
-   */
   tree.resolutionSummary =
     createTreeResolutionSummary(
       tree
@@ -1257,10 +1238,6 @@ function advanceTreeResolver(
     roomCode
   );
 
-  /*
-   * Als er slokken zijn uitgedeeld:
-   * langer wachten zodat de popup leesbaar is.
-   */
   queueNextTreeCard(
     roomCode,
     tree.resolutionSummary
@@ -1491,13 +1468,6 @@ function prepareUsedCardsForBus(
       card.id
     );
 
-    /*
-     * Deze kaarten gaan ALLEEN naar
-     * de aflegstapel.
-     *
-     * Ze gaan dus NIET direct terug
-     * naar room.deck.
-     */
     addToDiscard(
       room,
       card
@@ -1914,10 +1884,6 @@ function revealNextTreeCard(
   treeCard.revealed =
     true;
 
-  /*
-   * Nieuwe boomkaart:
-   * oude samenvatting weg.
-   */
   tree.currentCardActions =
     [];
 
@@ -3511,11 +3477,6 @@ io.on(
         tree.lastAction =
           action;
 
-        /*
-         * Bewaar deze actie voor de popup
-         * nadat ALLE matches op deze kaart
-         * zijn afgehandeld.
-         */
         tree.currentCardActions.push(
           {
             giverId:
@@ -4064,10 +4025,6 @@ io.on(
         bus.length =
           card.value;
 
-        /*
-         * Deze setupkaart is gebruikt en
-         * gaat op de aflegstapel.
-         */
         addToDiscard(
           room,
           card
@@ -4526,13 +4483,6 @@ io.on(
         const referenceCard =
           pile.card;
 
-        /*
-         * takeCard() gebruikt ALTIJD eerst
-         * de bestaande stock.
-         *
-         * Alleen als die volledig leeg is,
-         * wordt refillStock() uitgevoerd.
-         */
         const newCard =
           takeCard(room);
 
@@ -4548,27 +4498,22 @@ io.on(
           return;
         }
 
-        /*
-         * De oude bovenste buskaart is nu
-         * echt gebruikt.
-         *
-         * Hij gaat dus op de AFLEGSTAPEL,
-         * niet direct terug in de stock.
-         */
         addToDiscard(
           room,
           referenceCard
         );
 
-        /*
-         * De nieuwe kaart blijft bovenop
-         * deze buspositie liggen.
-         */
         pile.card =
           newCard;
 
         pile.revealed =
           true;
+
+        /*
+         * =========================
+         * DUBBEL
+         * =========================
+         */
 
         if (
           newCard.value ===
@@ -4588,6 +4533,92 @@ io.on(
           bus.checkpointRetryUsedIndex =
             null;
 
+          /*
+           * NIEUW:
+           *
+           * Bij "iemand meenemen" kijken we
+           * of letterlijk iedere speler al
+           * in bus.riders staat.
+           *
+           * Zo ja:
+           * - geen speler meer kiezen
+           * - popup "Bus zit vol"
+           * - automatisch verder
+           */
+          const busIsFull =
+            bus.doubleRule ===
+              "take-along" &&
+            room.players.every(
+              (player) =>
+                bus.riders.includes(
+                  player.id
+                )
+            );
+
+          if (busIsFull) {
+            bus.result = {
+              type:
+                "wrong",
+
+              guess:
+                normalizedGuess,
+
+              position,
+
+              fromCard:
+                referenceCard,
+
+              newCard,
+
+              correct:
+                false,
+
+              double:
+                true,
+
+              busFull:
+                true,
+
+              drinks,
+
+              restartIndex:
+                doubleRestartIndex,
+
+              secondChance:
+                false,
+
+              checkpointSafe:
+                bus.checkpointFailRule ===
+                  "safe" &&
+                bus.activeCheckpointIndex !==
+                  null,
+            };
+
+            bus.status =
+              "result";
+
+            sendGameState(
+              roomCode
+            );
+
+            continueBusAfterResult(
+              roomCode,
+              false,
+              doubleRestartIndex
+            );
+
+            done({
+              success:
+                true,
+            });
+
+            return;
+          }
+
+          /*
+           * Er kunnen nog spelers instappen:
+           * normale keuze tonen.
+           */
           bus.result = {
             type:
               "double",
@@ -4607,6 +4638,9 @@ io.on(
 
             double:
               true,
+
+            busFull:
+              false,
 
             drinks,
 
@@ -4668,6 +4702,9 @@ io.on(
               true,
 
             double:
+              false,
+
+            busFull:
               false,
 
             drinks:
@@ -4803,6 +4840,9 @@ io.on(
           double:
             false,
 
+          busFull:
+            false,
+
           drinks,
 
           restartIndex,
@@ -4904,6 +4944,29 @@ io.on(
           return;
         }
 
+        /*
+         * Extra controle:
+         * bij meenemen mag iemand die al
+         * in de bus zit niet opnieuw gekozen worden.
+         */
+        if (
+          bus.doubleRule ===
+            "take-along" &&
+          bus.riders.includes(
+            selectedPlayer.id
+          )
+        ) {
+          done({
+            success:
+              false,
+
+            message:
+              "Deze speler zit al in de bus.",
+          });
+
+          return;
+        }
+
         const doubleRestartIndex =
           bus.checkpointFailRule ===
             "safe"
@@ -4926,6 +4989,9 @@ io.on(
 
           double:
             true,
+
+          busFull:
+            false,
 
           restartIndex:
             doubleRestartIndex,
