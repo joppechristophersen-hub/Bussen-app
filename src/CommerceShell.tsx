@@ -14,6 +14,11 @@ type ShopCategory =
   | "animations"
   | "extras";
 
+type ThemeMode =
+  | "system"
+  | "light"
+  | "dark";
+
 type ThemePalette = {
   background?: string;
   surface?: string;
@@ -26,6 +31,7 @@ type ThemePalette = {
 };
 
 type ShopEffect = {
+  themeMode?: ThemeMode;
   palette?: ThemePalette;
   cardBack?: string;
   animation?: string;
@@ -34,7 +40,6 @@ type ShopEffect = {
 
 type ShopItem = {
   id: string;
-
   name: string;
 
   category:
@@ -74,54 +79,161 @@ const OWNED_STORAGE_KEY =
 const EQUIPPED_STORAGE_KEY =
   "busbaas-equipped-items";
 
-const FALLBACK_CLASSIC: ShopItem = {
-  id: "theme-classic",
+const LIGHT_PALETTE: ThemePalette = {
+  background:
+    "#edf1ee",
 
-  name: "Busbaas Classic",
+  surface:
+    "#ffffff",
 
-  category: "themes",
+  surfaceSoft:
+    "#f3f6f4",
 
-  type: "theme",
+  accent:
+    "#11866a",
 
-  equipSlot: "theme",
+  accentStrong:
+    "#087158",
 
-  description:
-    "De originele Busbaas-look.",
+  text:
+    "#14211c",
 
-  priceLabel: "Gratis",
+  muted:
+    "#6f7d77",
 
-  free: true,
+  border:
+    "#dce5e0",
+};
 
-  featured: true,
+const DARK_PALETTE: ThemePalette = {
+  background:
+    "#090e0c",
 
-  effect: {
-    palette: {
-      background:
-        "#edf1ee",
+  surface:
+    "#121916",
 
-      surface:
-        "#ffffff",
+  surfaceSoft:
+    "#1a231f",
 
-      surfaceSoft:
-        "#f3f6f4",
+  accent:
+    "#27c99a",
 
-      accent:
-        "#11866a",
+  accentStrong:
+    "#159975",
 
-      accentStrong:
-        "#087158",
+  text:
+    "#f2f7f5",
 
-      text:
-        "#14211c",
+  muted:
+    "#91a09a",
 
-      muted:
-        "#6f7d77",
+  border:
+    "#293630",
+};
 
-      border:
-        "#dce5e0",
+const FALLBACK_FREE_THEMES: ShopItem[] = [
+  {
+    id:
+      "theme-auto",
+
+    name:
+      "Busbaas Automatisch",
+
+    category:
+      "themes",
+
+    type:
+      "theme",
+
+    equipSlot:
+      "theme",
+
+    description:
+      "Volgt automatisch de lichte of donkere instelling van je telefoon.",
+
+    priceLabel:
+      "Gratis",
+
+    free:
+      true,
+
+    featured:
+      true,
+
+    effect: {
+      themeMode:
+        "system",
     },
   },
-};
+
+  {
+    id:
+      "theme-light",
+
+    name:
+      "Busbaas Licht",
+
+    category:
+      "themes",
+
+    type:
+      "theme",
+
+    equipSlot:
+      "theme",
+
+    description:
+      "De lichte standaardlook van Busbaas.",
+
+    priceLabel:
+      "Gratis",
+
+    free:
+      true,
+
+    effect: {
+      themeMode:
+        "light",
+
+      palette:
+        LIGHT_PALETTE,
+    },
+  },
+
+  {
+    id:
+      "theme-dark",
+
+    name:
+      "Busbaas Donker",
+
+    category:
+      "themes",
+
+    type:
+      "theme",
+
+    equipSlot:
+      "theme",
+
+    description:
+      "De donkere standaardlook van Busbaas.",
+
+    priceLabel:
+      "Gratis",
+
+    free:
+      true,
+
+    effect: {
+      themeMode:
+        "dark",
+
+      palette:
+        DARK_PALETTE,
+    },
+  },
+];
 
 const CATEGORY_LABELS: Record<
   ShopCategory,
@@ -148,6 +260,12 @@ const CATEGORY_ORDER: ShopCategory[] = [
 ];
 
 function readOwnedItems() {
+  const standardItems = [
+    "theme-auto",
+    "theme-light",
+    "theme-dark",
+  ];
+
   try {
     const stored =
       localStorage.getItem(
@@ -155,33 +273,41 @@ function readOwnedItems() {
       );
 
     if (!stored) {
-      return [
-        "theme-classic",
-      ];
+      return standardItems;
     }
 
     const parsed =
-      JSON.parse(stored);
+      JSON.parse(
+        stored
+      );
 
     if (
-      !Array.isArray(parsed)
+      !Array.isArray(
+        parsed
+      )
     ) {
-      return [
-        "theme-classic",
-      ];
+      return standardItems;
     }
 
-    return parsed.filter(
-      (
-        value
-      ): value is string =>
-        typeof value ===
-        "string"
-    );
-  } catch {
+    const validItems =
+      parsed.filter(
+        (
+          value
+        ): value is string =>
+          typeof value ===
+          "string" &&
+          value !==
+            "theme-classic"
+      );
+
     return [
-      "theme-classic",
+      ...new Set([
+        ...standardItems,
+        ...validItems,
+      ]),
     ];
+  } catch {
+    return standardItems;
   }
 }
 
@@ -195,12 +321,14 @@ function readEquippedItems() {
     if (!stored) {
       return {
         theme:
-          "theme-classic",
+          "theme-auto",
       };
     }
 
     const parsed =
-      JSON.parse(stored);
+      JSON.parse(
+        stored
+      );
 
     if (
       !parsed ||
@@ -209,20 +337,27 @@ function readEquippedItems() {
     ) {
       return {
         theme:
-          "theme-classic",
+          "theme-auto",
       };
     }
 
-    return {
-      theme:
-        "theme-classic",
+    const oldTheme =
+      parsed.theme;
 
+    return {
       ...parsed,
+
+      theme:
+        oldTheme ===
+        "theme-classic"
+          ? "theme-auto"
+          : oldTheme ||
+            "theme-auto",
     };
   } catch {
     return {
       theme:
-        "theme-classic",
+        "theme-auto",
     };
   }
 }
@@ -242,9 +377,9 @@ function CommerceShell({
   ] =
     useState<
       ShopItem[]
-    >([
-      FALLBACK_CLASSIC,
-    ]);
+    >(
+      FALLBACK_FREE_THEMES
+    );
 
   const [
     shopLoading,
@@ -295,6 +430,19 @@ function CommerceShell({
       null
     );
 
+  const [
+    systemDark,
+    setSystemDark,
+  ] =
+    useState(() => {
+      return (
+        window.matchMedia?.(
+          "(prefers-color-scheme: dark)"
+        ).matches ??
+        false
+      );
+    });
+
   /*
    * =========================
    * ADVERTENTIE NA POTJE
@@ -315,6 +463,43 @@ function CommerceShell({
 
   const gameWasFinishedRef =
     useRef(false);
+
+  /*
+   * =========================
+   * LICHT / DONKER DETECTIE
+   * =========================
+   */
+
+  useEffect(() => {
+    const media =
+      window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      );
+
+    function handleChange(
+      event: MediaQueryListEvent
+    ) {
+      setSystemDark(
+        event.matches
+      );
+    }
+
+    setSystemDark(
+      media.matches
+    );
+
+    media.addEventListener(
+      "change",
+      handleChange
+    );
+
+    return () => {
+      media.removeEventListener(
+        "change",
+        handleChange
+      );
+    };
+  }, []);
 
   /*
    * =========================
@@ -363,32 +548,34 @@ function CommerceShell({
           );
         }
 
-        if (cancelled) {
+        if (
+          cancelled
+        ) {
           return;
         }
 
-        const hasClassic =
-          data.items.some(
-            (item) =>
-              item.id ===
-              "theme-classic"
+        const missingStandardThemes =
+          FALLBACK_FREE_THEMES.filter(
+            (standardTheme) =>
+              !data.items.some(
+                (item) =>
+                  item.id ===
+                  standardTheme.id
+              )
           );
 
-        const loadedItems =
-          hasClassic
-            ? data.items
-            : [
-                FALLBACK_CLASSIC,
-                ...data.items,
-              ];
+        const loadedItems = [
+          ...missingStandardThemes,
+          ...data.items,
+        ];
 
         setShopItems(
           loadedItems
         );
 
         /*
-         * Alle gratis items automatisch
-         * als eigendom registreren.
+         * Alle gratis items worden
+         * automatisch bezit van de speler.
          */
         setOwnedItems(
           (
@@ -427,12 +614,12 @@ function CommerceShell({
           return;
         }
 
-        setShopItems([
-          FALLBACK_CLASSIC,
-        ]);
+        setShopItems(
+          FALLBACK_FREE_THEMES
+        );
 
         setShopError(
-          "De online shop kon niet worden geladen. Het standaardthema blijft beschikbaar."
+          "De online shop kon niet worden geladen. Licht, donker en automatisch blijven beschikbaar."
         );
       } finally {
         if (
@@ -490,7 +677,7 @@ function CommerceShell({
   useEffect(() => {
     const selectedThemeId =
       equippedItems.theme ||
-      "theme-classic";
+      "theme-auto";
 
     const selectedTheme =
       shopItems.find(
@@ -503,18 +690,49 @@ function CommerceShell({
       shopItems.find(
         (item) =>
           item.id ===
-          "theme-classic"
+          "theme-auto"
       ) ||
-      FALLBACK_CLASSIC;
+      FALLBACK_FREE_THEMES[0];
 
-    const palette =
-      selectedTheme
-        .effect
-        ?.palette ||
-      FALLBACK_CLASSIC
-        .effect
-        ?.palette ||
-      {};
+    const themeMode =
+      selectedTheme.effect
+        ?.themeMode ||
+      "light";
+
+    let actualMode:
+      | "light"
+      | "dark";
+
+    let palette:
+      ThemePalette;
+
+    if (
+      themeMode ===
+      "system"
+    ) {
+      actualMode =
+        systemDark
+          ? "dark"
+          : "light";
+
+      palette =
+        systemDark
+          ? DARK_PALETTE
+          : LIGHT_PALETTE;
+    } else {
+      actualMode =
+        themeMode;
+
+      palette =
+        selectedTheme.effect
+          ?.palette ||
+        (
+          themeMode ===
+          "dark"
+            ? DARK_PALETTE
+            : LIGHT_PALETTE
+        );
+    }
 
     const root =
       document.documentElement;
@@ -567,16 +785,23 @@ function CommerceShell({
         "#dce5e0"
     );
 
+    root.style.colorScheme =
+      actualMode;
+
     document.body.dataset.bbTheme =
       selectedTheme.id;
+
+    document.body.dataset.bbColorMode =
+      actualMode;
   }, [
     equippedItems.theme,
     shopItems,
+    systemDark,
   ]);
 
   /*
    * =========================
-   * KAARTEN / ANIMATIES
+   * KAARTSTIJL
    * =========================
    */
 
@@ -600,6 +825,12 @@ function CommerceShell({
     equippedItems.cardBack,
     shopItems,
   ]);
+
+  /*
+   * =========================
+   * ANIMATIE
+   * =========================
+   */
 
   useEffect(() => {
     const animationId =
@@ -646,13 +877,6 @@ function CommerceShell({
           )
         );
 
-      /*
-       * Alleen bij overgang:
-       * niet klaar -> wel klaar.
-       *
-       * Hierdoor komt de advertentie
-       * precies één keer per potje.
-       */
       if (
         gameFinished &&
         !gameWasFinishedRef.current
@@ -831,6 +1055,36 @@ function CommerceShell({
     );
   }
 
+  function getPreviewPalette(
+    item: ShopItem
+  ) {
+    if (
+      item.effect
+        ?.themeMode ===
+      "dark"
+    ) {
+      return (
+        item.effect
+          ?.palette ||
+        DARK_PALETTE
+      );
+    }
+
+    if (
+      item.effect
+        ?.themeMode ===
+      "system"
+    ) {
+      return LIGHT_PALETTE;
+    }
+
+    return (
+      item.effect
+        ?.palette ||
+      LIGHT_PALETTE
+    );
+  }
+
   function renderPreview(
     item: ShopItem
   ) {
@@ -838,17 +1092,55 @@ function CommerceShell({
       item.category ===
       "themes"
     ) {
-      const palette =
+      if (
         item.effect
-          ?.palette;
+          ?.themeMode ===
+        "system"
+      ) {
+        return (
+          <div className="commerce-theme-preview">
+            <span
+              style={{
+                background:
+                  LIGHT_PALETTE.background,
+              }}
+            />
+
+            <span
+              style={{
+                background:
+                  LIGHT_PALETTE.accent,
+              }}
+            />
+
+            <span
+              style={{
+                background:
+                  DARK_PALETTE.background,
+              }}
+            />
+
+            <span
+              style={{
+                background:
+                  DARK_PALETTE.accent,
+              }}
+            />
+          </div>
+        );
+      }
+
+      const palette =
+        getPreviewPalette(
+          item
+        );
 
       return (
         <div className="commerce-theme-preview">
           <span
             style={{
               background:
-                palette
-                  ?.background ||
+                palette.background ||
                 "#eeeeee",
             }}
           />
@@ -856,8 +1148,7 @@ function CommerceShell({
           <span
             style={{
               background:
-                palette
-                  ?.surface ||
+                palette.surface ||
                 "#ffffff",
             }}
           />
@@ -865,8 +1156,7 @@ function CommerceShell({
           <span
             style={{
               background:
-                palette
-                  ?.accent ||
+                palette.accent ||
                 "#11866a",
             }}
           />
@@ -874,8 +1164,7 @@ function CommerceShell({
           <span
             style={{
               background:
-                palette
-                  ?.accentStrong ||
+                palette.accentStrong ||
                 "#087158",
             }}
           />
@@ -905,9 +1194,11 @@ function CommerceShell({
       return (
         <div className="commerce-animation-preview">
           ✨
+
           <span>
             ✦
           </span>
+
           <small>
             ✨
           </small>
@@ -1082,7 +1373,7 @@ function CommerceShell({
                       >
                         {item.featured && (
                           <span className="commerce-featured">
-                            AANRADER
+                            STANDAARD
                           </span>
                         )}
 
@@ -1160,7 +1451,7 @@ function CommerceShell({
               </span>
 
               <p>
-                Aankopen worden later gekoppeld aan Google Play en de App Store.
+                Licht, donker en automatisch zijn altijd gratis. Extra thema's en cosmetische items kunnen later worden gekocht.
               </p>
             </footer>
           </div>
@@ -1191,7 +1482,7 @@ function CommerceShell({
             </strong>
 
             <p>
-              Dit product staat al klaar in de shop. In een volgende stap koppelen we hier de echte Google Play / App Store-aankoop aan.
+              Dit product staat al klaar in de shop. Later koppelen we hier de echte Google Play / App Store-aankoop aan.
             </p>
 
             <button
