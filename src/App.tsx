@@ -16,6 +16,7 @@ import "./App.css";
 type Screen =
   | "home"
   | "settings"
+  | "rules"
   | "join"
   | "lobby"
   | "game";
@@ -173,6 +174,7 @@ type BusPile = {
   revealed: boolean;
   card: Card | null;
   isCheckpoint: boolean;
+  isActiveCheckpoint?: boolean;
 };
 
 type BusResult = {
@@ -237,6 +239,9 @@ type BusState = {
     CheckpointFailRule;
 
   checkpointRetryUsedIndex:
+    number | null;
+
+  activeCheckpointIndex:
     number | null;
 
   checkpoints:
@@ -493,7 +498,7 @@ function App() {
 
   /*
    * =========================
-   * SOCKET EVENTS
+   * SOCKETS
    * =========================
    */
 
@@ -516,7 +521,9 @@ function App() {
       setTreeSubmitting(false);
       setBusSubmitting(false);
 
-      setScreen("game");
+      setScreen(
+        "game"
+      );
     }
 
     function handleGameState(
@@ -584,7 +591,8 @@ function App() {
         state.bus
       ) {
         setSelectedCheckpoints(
-          state.bus.checkpoints
+          state.bus
+            .checkpoints
         );
       }
 
@@ -814,7 +822,7 @@ function App() {
 
   /*
    * =========================
-   * ALGEMEEN
+   * HELPERS
    * =========================
    */
 
@@ -1009,9 +1017,7 @@ function App() {
         .trim()
         .toUpperCase();
 
-    setJoinError(
-      ""
-    );
+    setJoinError("");
 
     if (!name) {
       setJoinError(
@@ -1022,7 +1028,8 @@ function App() {
     }
 
     if (
-      code.length !== 5
+      code.length !==
+      5
     ) {
       setJoinError(
         "Een kamercode bestaat uit 5 tekens."
@@ -1476,7 +1483,7 @@ function App() {
 
   /*
    * =========================
-   * BUS
+   * BUS FUNCTIES
    * =========================
    */
 
@@ -1748,13 +1755,6 @@ function App() {
           player.id ===
           bus.activeDriverId
       );
-
-    /*
-     * BELANGRIJK:
-     * Alleen de speler die
-     * daadwerkelijk in de bus zit
-     * mag bedienen.
-     */
 
     const canControl =
       bus.activeDriverId ===
@@ -2061,7 +2061,7 @@ function App() {
               {bus.checkpointFailRule ===
                 "safe" && (
                 <p>
-                  Zodra je een checkpoint bereikt, wordt dit je nieuwe beginpunt.
+                  Zodra je op een checkpoint aankomt, is dit direct je nieuwe beginpunt.
                 </p>
               )}
 
@@ -2257,6 +2257,23 @@ function App() {
             </div>
           </div>
 
+          {bus.checkpointFailRule ===
+            "safe" &&
+            bus.activeCheckpointIndex !==
+              null && (
+              <div className="bus-riders">
+                <span>
+                  ⚑ Actief checkpoint:{" "}
+                </span>
+
+                <strong>
+                  kaart{" "}
+                  {bus.activeCheckpointIndex +
+                    1}
+                </strong>
+              </div>
+            )}
+
           {riders.length >
             1 && (
             <div className="bus-riders">
@@ -2328,11 +2345,15 @@ function App() {
                     </div>
                   )}
 
-                  {pile.isCheckpoint && (
+                  {pile.isActiveCheckpoint ? (
+                    <small>
+                      ⚑ ACTIEF
+                    </small>
+                  ) : pile.isCheckpoint ? (
                     <small>
                       ⚑
                     </small>
-                  )}
+                  ) : null}
                 </div>
               )
             )}
@@ -2396,7 +2417,8 @@ function App() {
                   <div className="bus-choice-panel">
                     <span className="bus-position-label">
                       KAART{" "}
-                      {bus.currentIndex + 1}
+                      {bus.currentIndex +
+                        1}
                     </span>
 
                     {currentPile?.isCheckpoint && (
@@ -2418,7 +2440,7 @@ function App() {
                         {bus.checkpointFailRule ===
                           "safe" && (
                           <p>
-                            ⚑ Checkpoint — dit is vanaf nu je nieuwe beginpunt.
+                            ⚑ Checkpoint actief — dit is nu je nieuwe beginpunt.
                           </p>
                         )}
                       </>
@@ -2504,7 +2526,8 @@ function App() {
 
                     <p>
                       Wachten op de gok voor kaart{" "}
-                      {bus.currentIndex + 1}
+                      {bus.currentIndex +
+                        1}
                       ...
                     </p>
                   </div>
@@ -2607,8 +2630,8 @@ function App() {
                           bus.result
                             .drinks
                         }{" "}
-                        {bus.result
-                          .drinks === 1
+                        {bus.result.drinks ===
+                        1
                           ? "slok"
                           : "slokken"}
                       </strong>
@@ -2619,16 +2642,8 @@ function App() {
                         ⚑ Je krijgt één tweede kans en blijft op{" "}
                         <strong>
                           kaart{" "}
-                          {bus.result.position + 1}
-                        </strong>
-                        .
-                      </p>
-                    ) : bus.result.checkpointSafe ? (
-                      <p>
-                        ⚑ Dit checkpoint is je nieuwe beginpunt. Je blijft op{" "}
-                        <strong>
-                          kaart{" "}
-                          {bus.result.position + 1}
+                          {bus.result.position +
+                            1}
                         </strong>
                         .
                       </p>
@@ -2717,9 +2732,27 @@ function App() {
                         .drinks
                     }{" "}
                     slokken
-                  </strong>{" "}
-                  en altijd terug naar kaart 1.
+                  </strong>
+                  .
                 </p>
+
+                {bus.checkpointFailRule ===
+                  "safe" &&
+                bus.activeCheckpointIndex !==
+                  null ? (
+                  <p>
+                    Het actieve checkpoint op kaart{" "}
+                    <strong>
+                      {bus.activeCheckpointIndex +
+                        1}
+                    </strong>{" "}
+                    blijft gelden.
+                  </p>
+                ) : (
+                  <p>
+                    Terug naar kaart 1.
+                  </p>
+                )}
 
                 {isDriver ? (
                   <>
@@ -2778,7 +2811,7 @@ function App() {
 
   /*
    * =========================
-   * BOOM / GELIJKSTAND
+   * BOOM
    * =========================
    */
 
@@ -4249,7 +4282,332 @@ function App() {
 
   /*
    * =========================
-   * SETTINGS
+   * SPELREGELS
+   * =========================
+   */
+
+  if (
+    screen === "rules"
+  ) {
+    return (
+      <main className="app">
+        <section className="card settings-card">
+          <button
+            className="back-button"
+            onClick={() =>
+              setScreen(
+                "settings"
+              )
+            }
+          >
+            ← Terug
+          </button>
+
+          <div className="logo small-logo">
+            ⚙️
+          </div>
+
+          <h1>
+            Spelregels
+          </h1>
+
+          <p className="subtitle">
+            Pas het spel aan zoals jullie het spelen
+          </p>
+
+          <div className="setting">
+            <label>
+              🌲 Aantal rijen in de boom
+            </label>
+
+            <div className="options">
+              {[3, 4, 5].map(
+                (
+                  value
+                ) => (
+                  <button
+                    key={
+                      value
+                    }
+                    className={
+                      rows ===
+                      value
+                        ? "selected"
+                        : ""
+                    }
+                    onClick={() =>
+                      setRows(
+                        value
+                      )
+                    }
+                  >
+                    {
+                      value
+                    }
+                  </button>
+                )
+              )}
+            </div>
+          </div>
+
+          <div className="setting">
+            <label>
+              🃏 Aantal kaartspellen
+            </label>
+
+            <div className="options">
+              {[1, 2].map(
+                (
+                  value
+                ) => (
+                  <button
+                    key={
+                      value
+                    }
+                    className={
+                      decks ===
+                      value
+                        ? "selected"
+                        : ""
+                    }
+                    onClick={() =>
+                      setDecks(
+                        value
+                      )
+                    }
+                  >
+                    {value} 🃏
+                  </button>
+                )
+              )}
+            </div>
+          </div>
+
+          <div className="setting">
+            <label>
+              ⚑ Checkpoints in de bus
+            </label>
+
+            <div className="options">
+              <button
+                className={
+                  !checkpoints
+                    ? "selected"
+                    : ""
+                }
+                onClick={() =>
+                  setCheckpoints(
+                    false
+                  )
+                }
+              >
+                Uit
+              </button>
+
+              <button
+                className={
+                  checkpoints
+                    ? "selected"
+                    : ""
+                }
+                onClick={() =>
+                  setCheckpoints(
+                    true
+                  )
+                }
+              >
+                Aan
+              </button>
+            </div>
+          </div>
+
+          {checkpoints && (
+            <div className="setting">
+              <label>
+                Wat gebeurt er bij een checkpoint?
+              </label>
+
+              <div className="double-rule-options">
+                <button
+                  className={
+                    checkpointFailRule ===
+                    "safe"
+                      ? "selected"
+                      : ""
+                  }
+                  onClick={() =>
+                    setCheckpointFailRule(
+                      "safe"
+                    )
+                  }
+                >
+                  <strong>
+                    ⚑ Nieuw beginpunt
+                  </strong>
+
+                  <span>
+                    Zodra je op het checkpoint aankomt, wordt dit direct je nieuwe kaart 1. Dit blijft ook gelden als de bus wordt doorgegeven.
+                  </span>
+                </button>
+
+                <button
+                  className={
+                    checkpointFailRule ===
+                    "retry"
+                      ? "selected"
+                      : ""
+                  }
+                  onClick={() =>
+                    setCheckpointFailRule(
+                      "retry"
+                    )
+                  }
+                >
+                  <strong>
+                    🔁 Tweede kans
+                  </strong>
+
+                  <span>
+                    Eerste fout op de checkpointkaart: blijf staan. Tweede fout: terug naar kaart 1.
+                  </span>
+                </button>
+
+                <button
+                  className={
+                    checkpointFailRule ===
+                    "reset"
+                      ? "selected"
+                      : ""
+                  }
+                  onClick={() =>
+                    setCheckpointFailRule(
+                      "reset"
+                    )
+                  }
+                >
+                  <strong>
+                    ↩ Terug naar 1
+                  </strong>
+
+                  <span>
+                    Een fout op de checkpointkaart betekent direct helemaal terug naar kaart 1.
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="setting">
+            <label>
+              ⚡ Dubbele kaart in de bus
+            </label>
+
+            <div className="double-rule-options">
+              <button
+                className={
+                  doubleRule ===
+                  "pass"
+                    ? "selected"
+                    : ""
+                }
+                onClick={() =>
+                  setDoubleRule(
+                    "pass"
+                  )
+                }
+              >
+                <strong>
+                  Bus doorgeven
+                </strong>
+
+                <span>
+                  Bij dubbel kiest de speler iemand anders die de bus overneemt.
+                </span>
+              </button>
+
+              <button
+                className={
+                  doubleRule ===
+                  "take-along"
+                    ? "selected"
+                    : ""
+                }
+                onClick={() =>
+                  setDoubleRule(
+                    "take-along"
+                  )
+                }
+              >
+                <strong>
+                  Iemand meenemen
+                </strong>
+
+                <span>
+                  Bij dubbel kiest de speler iemand die mee de bus in gaat.
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div className="game-summary">
+            <strong>
+              Ingestelde regels
+            </strong>
+
+            <p>
+              Boom: {rows} rijen
+              {" · "}
+              {decks} kaartspel
+              {decks === 1
+                ? ""
+                : "len"}
+              {" · "}
+              checkpoints{" "}
+              {checkpoints
+                ? "aan"
+                : "uit"}
+            </p>
+
+            {checkpoints && (
+              <p>
+                Checkpointregel:{" "}
+                {checkpointFailRule ===
+                "safe"
+                  ? "Nieuw beginpunt"
+                  : checkpointFailRule ===
+                      "retry"
+                    ? "Tweede kans"
+                    : "Terug naar 1"}
+              </p>
+            )}
+
+            <p>
+              Dubbel:{" "}
+              {doubleRule ===
+              "pass"
+                ? "Bus doorgeven"
+                : "Iemand meenemen"}
+            </p>
+          </div>
+
+          <button
+            className="start-button"
+            onClick={() =>
+              setScreen(
+                "settings"
+              )
+            }
+          >
+            Regels opslaan ✓
+          </button>
+        </section>
+      </main>
+    );
+  }
+
+  /*
+   * =========================
+   * NIEUW SPEL INSTELLEN
    * =========================
    */
 
@@ -4280,7 +4638,7 @@ function App() {
           </h1>
 
           <p className="subtitle">
-            Stel jullie spel in
+            Maak een kamer en stel jullie spel in
           </p>
 
           <div className="setting">
@@ -4347,236 +4705,19 @@ function App() {
 
           <div className="setting">
             <label>
-              Aantal rijen
+              Spelregels
             </label>
 
-            <div className="options">
-              {[3, 4, 5].map(
-                (
-                  value
-                ) => (
-                  <button
-                    key={
-                      value
-                    }
-                    className={
-                      rows ===
-                      value
-                        ? "selected"
-                        : ""
-                    }
-                    onClick={() =>
-                      setRows(
-                        value
-                      )
-                    }
-                  >
-                    {
-                      value
-                    }
-                  </button>
+            <button
+              className="secondary"
+              onClick={() =>
+                setScreen(
+                  "rules"
                 )
-              )}
-            </div>
-          </div>
-
-          <div className="setting">
-            <label>
-              Kaartspellen
-            </label>
-
-            <div className="options">
-              {[1, 2].map(
-                (
-                  value
-                ) => (
-                  <button
-                    key={
-                      value
-                    }
-                    className={
-                      decks ===
-                      value
-                        ? "selected"
-                        : ""
-                    }
-                    onClick={() =>
-                      setDecks(
-                        value
-                      )
-                    }
-                  >
-                    {value} 🃏
-                  </button>
-                )
-              )}
-            </div>
-          </div>
-
-          <div className="setting">
-            <label>
-              Checkpoints in de bus
-            </label>
-
-            <div className="options">
-              <button
-                className={
-                  !checkpoints
-                    ? "selected"
-                    : ""
-                }
-                onClick={() =>
-                  setCheckpoints(
-                    false
-                  )
-                }
-              >
-                Uit
-              </button>
-
-              <button
-                className={
-                  checkpoints
-                    ? "selected"
-                    : ""
-                }
-                onClick={() =>
-                  setCheckpoints(
-                    true
-                  )
-                }
-              >
-                Aan
-              </button>
-            </div>
-          </div>
-
-          {checkpoints && (
-            <div className="setting">
-              <label>
-                Fout op checkpoint
-              </label>
-
-              <div className="double-rule-options">
-                <button
-                  className={
-                    checkpointFailRule ===
-                    "retry"
-                      ? "selected"
-                      : ""
-                  }
-                  onClick={() =>
-                    setCheckpointFailRule(
-                      "retry"
-                    )
-                  }
-                >
-                  <strong>
-                    Tweede kans
-                  </strong>
-
-                  <span>
-                    Eerste fout: blijf op het checkpoint. Tweede fout: terug naar kaart 1.
-                  </span>
-                </button>
-
-                <button
-                  className={
-                    checkpointFailRule ===
-                    "safe"
-                      ? "selected"
-                      : ""
-                  }
-                  onClick={() =>
-                    setCheckpointFailRule(
-                      "safe"
-                    )
-                  }
-                >
-                  <strong>
-                    Nieuw beginpunt
-                  </strong>
-
-                  <span>
-                    Zodra je het checkpoint bereikt, wordt dit je nieuwe kaart 1.
-                  </span>
-                </button>
-
-                <button
-                  className={
-                    checkpointFailRule ===
-                    "reset"
-                      ? "selected"
-                      : ""
-                  }
-                  onClick={() =>
-                    setCheckpointFailRule(
-                      "reset"
-                    )
-                  }
-                >
-                  <strong>
-                    Terug naar 1
-                  </strong>
-
-                  <span>
-                    Fout op het checkpoint betekent direct helemaal terug naar kaart 1.
-                  </span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          <div className="setting">
-            <label>
-              Dubbele kaart in de bus
-            </label>
-
-            <div className="double-rule-options">
-              <button
-                className={
-                  doubleRule ===
-                  "pass"
-                    ? "selected"
-                    : ""
-                }
-                onClick={() =>
-                  setDoubleRule(
-                    "pass"
-                  )
-                }
-              >
-                <strong>
-                  Bus doorgeven
-                </strong>
-
-                <span>
-                  Kies iemand die de bus overneemt
-                </span>
-              </button>
-
-              <button
-                className={
-                  doubleRule ===
-                  "take-along"
-                    ? "selected"
-                    : ""
-                }
-                onClick={() =>
-                  setDoubleRule(
-                    "take-along"
-                  )
-                }
-              >
-                <strong>
-                  Iemand meenemen
-                </strong>
-
-                <span>
-                  Kies iemand die mee de bus in gaat
-                </span>
-              </button>
-            </div>
+              }
+            >
+              ⚙️ Spelregels instellen
+            </button>
           </div>
 
           <div className="game-summary">
@@ -4585,16 +4726,35 @@ function App() {
             </strong>
 
             <p>
-              {players} spelers ·{" "}
-              {rows} rijen ·{" "}
+              {players} spelers
+              {" · "}
+              {rows} rijen
+              {" · "}
               {decks} kaartspel
               {decks === 1
                 ? ""
-                : "len"}{" "}
-              · checkpoints{" "}
+                : "len"}
+            </p>
+
+            <p>
+              Checkpoints:{" "}
               {checkpoints
-                ? "aan"
-                : "uit"}
+                ? checkpointFailRule ===
+                    "safe"
+                  ? "Nieuw beginpunt"
+                  : checkpointFailRule ===
+                      "retry"
+                    ? "Tweede kans"
+                    : "Terug naar 1"
+                : "Uit"}
+            </p>
+
+            <p>
+              Dubbel:{" "}
+              {doubleRule ===
+              "pass"
+                ? "Bus doorgeven"
+                : "Iemand meenemen"}
             </p>
           </div>
 

@@ -8,7 +8,7 @@ const TREE_START_DELAY = 1400;
 const TIE_BREAK_RESULT_DELAY = 2500;
 const BUS_RESULT_DELAY = 2000;
 
-const SERVER_VERSION = "BUS_V6_DRIVER_CONTROL_SAFE_CHECKPOINT";
+const SERVER_VERSION = "BUS_V7_ACTIVE_CHECKPOINT_RULES_MENU";
 
 const io = new Server(PORT, {
   cors: {
@@ -413,6 +413,9 @@ function publicBusState(room) {
     checkpointRetryUsedIndex:
       bus.checkpointRetryUsedIndex,
 
+    activeCheckpointIndex:
+      bus.activeCheckpointIndex,
+
     checkpoints: [
       ...bus.checkpoints,
     ],
@@ -440,6 +443,10 @@ function publicBusState(room) {
             bus.checkpoints.includes(
               index
             ),
+
+          isActiveCheckpoint:
+            bus.activeCheckpointIndex ===
+            index,
         })
       ),
 
@@ -688,6 +695,7 @@ function checkDisco(
         (card) =>
           card.suit
       ),
+
       drawnCard.suit,
     ]);
 
@@ -852,7 +860,8 @@ function drawTreeCard(
   }
 
   if (
-    skippedCards.length > 0
+    skippedCards.length >
+    0
   ) {
     return (
       skippedCards.pop() ||
@@ -914,7 +923,9 @@ function buildTree(room) {
 
       cards.push({
         card,
-        revealed: false,
+
+        revealed:
+          false,
 
         isDouble:
           cardIndex ===
@@ -1762,6 +1773,14 @@ function startBusSetup(
     currentIndex:
       0,
 
+    /*
+     * Wordt gebruikt bij
+     * "Nieuw beginpunt".
+     */
+
+    activeCheckpointIndex:
+      null,
+
     activeDriverId:
       busDriver.id,
 
@@ -1832,6 +1851,9 @@ function dealBusCards(room) {
   bus.currentIndex =
     0;
 
+  bus.activeCheckpointIndex =
+    null;
+
   if (
     room.settings.checkpoints
   ) {
@@ -1847,9 +1869,33 @@ function dealBusCards(room) {
 
 /*
  * =========================
- * BUS HELPERS
+ * CHECKPOINT HELPERS
  * =========================
  */
+
+function activateCheckpointIfNeeded(
+  bus
+) {
+  if (
+    bus.checkpointFailRule !==
+    "safe"
+  ) {
+    return;
+  }
+
+  if (
+    bus.checkpoints.includes(
+      bus.currentIndex
+    )
+  ) {
+    bus.activeCheckpointIndex =
+      bus.currentIndex;
+
+    console.log(
+      `Checkpoint ${bus.currentIndex + 1} is nu actief.`
+    );
+  }
+}
 
 function getRestartIndex(bus) {
   const achieved =
@@ -1869,6 +1915,29 @@ function getRestartIndex(bus) {
     ...achieved
   );
 }
+
+function getSafeRestartIndex(
+  bus
+) {
+  if (
+    bus.checkpointFailRule ===
+      "safe" &&
+    bus.activeCheckpointIndex !==
+      null
+  ) {
+    return (
+      bus.activeCheckpointIndex
+    );
+  }
+
+  return 0;
+}
+
+/*
+ * =========================
+ * BUS VERDER
+ * =========================
+ */
 
 function finishBus(
   roomCode
@@ -1958,9 +2027,30 @@ function continueBusAfterResult(
 
             return;
           }
+
+          /*
+           * BELANGRIJK:
+           *
+           * Zodra de speler OP een
+           * checkpoint aankomt,
+           * wordt dit direct actief.
+           *
+           * Er hoeft dus nog NIET goed
+           * gegokt te zijn op deze kaart.
+           */
+
+          activateCheckpointIfNeeded(
+            currentBus
+          );
         } else {
           currentBus.currentIndex =
             restartIndex;
+
+          /*
+           * Als we terugkomen op een
+           * actief checkpoint blijft
+           * dat checkpoint actief.
+           */
         }
 
         currentBus.status =
@@ -2045,8 +2135,26 @@ function continueBusAfterDouble(
           }
         }
 
+        /*
+         * BIJ NIEUW BEGINPUNT:
+         *
+         * Het laatst behaalde
+         * checkpoint blijft gelden,
+         * ook als de bus naar een
+         * andere speler gaat.
+         *
+         * Bij de andere checkpoint-
+         * regels blijft dubbel terug
+         * naar kaart 1 gaan.
+         */
+
         currentBus.currentIndex =
-          0;
+          currentBus.checkpointFailRule ===
+            "safe"
+            ? getSafeRestartIndex(
+                currentBus
+              )
+            : 0;
 
         currentBus.checkpointRetryUsedIndex =
           null;
@@ -2136,11 +2244,13 @@ io.on(
 
             checkpoints:
               Boolean(
-                settings?.checkpoints
+                settings
+                  ?.checkpoints
               ),
 
             doubleRule:
-              settings?.doubleRule ===
+              settings
+                ?.doubleRule ===
               "take-along"
                 ? "take-along"
                 : "pass",
@@ -2254,7 +2364,8 @@ io.on(
       ) => {
         const code =
           String(
-            roomCode || ""
+            roomCode ||
+              ""
           )
             .trim()
             .toUpperCase();
@@ -2764,7 +2875,8 @@ io.on(
           [];
 
         for (
-          const item of safe
+          const item of
+          safe
         ) {
           const receiver =
             room.players.find(
@@ -3155,11 +3267,7 @@ io.on(
     );
 
     /*
-     * =========================
      * BUS LENGTE
-     *
-     * ALLEEN DE BUSSPELER.
-     * =========================
      */
 
     socket.on(
@@ -3252,11 +3360,7 @@ io.on(
     );
 
     /*
-     * =========================
      * BUS OPEN KAARTEN
-     *
-     * ALLEEN DE BUSSPELER.
-     * =========================
      */
 
     socket.on(
@@ -3367,11 +3471,7 @@ io.on(
     );
 
     /*
-     * =========================
      * CHECKPOINTS
-     *
-     * OOK ALLEEN DE BUSSPELER.
-     * =========================
      */
 
     socket.on(
@@ -3527,11 +3627,7 @@ io.on(
     );
 
     /*
-     * =========================
      * BUS START
-     *
-     * ALLEEN DE BUSSPELER.
-     * =========================
      */
 
     socket.on(
@@ -3591,6 +3687,9 @@ io.on(
 
         bus.currentIndex =
           0;
+
+        bus.activeCheckpointIndex =
+          null;
 
         bus.checkpointRetryUsedIndex =
           null;
@@ -3663,6 +3762,17 @@ io.on(
           return;
         }
 
+        /*
+         * Extra zekerheid:
+         * als deze positie een
+         * safe checkpoint is, wordt
+         * hij vóór de gok actief.
+         */
+
+        activateCheckpointIfNeeded(
+          bus
+        );
+
         const normalizedGuess =
           String(
             guess || ""
@@ -3688,9 +3798,7 @@ io.on(
           bus.currentIndex;
 
         const pile =
-          bus.piles[
-            position
-          ];
+          bus.piles[position];
 
         if (!pile) {
           done({
@@ -3744,6 +3852,14 @@ io.on(
           const drinks =
             position + 1;
 
+          const doubleRestartIndex =
+            bus.checkpointFailRule ===
+              "safe"
+              ? getSafeRestartIndex(
+                  bus
+                )
+              : 0;
+
           bus.checkpointRetryUsedIndex =
             null;
 
@@ -3770,7 +3886,7 @@ io.on(
             drinks,
 
             restartIndex:
-              0,
+              doubleRestartIndex,
 
             secondChance:
               false,
@@ -3868,9 +3984,7 @@ io.on(
         }
 
         /*
-         * =========================
          * FOUT
-         * =========================
          */
 
         const isCheckpoint =
@@ -3888,75 +4002,51 @@ io.on(
           false;
 
         /*
-         * FOUT OP CHECKPOINT
+         * NIEUW BEGINPUNT
          */
 
-        if (isCheckpoint) {
-          /*
-           * REGEL 1:
-           * NIEUW BEGINPUNT
-           *
-           * Zodra checkpoint bereikt is,
-           * wordt die kaart de nieuwe
-           * kaart 1.
-           */
+        if (
+          bus.checkpointFailRule ===
+          "safe"
+        ) {
+          restartIndex =
+            getSafeRestartIndex(
+              bus
+            );
 
+          checkpointSafe =
+            bus.activeCheckpointIndex !==
+            null;
+
+          secondChance =
+            false;
+
+          bus.checkpointRetryUsedIndex =
+            null;
+        }
+
+        /*
+         * TWEEDE KANS
+         */
+
+        else if (
+          isCheckpoint &&
+          bus.checkpointFailRule ===
+            "retry"
+        ) {
           if (
-            bus.checkpointFailRule ===
-            "safe"
+            bus.checkpointRetryUsedIndex !==
+            position
           ) {
             restartIndex =
               position;
 
             secondChance =
-              false;
-
-            checkpointSafe =
               true;
 
             bus.checkpointRetryUsedIndex =
-              null;
-          }
-
-          /*
-           * REGEL 2:
-           * TWEEDE KANS
-           */
-
-          else if (
-            bus.checkpointFailRule ===
-            "retry"
-          ) {
-            if (
-              bus.checkpointRetryUsedIndex !==
-              position
-            ) {
-              restartIndex =
-                position;
-
-              secondChance =
-                true;
-
-              bus.checkpointRetryUsedIndex =
-                position;
-            } else {
-              restartIndex =
-                0;
-
-              secondChance =
-                false;
-
-              bus.checkpointRetryUsedIndex =
-                null;
-            }
-          }
-
-          /*
-           * REGEL 3:
-           * DIRECT TERUG NAAR 1
-           */
-
-          else {
+              position;
+          } else {
             restartIndex =
               0;
 
@@ -3969,10 +4059,23 @@ io.on(
         }
 
         /*
-         * FOUT NA EEN CHECKPOINT.
-         *
-         * Dan ga je terug naar het
-         * laatste behaalde checkpoint.
+         * TERUG NAAR 1 OP CHECKPOINT
+         */
+
+        else if (
+          isCheckpoint &&
+          bus.checkpointFailRule ===
+            "reset"
+        ) {
+          restartIndex =
+            0;
+
+          bus.checkpointRetryUsedIndex =
+            null;
+        }
+
+        /*
+         * NORMALE FOUT NA CHECKPOINT
          */
 
         else {
@@ -4110,6 +4213,14 @@ io.on(
           return;
         }
 
+        const doubleRestartIndex =
+          bus.checkpointFailRule ===
+            "safe"
+            ? getSafeRestartIndex(
+                bus
+              )
+            : 0;
+
         bus.checkpointRetryUsedIndex =
           null;
 
@@ -4126,13 +4237,16 @@ io.on(
             true,
 
           restartIndex:
-            0,
+            doubleRestartIndex,
 
           secondChance:
             false,
 
           checkpointSafe:
-            false,
+            bus.checkpointFailRule ===
+              "safe" &&
+            bus.activeCheckpointIndex !==
+              null,
         };
 
         bus.status =
