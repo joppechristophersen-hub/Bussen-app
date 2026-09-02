@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "updatedAt": "2026-09-01",
+  "version": 3,
+  "updatedAt": "2026-09-02",
   "items": [
     {
       "id": "theme-classic",
@@ -8,20 +8,32 @@
       "category": "themes",
       "type": "theme",
       "equipSlot": "theme",
-      "description": "De originele frisse Busbaas-look.",
+      "description": "De originele Busbaas-look. Inclusief lichte en donkere variant.",
       "priceLabel": "Gratis",
       "free": true,
       "featured": true,
       "effect": {
-        "palette": {
-          "background": "#edf1ee",
-          "surface": "#ffffff",
-          "surfaceSoft": "#f3f6f4",
-          "accent": "#11866a",
-          "accentStrong": "#087158",
-          "text": "#14211c",
-          "muted": "#6f7d77",
-          "border": "#dce5e0"
+        "palettes": {
+          "light": {
+            "background": "#e3e9e5",
+            "surface": "#ffffff",
+            "surfaceSoft": "#eef3f0",
+            "accent": "#08745b",
+            "accentStrong": "#055744",
+            "text": "#07150f",
+            "muted": "#4f5f58",
+            "border": "#bfcac4"
+          },
+          "dark": {
+            "background": "#080d0b",
+            "surface": "#111815",
+            "surfaceSoft": "#19221e",
+            "accent": "#2ad1a0",
+            "accentStrong": "#159b76",
+            "text": "#f3f8f6",
+            "muted": "#9baba4",
+            "border": "#2d3934"
+          }
         }
       }
     },
@@ -31,19 +43,31 @@
       "category": "themes",
       "type": "theme",
       "equipSlot": "theme",
-      "description": "Donker, strak en gemaakt voor late avonden.",
+      "description": "Een koel blauwgroen thema voor lange avonden.",
       "priceLabel": "€0,99",
       "free": false,
       "effect": {
-        "palette": {
-          "background": "#090d0c",
-          "surface": "#121816",
-          "surfaceSoft": "#1a211f",
-          "accent": "#33d6a6",
-          "accentStrong": "#1aa37e",
-          "text": "#f3f7f5",
-          "muted": "#94a39e",
-          "border": "#29332f"
+        "palettes": {
+          "light": {
+            "background": "#e6eef1",
+            "surface": "#ffffff",
+            "surfaceSoft": "#edf5f7",
+            "accent": "#087a84",
+            "accentStrong": "#075b63",
+            "text": "#071619",
+            "muted": "#53696e",
+            "border": "#b9cbd0"
+          },
+          "dark": {
+            "background": "#060b11",
+            "surface": "#0d1720",
+            "surfaceSoft": "#142431",
+            "accent": "#33d6c4",
+            "accentStrong": "#1aa39a",
+            "text": "#f2faf9",
+            "muted": "#98acb1",
+            "border": "#29404a"
+          }
         }
       }
     },
@@ -56,17 +80,28 @@
       "description": "Paars, neon en gemaakt voor de Disco-gok.",
       "priceLabel": "€1,49",
       "free": false,
-      "featured": true,
       "effect": {
-        "palette": {
-          "background": "#13091d",
-          "surface": "#22102e",
-          "surfaceSoft": "#301641",
-          "accent": "#e84cff",
-          "accentStrong": "#a832c7",
-          "text": "#fff4ff",
-          "muted": "#c5a8ca",
-          "border": "#4a2855"
+        "palettes": {
+          "light": {
+            "background": "#f1e7f6",
+            "surface": "#fffaff",
+            "surfaceSoft": "#f4eafa",
+            "accent": "#a21caf",
+            "accentStrong": "#7e1489",
+            "text": "#210625",
+            "muted": "#75597a",
+            "border": "#d2b9d7"
+          },
+          "dark": {
+            "background": "#13091d",
+            "surface": "#22102e",
+            "surfaceSoft": "#301641",
+            "accent": "#e84cff",
+            "accentStrong": "#a832c7",
+            "text": "#fff4ff",
+            "muted": "#c5a8ca",
+            "border": "#4a2855"
+          }
         }
       }
     },
@@ -76,19 +111,31 @@
       "category": "themes",
       "type": "theme",
       "equipSlot": "theme",
-      "description": "Een lichte zomerse look voor vakanties en festivals.",
+      "description": "Een warme zomerse stijl voor vakanties, terrassen en festivals.",
       "priceLabel": "€0,99",
       "free": false,
       "effect": {
-        "palette": {
-          "background": "#fff3d6",
-          "surface": "#fffdf7",
-          "surfaceSoft": "#ffebbd",
-          "accent": "#e67b36",
-          "accentStrong": "#bd5520",
-          "text": "#3f2c1e",
-          "muted": "#8a705e",
-          "border": "#efd6a8"
+        "palettes": {
+          "light": {
+            "background": "#f8e8c9",
+            "surface": "#fffdf8",
+            "surfaceSoft": "#fbe4b7",
+            "accent": "#bd5420",
+            "accentStrong": "#913b13",
+            "text": "#28150b",
+            "muted": "#715b4d",
+            "border": "#dfc49d"
+          },
+          "dark": {
+            "background": "#17100b",
+            "surface": "#241812",
+            "surfaceSoft": "#332219",
+            "accent": "#ff9958",
+            "accentStrong": "#d36b2c",
+            "text": "#fff5e9",
+            "muted": "#c4aa98",
+            "border": "#493329"
+          }
         }
       }
     },
@@ -111,7 +158,7 @@
       "category": "cards",
       "type": "card_back",
       "equipSlot": "cardBack",
-      "description": "Donkere kaarten met een felle neonrand.",
+      "description": "Donkere speelkaarten met een felle neonrand.",
       "priceLabel": "€0,79",
       "free": false,
       "effect": {

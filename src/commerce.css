@@ -1,12 +1,12 @@
 :root {
-  --bb-background: #edf1ee;
+  --bb-background: #e3e9e5;
   --bb-surface: #ffffff;
-  --bb-surface-soft: #f3f6f4;
-  --bb-accent: #11866a;
-  --bb-accent-strong: #087158;
-  --bb-text: #14211c;
-  --bb-muted: #6f7d77;
-  --bb-border: #dce5e0;
+  --bb-surface-soft: #eef3f0;
+  --bb-accent: #08745b;
+  --bb-accent-strong: #055744;
+  --bb-text: #07150f;
+  --bb-muted: #4f5f58;
+  --bb-border: #bfcac4;
 }
 
 /*
@@ -25,24 +25,136 @@ body[data-bb-theme] .app {
     var(--bb-background) !important;
 
   color:
-    var(--bb-text);
+    var(--bb-text) !important;
 }
 
 body[data-bb-theme] .card {
   background:
-    var(--bb-surface);
+    var(--bb-surface) !important;
 
   color:
-    var(--bb-text);
+    var(--bb-text) !important;
 
   border-color:
-    var(--bb-border);
+    var(--bb-border) !important;
 }
 
-body[data-bb-theme] .subtitle {
+body[data-bb-theme] h1,
+body[data-bb-theme] h2,
+body[data-bb-theme] h3,
+body[data-bb-theme] strong,
+body[data-bb-theme] label {
   color:
-    var(--bb-muted);
+    var(--bb-text);
 }
+
+body[data-bb-theme] .subtitle,
+body[data-bb-theme] .setting p,
+body[data-bb-theme] .game-summary p,
+body[data-bb-theme] .tree-message p,
+body[data-bb-theme] .waiting-message p,
+body[data-bb-theme] .bus-choice-panel p,
+body[data-bb-theme] .bus-draw-panel p,
+body[data-bb-theme] .bus-ready-panel p,
+body[data-bb-theme] .checkpoint-panel p,
+body[data-bb-theme] .double-panel p,
+body[data-bb-theme] .bus-result p {
+  color:
+    var(--bb-muted) !important;
+}
+
+/*
+ * =========================
+ * LICHT THEMA CONTRAST
+ * =========================
+ */
+
+body[data-bb-color-mode="light"] input {
+  background:
+    #ffffff !important;
+
+  color:
+    var(--bb-text) !important;
+
+  border:
+    1px solid
+      var(--bb-border) !important;
+
+  box-shadow:
+    inset 0 0 0 1px
+      rgba(
+        7,
+        21,
+        15,
+        0.02
+      );
+}
+
+body[data-bb-color-mode="light"] input::placeholder {
+  color:
+    #78847e !important;
+
+  opacity:
+    1;
+}
+
+body[data-bb-color-mode="light"] .setting,
+body[data-bb-color-mode="light"] .game-summary,
+body[data-bb-color-mode="light"] .turn-message,
+body[data-bb-color-mode="light"] .waiting-message,
+body[data-bb-color-mode="light"] .tree-message,
+body[data-bb-color-mode="light"] .tree-distribute-panel,
+body[data-bb-color-mode="light"] .tree-active-panel,
+body[data-bb-color-mode="light"] .bus-choice-panel,
+body[data-bb-color-mode="light"] .bus-draw-panel,
+body[data-bb-color-mode="light"] .bus-ready-panel,
+body[data-bb-color-mode="light"] .checkpoint-panel,
+body[data-bb-color-mode="light"] .double-panel,
+body[data-bb-color-mode="light"] .bus-status-row,
+body[data-bb-color-mode="light"] .bus-riders {
+  border-color:
+    var(--bb-border) !important;
+}
+
+body[data-bb-color-mode="light"] .game-summary,
+body[data-bb-color-mode="light"] .waiting-message,
+body[data-bb-color-mode="light"] .tree-message,
+body[data-bb-color-mode="light"] .bus-riders {
+  background:
+    var(--bb-surface-soft) !important;
+}
+
+body[data-bb-color-mode="light"] .game-player,
+body[data-bb-color-mode="light"] .player {
+  border-color:
+    var(--bb-border) !important;
+
+  color:
+    var(--bb-text) !important;
+}
+
+body[data-bb-color-mode="light"] .game-player.active {
+  border-color:
+    var(--bb-accent) !important;
+}
+
+body[data-bb-color-mode="light"] .room-code {
+  background:
+    var(--bb-surface-soft) !important;
+
+  border:
+    1px solid
+      var(--bb-border) !important;
+
+  color:
+    var(--bb-text) !important;
+}
+
+/*
+ * =========================
+ * BASIS THEMA ELEMENTEN
+ * =========================
+ */
 
 body[data-bb-theme] .start-button,
 body[data-bb-theme] .tree-confirm-button,
@@ -67,13 +179,13 @@ body[data-bb-theme] .guess-grid button:hover {
 
 body[data-bb-theme] .secondary {
   background:
-    var(--bb-surface-soft);
+    var(--bb-surface-soft) !important;
 
   color:
-    var(--bb-text);
+    var(--bb-text) !important;
 
   border-color:
-    var(--bb-border);
+    var(--bb-border) !important;
 }
 
 body[data-bb-theme] .player-avatar,
@@ -156,7 +268,7 @@ body[data-bb-card-back="neon"]
 
 /*
  * =========================
- * ANIMATIE PACKS
+ * ANIMATIES
  * =========================
  */
 
@@ -255,7 +367,7 @@ body[data-bb-animation="party"]
         255,
         255,
         255,
-        0.16
+        0.18
       );
 
   border-radius:
@@ -289,14 +401,12 @@ body[data-bb-animation="party"]
 }
 
 .commerce-shop-launcher strong {
+  color:
+    #ffffff;
+
   font-size:
     0.9rem;
 }
-
-/*
- * Niet tijdens actieve gameplay/lobby
- * boven de knoppen laten zweven.
- */
 
 body:has(.game-card)
   .commerce-shop-launcher,
@@ -348,10 +458,10 @@ body:has(.lobby-card)
 
   background:
     rgba(
-      7,
-      13,
-      11,
-      0.74
+      5,
+      10,
+      8,
+      0.76
     );
 
   backdrop-filter:
@@ -390,7 +500,7 @@ body:has(.lobby-card)
         0,
         0,
         0,
-        0.32
+        0.34
       );
 }
 
@@ -411,6 +521,9 @@ body:has(.lobby-card)
 .commerce-shop-header h1 {
   margin:
     3px 0 5px;
+
+  color:
+    var(--bb-text);
 
   font-size:
     clamp(
@@ -489,6 +602,248 @@ body:has(.lobby-card)
 
 /*
  * =========================
+ * WEERGAVE
+ * =========================
+ */
+
+.commerce-appearance {
+  margin-top:
+    22px;
+
+  padding:
+    16px;
+
+  border:
+    1px solid
+      var(--bb-border);
+
+  border-radius:
+    18px;
+
+  background:
+    var(--bb-surface-soft);
+}
+
+.commerce-appearance-heading {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  gap:
+    20px;
+}
+
+.commerce-appearance-heading > div {
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    2px;
+}
+
+.commerce-appearance-heading > div > span {
+  color:
+    var(--bb-muted);
+
+  font-size:
+    0.64rem;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    0.1em;
+}
+
+.commerce-appearance-heading > div > strong {
+  color:
+    var(--bb-text);
+
+  font-size:
+    1.05rem;
+}
+
+.commerce-appearance p {
+  margin:
+    10px 0 0;
+
+  color:
+    var(--bb-muted);
+
+  font-size:
+    0.78rem;
+
+  line-height:
+    1.45;
+}
+
+/*
+ * Automatisch switch
+ */
+
+.commerce-switch {
+  position:
+    relative;
+
+  flex:
+    0 0 auto;
+
+  width:
+    54px;
+
+  height:
+    31px;
+
+  padding:
+    0;
+
+  margin:
+    0;
+
+  border:
+    1px solid
+      var(--bb-border);
+
+  border-radius:
+    999px;
+
+  background:
+    #87938d;
+
+  cursor:
+    pointer;
+
+  transition:
+    0.18s ease;
+}
+
+.commerce-switch span {
+  position:
+    absolute;
+
+  top:
+    3px;
+
+  left:
+    3px;
+
+  width:
+    23px;
+
+  height:
+    23px;
+
+  border-radius:
+    50%;
+
+  background:
+    #ffffff;
+
+  box-shadow:
+    0 2px 7px
+      rgba(
+        0,
+        0,
+        0,
+        0.28
+      );
+
+  transition:
+    0.18s ease;
+}
+
+.commerce-switch.active {
+  border-color:
+    var(--bb-accent);
+
+  background:
+    var(--bb-accent);
+}
+
+.commerce-switch.active span {
+  transform:
+    translateX(
+      23px
+    );
+}
+
+.commerce-mode-selector {
+  display:
+    grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap:
+    8px;
+
+  margin-top:
+    14px;
+
+  padding:
+    4px;
+
+  border:
+    1px solid
+      var(--bb-border);
+
+  border-radius:
+    14px;
+
+  background:
+    var(--bb-surface);
+}
+
+.commerce-mode-selector button {
+  min-height:
+    42px;
+
+  margin:
+    0;
+
+  border:
+    0;
+
+  border-radius:
+    10px;
+
+  background:
+    transparent;
+
+  color:
+    var(--bb-text);
+
+  font:
+    inherit;
+
+  font-size:
+    0.82rem;
+
+  font-weight:
+    800;
+
+  cursor:
+    pointer;
+}
+
+.commerce-mode-selector button.active {
+  background:
+    var(--bb-accent);
+
+  color:
+    #ffffff;
+}
+
+/*
+ * =========================
  * CATEGORIEËN
  * =========================
  */
@@ -501,7 +856,7 @@ body:has(.lobby-card)
     8px;
 
   margin:
-    23px -2px 20px;
+    18px -2px 20px;
 
   padding:
     2px;
@@ -617,12 +972,7 @@ body:has(.lobby-card)
 
 .commerce-product.featured {
   border-color:
-    color-mix(
-      in srgb,
-      var(--bb-accent)
-        65%,
-      transparent
-    );
+    var(--bb-accent);
 }
 
 .commerce-product.equipped {
@@ -709,6 +1059,9 @@ body:has(.lobby-card)
 .commerce-product-title h2 {
   margin:
     3px 0 5px;
+
+  color:
+    var(--bb-text);
 
   font-size:
     1rem;
@@ -813,19 +1166,13 @@ body:has(.lobby-card)
 
 /*
  * =========================
- * THEME PREVIEW
+ * DUBBELE THEME PREVIEW
  * =========================
  */
 
 .commerce-theme-preview {
-  display:
-    grid;
-
-  grid-template-columns:
-    1fr 1fr;
-
   width:
-    76px;
+    78px;
 
   height:
     94px;
@@ -834,12 +1181,12 @@ body:has(.lobby-card)
     hidden;
 
   border:
-    4px solid
+    3px solid
       rgba(
         255,
         255,
         255,
-        0.65
+        0.75
       );
 
   border-radius:
@@ -851,13 +1198,79 @@ body:has(.lobby-card)
         0,
         0,
         0,
-        0.15
+        0.18
       );
 }
 
-.commerce-theme-preview span {
+.commerce-theme-preview-dual {
   display:
-    block;
+    grid;
+
+  grid-template-columns:
+    1fr 1fr;
+}
+
+.commerce-theme-half {
+  position:
+    relative;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+}
+
+.commerce-theme-half span {
+  width:
+    25px;
+
+  height:
+    56px;
+
+  border-radius:
+    7px;
+
+  box-shadow:
+    0 3px 8px
+      rgba(
+        0,
+        0,
+        0,
+        0.12
+      );
+}
+
+.commerce-theme-half strong {
+  position:
+    absolute;
+
+  right:
+    4px;
+
+  bottom:
+    7px;
+
+  width:
+    16px;
+
+  height:
+    16px;
+
+  border:
+    2px solid
+      rgba(
+        255,
+        255,
+        255,
+        0.65
+      );
+
+  border-radius:
+    50%;
 }
 
 /*
@@ -952,7 +1365,7 @@ body:has(.lobby-card)
 
 /*
  * =========================
- * ANIMATIE PREVIEW
+ * ANIMATION PREVIEW
  * =========================
  */
 
@@ -1148,22 +1561,34 @@ body:has(.lobby-card)
 
   border:
     1px solid
-      #e6c66b;
+      #c89f2f;
 
   border-radius:
     14px;
 
   background:
-    #fff8dc;
+    #fff4c7;
 
   color:
-    #604c12;
+    #4c3905;
 
   font-size:
     0.78rem;
 
   line-height:
     1.4;
+}
+
+body[data-bb-color-mode="dark"]
+  .commerce-info-message {
+  border-color:
+    #675f35;
+
+  background:
+    #302d1d;
+
+  color:
+    #f4df92;
 }
 
 .commerce-shop-footer {
@@ -1181,6 +1606,10 @@ body:has(.lobby-card)
 
   padding:
     14px;
+
+  border:
+    1px solid
+      var(--bb-border);
 
   border-radius:
     15px;
@@ -1235,7 +1664,7 @@ body:has(.lobby-card)
       6,
       11,
       9,
-      0.78
+      0.8
     );
 
   backdrop-filter:
@@ -1274,7 +1703,7 @@ body:has(.lobby-card)
         0,
         0,
         0,
-        0.38
+        0.4
       );
 }
 
@@ -1446,7 +1875,7 @@ body:has(.lobby-card)
     #e7e7e7;
 
   color:
-    #6b6b6b;
+    #5f5f5f;
 
   font-size:
     0.62rem;
@@ -1508,6 +1937,9 @@ body:has(.lobby-card)
   margin:
     0 0 8px;
 
+  color:
+    #151515;
+
   font-size:
     1.5rem;
 }
@@ -1520,7 +1952,7 @@ body:has(.lobby-card)
     0;
 
   color:
-    #747474;
+    #666666;
 
   font-size:
     0.88rem;
@@ -1537,10 +1969,10 @@ body:has(.lobby-card)
     13px;
 
   background:
-    #e8e8e8;
+    #e1e1e1;
 
   color:
-    #656565;
+    #555555;
 
   text-align:
     center;
@@ -1585,10 +2017,18 @@ body:has(.lobby-card)
 
   .commerce-theme-preview {
     width:
-      66px;
+      67px;
 
     height:
-      82px;
+      83px;
+  }
+
+  .commerce-theme-half span {
+    width:
+      21px;
+
+    height:
+      48px;
   }
 
   .commerce-card-preview {
@@ -1597,21 +2037,5 @@ body:has(.lobby-card)
 
     height:
       79px;
-  }
-}
-
-@media (
-  prefers-color-scheme:
-    dark
-) {
-  .commerce-info-message {
-    border-color:
-      #675f35;
-
-    background:
-      #302d1d;
-
-    color:
-      #f4df92;
   }
 }

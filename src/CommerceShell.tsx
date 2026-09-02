@@ -14,25 +14,33 @@ type ShopCategory =
   | "animations"
   | "extras";
 
-type ThemeMode =
+type AppearanceMode =
   | "system"
   | "light"
   | "dark";
 
+type ManualAppearanceMode =
+  | "light"
+  | "dark";
+
 type ThemePalette = {
-  background?: string;
-  surface?: string;
-  surfaceSoft?: string;
-  accent?: string;
-  accentStrong?: string;
-  text?: string;
-  muted?: string;
-  border?: string;
+  background: string;
+  surface: string;
+  surfaceSoft: string;
+  accent: string;
+  accentStrong: string;
+  text: string;
+  muted: string;
+  border: string;
+};
+
+type ThemePalettes = {
+  light: ThemePalette;
+  dark: ThemePalette;
 };
 
 type ShopEffect = {
-  themeMode?: ThemeMode;
-  palette?: ThemePalette;
+  palettes?: ThemePalettes;
   cardBack?: string;
   animation?: string;
   extra?: string;
@@ -79,161 +87,115 @@ const OWNED_STORAGE_KEY =
 const EQUIPPED_STORAGE_KEY =
   "busbaas-equipped-items";
 
-const LIGHT_PALETTE: ThemePalette = {
+const APPEARANCE_STORAGE_KEY =
+  "busbaas-appearance-mode";
+
+const MANUAL_APPEARANCE_STORAGE_KEY =
+  "busbaas-manual-appearance-mode";
+
+/*
+ * =========================
+ * CLASSIC PALETTEN
+ * =========================
+ *
+ * Licht heeft bewust sterker contrast:
+ * - donkerdere tekst
+ * - duidelijkere borders
+ * - donkerder groen
+ * - duidelijk verschil tussen achtergrond
+ *   en witte kaarten/panelen
+ */
+
+const CLASSIC_LIGHT: ThemePalette = {
   background:
-    "#edf1ee",
+    "#e3e9e5",
 
   surface:
     "#ffffff",
 
   surfaceSoft:
-    "#f3f6f4",
+    "#eef3f0",
 
   accent:
-    "#11866a",
+    "#08745b",
 
   accentStrong:
-    "#087158",
+    "#055744",
 
   text:
-    "#14211c",
+    "#07150f",
 
   muted:
-    "#6f7d77",
+    "#4f5f58",
 
   border:
-    "#dce5e0",
+    "#bfcac4",
 };
 
-const DARK_PALETTE: ThemePalette = {
+const CLASSIC_DARK: ThemePalette = {
   background:
-    "#090e0c",
+    "#080d0b",
 
   surface:
-    "#121916",
+    "#111815",
 
   surfaceSoft:
-    "#1a231f",
+    "#19221e",
 
   accent:
-    "#27c99a",
+    "#2ad1a0",
 
   accentStrong:
-    "#159975",
+    "#159b76",
 
   text:
-    "#f2f7f5",
+    "#f3f8f6",
 
   muted:
-    "#91a09a",
+    "#9baba4",
 
   border:
-    "#293630",
+    "#2d3934",
 };
 
-const FALLBACK_FREE_THEMES: ShopItem[] = [
-  {
-    id:
-      "theme-auto",
+const FALLBACK_CLASSIC_THEME: ShopItem = {
+  id:
+    "theme-classic",
 
-    name:
-      "Busbaas Automatisch",
+  name:
+    "Busbaas Classic",
 
-    category:
-      "themes",
+  category:
+    "themes",
 
-    type:
-      "theme",
+  type:
+    "theme",
 
-    equipSlot:
-      "theme",
+  equipSlot:
+    "theme",
 
-    description:
-      "Volgt automatisch de lichte of donkere instelling van je telefoon.",
+  description:
+    "De originele Busbaas-look. Werkt automatisch in licht en donker.",
 
-    priceLabel:
-      "Gratis",
+  priceLabel:
+    "Gratis",
 
-    free:
-      true,
+  free:
+    true,
 
-    featured:
-      true,
+  featured:
+    true,
 
-    effect: {
-      themeMode:
-        "system",
+  effect: {
+    palettes: {
+      light:
+        CLASSIC_LIGHT,
+
+      dark:
+        CLASSIC_DARK,
     },
   },
-
-  {
-    id:
-      "theme-light",
-
-    name:
-      "Busbaas Licht",
-
-    category:
-      "themes",
-
-    type:
-      "theme",
-
-    equipSlot:
-      "theme",
-
-    description:
-      "De lichte standaardlook van Busbaas.",
-
-    priceLabel:
-      "Gratis",
-
-    free:
-      true,
-
-    effect: {
-      themeMode:
-        "light",
-
-      palette:
-        LIGHT_PALETTE,
-    },
-  },
-
-  {
-    id:
-      "theme-dark",
-
-    name:
-      "Busbaas Donker",
-
-    category:
-      "themes",
-
-    type:
-      "theme",
-
-    equipSlot:
-      "theme",
-
-    description:
-      "De donkere standaardlook van Busbaas.",
-
-    priceLabel:
-      "Gratis",
-
-    free:
-      true,
-
-    effect: {
-      themeMode:
-        "dark",
-
-      palette:
-        DARK_PALETTE,
-    },
-  },
-];
+};
 
 const CATEGORY_LABELS: Record<
   ShopCategory,
@@ -259,13 +221,13 @@ const CATEGORY_ORDER: ShopCategory[] = [
   "extras",
 ];
 
-function readOwnedItems() {
-  const standardItems = [
-    "theme-auto",
-    "theme-light",
-    "theme-dark",
-  ];
+/*
+ * =========================
+ * LOCAL STORAGE
+ * =========================
+ */
 
+function readOwnedItems() {
   try {
     const stored =
       localStorage.getItem(
@@ -273,7 +235,9 @@ function readOwnedItems() {
       );
 
     if (!stored) {
-      return standardItems;
+      return [
+        "theme-classic",
+      ];
     }
 
     const parsed =
@@ -286,28 +250,45 @@ function readOwnedItems() {
         parsed
       )
     ) {
-      return standardItems;
+      return [
+        "theme-classic",
+      ];
     }
 
-    const validItems =
+    const cleaned =
       parsed.filter(
         (
           value
         ): value is string =>
           typeof value ===
-          "string" &&
-          value !==
-            "theme-classic"
+          "string"
+      );
+
+    /*
+     * Oude gratis licht/donker-items
+     * verwijderen we uit eigendom.
+     */
+    const migrated =
+      cleaned.filter(
+        (item) =>
+          item !==
+            "theme-auto" &&
+          item !==
+            "theme-light" &&
+          item !==
+            "theme-dark"
       );
 
     return [
       ...new Set([
-        ...standardItems,
-        ...validItems,
+        "theme-classic",
+        ...migrated,
       ]),
     ];
   } catch {
-    return standardItems;
+    return [
+      "theme-classic",
+    ];
   }
 }
 
@@ -321,7 +302,7 @@ function readEquippedItems() {
     if (!stored) {
       return {
         theme:
-          "theme-auto",
+          "theme-classic",
       };
     }
 
@@ -337,30 +318,96 @@ function readEquippedItems() {
     ) {
       return {
         theme:
-          "theme-auto",
+          "theme-classic",
       };
     }
 
-    const oldTheme =
-      parsed.theme;
+    let selectedTheme =
+      typeof parsed.theme ===
+      "string"
+        ? parsed.theme
+        : "theme-classic";
+
+    /*
+     * Migratie van de vorige versie:
+     * auto / light / dark waren toen
+     * aparte shopproducten.
+     */
+    if (
+      selectedTheme ===
+        "theme-auto" ||
+      selectedTheme ===
+        "theme-light" ||
+      selectedTheme ===
+        "theme-dark"
+    ) {
+      selectedTheme =
+        "theme-classic";
+    }
 
     return {
       ...parsed,
 
       theme:
-        oldTheme ===
-        "theme-classic"
-          ? "theme-auto"
-          : oldTheme ||
-            "theme-auto",
+        selectedTheme,
     };
   } catch {
     return {
       theme:
-        "theme-auto",
+        "theme-classic",
     };
   }
 }
+
+function readAppearanceMode():
+  AppearanceMode {
+  try {
+    const stored =
+      localStorage.getItem(
+        APPEARANCE_STORAGE_KEY
+      );
+
+    if (
+      stored ===
+        "light" ||
+      stored ===
+        "dark"
+    ) {
+      return stored;
+    }
+
+    return "system";
+  } catch {
+    return "system";
+  }
+}
+
+function readManualAppearanceMode():
+  ManualAppearanceMode {
+  try {
+    const stored =
+      localStorage.getItem(
+        MANUAL_APPEARANCE_STORAGE_KEY
+      );
+
+    if (
+      stored ===
+        "dark"
+    ) {
+      return "dark";
+    }
+
+    return "light";
+  } catch {
+    return "light";
+  }
+}
+
+/*
+ * =========================
+ * COMPONENT
+ * =========================
+ */
 
 function CommerceShell({
   children,
@@ -377,9 +424,9 @@ function CommerceShell({
   ] =
     useState<
       ShopItem[]
-    >(
-      FALLBACK_FREE_THEMES
-    );
+    >([
+      FALLBACK_CLASSIC_THEME,
+    ]);
 
   const [
     shopLoading,
@@ -430,6 +477,28 @@ function CommerceShell({
       null
     );
 
+  /*
+   * =========================
+   * LICHT / DONKER
+   * =========================
+   */
+
+  const [
+    appearanceMode,
+    setAppearanceMode,
+  ] =
+    useState<AppearanceMode>(
+      readAppearanceMode
+    );
+
+  const [
+    manualAppearanceMode,
+    setManualAppearanceMode,
+  ] =
+    useState<ManualAppearanceMode>(
+      readManualAppearanceMode
+    );
+
   const [
     systemDark,
     setSystemDark,
@@ -466,7 +535,7 @@ function CommerceShell({
 
   /*
    * =========================
-   * LICHT / DONKER DETECTIE
+   * DEVICE THEME
    * =========================
    */
 
@@ -477,7 +546,8 @@ function CommerceShell({
       );
 
     function handleChange(
-      event: MediaQueryListEvent
+      event:
+        MediaQueryListEvent
     ) {
       setSystemDark(
         event.matches
@@ -554,28 +624,44 @@ function CommerceShell({
           return;
         }
 
-        const missingStandardThemes =
-          FALLBACK_FREE_THEMES.filter(
-            (standardTheme) =>
-              !data.items.some(
-                (item) =>
-                  item.id ===
-                  standardTheme.id
-              )
+        /*
+         * Oude licht/donker-producten worden
+         * niet meer getoond als een oude
+         * catalogus nog even in cache staat.
+         */
+        const cleanedItems =
+          data.items.filter(
+            (item) =>
+              item.id !==
+                "theme-auto" &&
+              item.id !==
+                "theme-light" &&
+              item.id !==
+                "theme-dark"
           );
 
-        const loadedItems = [
-          ...missingStandardThemes,
-          ...data.items,
-        ];
+        const hasClassic =
+          cleanedItems.some(
+            (item) =>
+              item.id ===
+              "theme-classic"
+          );
+
+        const loadedItems =
+          hasClassic
+            ? cleanedItems
+            : [
+                FALLBACK_CLASSIC_THEME,
+                ...cleanedItems,
+              ];
 
         setShopItems(
           loadedItems
         );
 
         /*
-         * Alle gratis items worden
-         * automatisch bezit van de speler.
+         * Alle gratis items automatisch
+         * als eigendom registreren.
          */
         setOwnedItems(
           (
@@ -594,6 +680,7 @@ function CommerceShell({
 
             return [
               ...new Set([
+                "theme-classic",
                 ...current,
                 ...freeIds,
               ]),
@@ -614,12 +701,12 @@ function CommerceShell({
           return;
         }
 
-        setShopItems(
-          FALLBACK_FREE_THEMES
-        );
+        setShopItems([
+          FALLBACK_CLASSIC_THEME,
+        ]);
 
         setShopError(
-          "De online shop kon niet worden geladen. Licht, donker en automatisch blijven beschikbaar."
+          "De online shop kon niet worden geladen. Busbaas Classic blijft beschikbaar."
         );
       } finally {
         if (
@@ -668,6 +755,24 @@ function CommerceShell({
     equippedItems,
   ]);
 
+  useEffect(() => {
+    localStorage.setItem(
+      APPEARANCE_STORAGE_KEY,
+      appearanceMode
+    );
+  }, [
+    appearanceMode,
+  ]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      MANUAL_APPEARANCE_STORAGE_KEY,
+      manualAppearanceMode
+    );
+  }, [
+    manualAppearanceMode,
+  ]);
+
   /*
    * =========================
    * THEMA TOEPASSEN
@@ -677,7 +782,7 @@ function CommerceShell({
   useEffect(() => {
     const selectedThemeId =
       equippedItems.theme ||
-      "theme-auto";
+      "theme-classic";
 
     const selectedTheme =
       shopItems.find(
@@ -690,118 +795,96 @@ function CommerceShell({
       shopItems.find(
         (item) =>
           item.id ===
-          "theme-auto"
+          "theme-classic"
       ) ||
-      FALLBACK_FREE_THEMES[0];
+      FALLBACK_CLASSIC_THEME;
 
-    const themeMode =
-      selectedTheme.effect
-        ?.themeMode ||
-      "light";
-
-    let actualMode:
-      | "light"
-      | "dark";
-
-    let palette:
-      ThemePalette;
-
-    if (
-      themeMode ===
+    const resolvedMode:
+      ManualAppearanceMode =
+      appearanceMode ===
       "system"
-    ) {
-      actualMode =
-        systemDark
+        ? systemDark
           ? "dark"
-          : "light";
+          : "light"
+        : appearanceMode;
 
-      palette =
-        systemDark
-          ? DARK_PALETTE
-          : LIGHT_PALETTE;
-    } else {
-      actualMode =
-        themeMode;
+    const palettes =
+      selectedTheme
+        .effect
+        ?.palettes ||
+      FALLBACK_CLASSIC_THEME
+        .effect
+        ?.palettes!;
 
-      palette =
-        selectedTheme.effect
-          ?.palette ||
-        (
-          themeMode ===
-          "dark"
-            ? DARK_PALETTE
-            : LIGHT_PALETTE
-        );
-    }
+    const palette =
+      palettes[
+        resolvedMode
+      ];
 
     const root =
       document.documentElement;
 
     root.style.setProperty(
       "--bb-background",
-      palette.background ||
-        "#edf1ee"
+      palette.background
     );
 
     root.style.setProperty(
       "--bb-surface",
-      palette.surface ||
-        "#ffffff"
+      palette.surface
     );
 
     root.style.setProperty(
       "--bb-surface-soft",
-      palette.surfaceSoft ||
-        "#f3f6f4"
+      palette.surfaceSoft
     );
 
     root.style.setProperty(
       "--bb-accent",
-      palette.accent ||
-        "#11866a"
+      palette.accent
     );
 
     root.style.setProperty(
       "--bb-accent-strong",
-      palette.accentStrong ||
-        "#087158"
+      palette.accentStrong
     );
 
     root.style.setProperty(
       "--bb-text",
-      palette.text ||
-        "#14211c"
+      palette.text
     );
 
     root.style.setProperty(
       "--bb-muted",
-      palette.muted ||
-        "#6f7d77"
+      palette.muted
     );
 
     root.style.setProperty(
       "--bb-border",
-      palette.border ||
-        "#dce5e0"
+      palette.border
     );
 
     root.style.colorScheme =
-      actualMode;
+      resolvedMode;
 
     document.body.dataset.bbTheme =
       selectedTheme.id;
 
     document.body.dataset.bbColorMode =
-      actualMode;
+      resolvedMode;
+
+    document.body.dataset.bbAppearance =
+      appearanceMode;
   }, [
     equippedItems.theme,
     shopItems,
+    appearanceMode,
     systemDark,
   ]);
 
   /*
    * =========================
-   * KAARTSTIJL
+   * CARD BACK
    * =========================
    */
 
@@ -852,6 +935,79 @@ function CommerceShell({
     equippedItems.animation,
     shopItems,
   ]);
+
+  /*
+   * =========================
+   * UI COPY
+   * =========================
+   *
+   * Zo hoeven we de grote App.tsx hiervoor
+   * niet aan te raken.
+   */
+
+  useEffect(() => {
+    function updateExampleNames() {
+      const inputs =
+        document.querySelectorAll<HTMLInputElement>(
+          "input[placeholder]"
+        );
+
+      inputs.forEach(
+        (input) => {
+          if (
+            input.placeholder ===
+              "Bijvoorbeeld Joppe" ||
+            input.placeholder ===
+              "Bijvoorbeeld Gerda"
+          ) {
+            input.placeholder =
+              "Bijvoorbeeld Gerda";
+          }
+
+          if (
+            input.placeholder ===
+              "Bijvoorbeeld Dennis" ||
+            input.placeholder ===
+              "Bijvoorbeeld Johan"
+          ) {
+            input.placeholder =
+              "Bijvoorbeeld Johan";
+          }
+        }
+      );
+    }
+
+    const root =
+      document.getElementById(
+        "root"
+      );
+
+    if (!root) {
+      return;
+    }
+
+    updateExampleNames();
+
+    const observer =
+      new MutationObserver(
+        updateExampleNames
+      );
+
+    observer.observe(
+      root,
+      {
+        childList:
+          true,
+
+        subtree:
+          true,
+      }
+    );
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   /*
    * =========================
@@ -919,7 +1075,7 @@ function CommerceShell({
 
   /*
    * =========================
-   * TEST AD COUNTDOWN
+   * TEST AD TIMER
    * =========================
    */
 
@@ -976,6 +1132,45 @@ function CommerceShell({
     adVisible,
     adCountdown,
   ]);
+
+  /*
+   * =========================
+   * APPEARANCE CONTROLS
+   * =========================
+   */
+
+  const automaticAppearance =
+    appearanceMode ===
+    "system";
+
+  function toggleAutomaticAppearance() {
+    if (
+      automaticAppearance
+    ) {
+      setAppearanceMode(
+        manualAppearanceMode
+      );
+
+      return;
+    }
+
+    setAppearanceMode(
+      "system"
+    );
+  }
+
+  function selectManualAppearance(
+    mode:
+      ManualAppearanceMode
+  ) {
+    setManualAppearanceMode(
+      mode
+    );
+
+    setAppearanceMode(
+      mode
+    );
+  }
 
   /*
    * =========================
@@ -1055,120 +1250,81 @@ function CommerceShell({
     );
   }
 
-  function getPreviewPalette(
+  function renderThemePreview(
     item: ShopItem
   ) {
-    if (
+    const palettes =
       item.effect
-        ?.themeMode ===
-      "dark"
-    ) {
-      return (
-        item.effect
-          ?.palette ||
-        DARK_PALETTE
-      );
-    }
-
-    if (
-      item.effect
-        ?.themeMode ===
-      "system"
-    ) {
-      return LIGHT_PALETTE;
-    }
+        ?.palettes ||
+      FALLBACK_CLASSIC_THEME
+        .effect
+        ?.palettes!;
 
     return (
-      item.effect
-        ?.palette ||
-      LIGHT_PALETTE
+      <div className="commerce-theme-preview commerce-theme-preview-dual">
+        <div
+          className="commerce-theme-half"
+          style={{
+            background:
+              palettes.light
+                .background,
+          }}
+        >
+          <span
+            style={{
+              background:
+                palettes.light
+                  .surface,
+            }}
+          />
+
+          <strong
+            style={{
+              background:
+                palettes.light
+                  .accent,
+            }}
+          />
+        </div>
+
+        <div
+          className="commerce-theme-half"
+          style={{
+            background:
+              palettes.dark
+                .background,
+          }}
+        >
+          <span
+            style={{
+              background:
+                palettes.dark
+                  .surface,
+            }}
+          />
+
+          <strong
+            style={{
+              background:
+                palettes.dark
+                  .accent,
+            }}
+          />
+        </div>
+      </div>
     );
   }
 
   function renderPreview(
-    item: ShopItem
+    item:
+      ShopItem
   ) {
     if (
       item.category ===
       "themes"
     ) {
-      if (
-        item.effect
-          ?.themeMode ===
-        "system"
-      ) {
-        return (
-          <div className="commerce-theme-preview">
-            <span
-              style={{
-                background:
-                  LIGHT_PALETTE.background,
-              }}
-            />
-
-            <span
-              style={{
-                background:
-                  LIGHT_PALETTE.accent,
-              }}
-            />
-
-            <span
-              style={{
-                background:
-                  DARK_PALETTE.background,
-              }}
-            />
-
-            <span
-              style={{
-                background:
-                  DARK_PALETTE.accent,
-              }}
-            />
-          </div>
-        );
-      }
-
-      const palette =
-        getPreviewPalette(
-          item
-        );
-
-      return (
-        <div className="commerce-theme-preview">
-          <span
-            style={{
-              background:
-                palette.background ||
-                "#eeeeee",
-            }}
-          />
-
-          <span
-            style={{
-              background:
-                palette.surface ||
-                "#ffffff",
-            }}
-          />
-
-          <span
-            style={{
-              background:
-                palette.accent ||
-                "#11866a",
-            }}
-          />
-
-          <span
-            style={{
-              background:
-                palette.accentStrong ||
-                "#087158",
-            }}
-          />
-        </div>
+      return renderThemePreview(
+        item
       );
     }
 
@@ -1268,6 +1424,90 @@ function CommerceShell({
                 ×
               </button>
             </header>
+
+            {/*
+             * =========================
+             * WEERGAVE
+             * =========================
+             */}
+
+            <section className="commerce-appearance">
+              <div className="commerce-appearance-heading">
+                <div>
+                  <span>
+                    WEERGAVE
+                  </span>
+
+                  <strong>
+                    {automaticAppearance
+                      ? "Automatisch"
+                      : appearanceMode ===
+                          "dark"
+                        ? "Donker"
+                        : "Licht"}
+                  </strong>
+                </div>
+
+                <button
+                  type="button"
+                  className={`commerce-switch ${
+                    automaticAppearance
+                      ? "active"
+                      : ""
+                  }`}
+                  onClick={
+                    toggleAutomaticAppearance
+                  }
+                  aria-label="Automatisch licht en donker"
+                >
+                  <span />
+                </button>
+              </div>
+
+              <p>
+                {automaticAppearance
+                  ? `Busbaas volgt nu automatisch je apparaat (${systemDark ? "donker" : "licht"}).`
+                  : "Automatisch staat uit. Kies hieronder zelf licht of donker."}
+              </p>
+
+              {!automaticAppearance && (
+                <div className="commerce-mode-selector">
+                  <button
+                    type="button"
+                    className={
+                      appearanceMode ===
+                      "light"
+                        ? "active"
+                        : ""
+                    }
+                    onClick={() =>
+                      selectManualAppearance(
+                        "light"
+                      )
+                    }
+                  >
+                    ☀️ Licht
+                  </button>
+
+                  <button
+                    type="button"
+                    className={
+                      appearanceMode ===
+                      "dark"
+                        ? "active"
+                        : ""
+                    }
+                    onClick={() =>
+                      selectManualAppearance(
+                        "dark"
+                      )
+                    }
+                  >
+                    🌙 Donker
+                  </button>
+                </div>
+              )}
+            </section>
 
             <div className="commerce-categories">
               {CATEGORY_ORDER.map(
@@ -1373,7 +1613,7 @@ function CommerceShell({
                       >
                         {item.featured && (
                           <span className="commerce-featured">
-                            STANDAARD
+                            GRATIS
                           </span>
                         )}
 
@@ -1447,11 +1687,11 @@ function CommerceShell({
 
             <footer className="commerce-shop-footer">
               <span>
-                🛍️
+                🎨
               </span>
 
               <p>
-                Licht, donker en automatisch zijn altijd gratis. Extra thema's en cosmetische items kunnen later worden gekocht.
+                Licht en donker zijn altijd onderdeel van Busbaas. Alleen extra stijlen en cosmetische items kunnen premium zijn.
               </p>
             </footer>
           </div>
@@ -1482,7 +1722,7 @@ function CommerceShell({
             </strong>
 
             <p>
-              Dit product staat al klaar in de shop. Later koppelen we hier de echte Google Play / App Store-aankoop aan.
+              Dit item staat al klaar in de Busbaas-shop. Later koppelen we hier de echte Google Play- en App Store-aankoop aan.
             </p>
 
             <button
