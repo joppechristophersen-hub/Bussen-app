@@ -42,7 +42,6 @@ body[data-bb-theme] .card {
 body[data-bb-theme] h1,
 body[data-bb-theme] h2,
 body[data-bb-theme] h3,
-body[data-bb-theme] strong,
 body[data-bb-theme] label {
   color:
     var(--bb-text);
@@ -59,6 +58,129 @@ body[data-bb-theme] .bus-ready-panel p,
 body[data-bb-theme] .checkpoint-panel p,
 body[data-bb-theme] .double-panel p,
 body[data-bb-theme] .bus-result p {
+  color:
+    var(--bb-muted) !important;
+}
+
+/*
+ * =========================
+ * SPEELKAARTEN ALTIJD LEESBAAR
+ * =========================
+ *
+ * Een speelkaart blijft een speelkaart:
+ * wit vlak, rood of zwart kaartdrukwerk.
+ *
+ * Hierdoor beïnvloedt donker/licht/automatisch
+ * nooit meer de leesbaarheid van kaartwaarden.
+ */
+
+body[data-bb-theme] .playing-card,
+body[data-bb-theme] .revealed-card,
+body[data-bb-theme] .tree-card-face,
+body[data-bb-theme] .tree-active-card,
+body[data-bb-theme] .bus-card-face,
+body[data-bb-theme] .bus-reference-card,
+body[data-bb-theme] .mini-playing-card,
+body[data-bb-theme] .setup-card:not(.placeholder) {
+  background:
+    #ffffff !important;
+
+  border-color:
+    #c8d0cc !important;
+
+  box-shadow:
+    0 5px 16px
+      rgba(
+        0,
+        0,
+        0,
+        0.16
+      );
+
+  color:
+    #111111 !important;
+}
+
+/*
+ * Rode kaarten
+ */
+
+body[data-bb-theme] .playing-card.rood,
+body[data-bb-theme] .revealed-card.rood,
+body[data-bb-theme] .tree-card-face.rood,
+body[data-bb-theme] .tree-active-card.rood,
+body[data-bb-theme] .bus-card-face.rood,
+body[data-bb-theme] .bus-reference-card.rood,
+body[data-bb-theme] .mini-playing-card.rood,
+body[data-bb-theme] .setup-card.rood {
+  color:
+    #c9182b !important;
+}
+
+/*
+ * Zwarte kaarten
+ */
+
+body[data-bb-theme] .playing-card.zwart,
+body[data-bb-theme] .revealed-card.zwart,
+body[data-bb-theme] .tree-card-face.zwart,
+body[data-bb-theme] .tree-active-card.zwart,
+body[data-bb-theme] .bus-card-face.zwart,
+body[data-bb-theme] .bus-reference-card.zwart,
+body[data-bb-theme] .mini-playing-card.zwart,
+body[data-bb-theme] .setup-card.zwart {
+  color:
+    #111111 !important;
+}
+
+/*
+ * Alle onderdelen binnen een kaart
+ * nemen de kaartkleur over.
+ */
+
+body[data-bb-theme] .playing-card strong,
+body[data-bb-theme] .playing-card span,
+body[data-bb-theme] .revealed-card strong,
+body[data-bb-theme] .revealed-card span,
+body[data-bb-theme] .tree-card-face strong,
+body[data-bb-theme] .tree-card-face span,
+body[data-bb-theme] .tree-active-card strong,
+body[data-bb-theme] .tree-active-card span,
+body[data-bb-theme] .bus-card-face strong,
+body[data-bb-theme] .bus-card-face span,
+body[data-bb-theme] .bus-reference-card strong,
+body[data-bb-theme] .bus-reference-card span,
+body[data-bb-theme] .mini-playing-card strong,
+body[data-bb-theme] .mini-playing-card span,
+body[data-bb-theme] .setup-card:not(.placeholder) strong,
+body[data-bb-theme] .setup-card:not(.placeholder) span {
+  color:
+    inherit !important;
+}
+
+/*
+ * Middenfiguur en kaarthoeken expliciet leesbaar houden
+ */
+
+body[data-bb-theme] .card-center-symbol,
+body[data-bb-theme] .card-corner,
+body[data-bb-theme] .card-corner strong,
+body[data-bb-theme] .card-corner span {
+  color:
+    inherit !important;
+}
+
+/*
+ * Placeholderkaart mag wel thema-kleuren gebruiken
+ */
+
+body[data-bb-theme] .setup-card.placeholder {
+  background:
+    var(--bb-surface-soft) !important;
+
+  border-color:
+    var(--bb-border) !important;
+
   color:
     var(--bb-muted) !important;
 }
@@ -86,13 +208,13 @@ body[data-bb-color-mode="light"] input {
         7,
         21,
         15,
-        0.02
+        0.025
       );
 }
 
 body[data-bb-color-mode="light"] input::placeholder {
   color:
-    #78847e !important;
+    #66736d !important;
 
   opacity:
     1;
@@ -397,7 +519,7 @@ body[data-bb-animation="party"]
 
 .commerce-shop-launcher span {
   font-size:
-    1.2rem;
+    1.15rem;
 }
 
 .commerce-shop-launcher strong {
@@ -405,7 +527,7 @@ body[data-bb-animation="party"]
     #ffffff;
 
   font-size:
-    0.9rem;
+    0.88rem;
 }
 
 body:has(.game-card)
@@ -443,14 +565,14 @@ body:has(.lobby-card)
 
   padding:
     max(
-      18px,
+      16px,
       env(
         safe-area-inset-top
       )
     )
-    14px
+    12px
     max(
-      24px,
+      22px,
       env(
         safe-area-inset-bottom
       )
@@ -472,21 +594,21 @@ body:has(.lobby-card)
   width:
     min(
       100%,
-      520px
+      500px
     );
 
   margin:
     auto;
 
   padding:
-    22px;
+    20px;
 
   border:
     1px solid
       var(--bb-border);
 
   border-radius:
-    28px;
+    25px;
 
   background:
     var(--bb-surface);
@@ -504,44 +626,77 @@ body:has(.lobby-card)
       );
 }
 
+/*
+ * =========================
+ * SHOP HEADER
+ * =========================
+ */
+
 .commerce-shop-header {
   display:
-    flex;
+    grid;
+
+  grid-template-columns:
+    minmax(
+      0,
+      1fr
+    )
+    42px;
 
   align-items:
-    flex-start;
-
-  justify-content:
-    space-between;
+    start;
 
   gap:
-    18px;
+    14px;
+}
+
+.commerce-shop-header > div {
+  min-width:
+    0;
 }
 
 .commerce-shop-header h1 {
   margin:
-    3px 0 5px;
+    4px 0 6px;
+
+  max-width:
+    100%;
 
   color:
     var(--bb-text);
 
   font-size:
     clamp(
-      1.7rem,
-      7vw,
-      2.3rem
+      1.55rem,
+      6vw,
+      1.95rem
     );
 
+  font-weight:
+    850;
+
   line-height:
-    1;
+    1.05;
+
+  letter-spacing:
+    -0.035em;
 }
 
 .commerce-shop-header p {
+  max-width:
+    330px;
+
   margin:
     0;
 
   color:
     var(--bb-muted);
+
+  font-size:
+    0.84rem;
+
+  line-height:
+    1.4;
 }
 
 .commerce-eyebrow {
@@ -552,24 +707,27 @@ body:has(.lobby-card)
     var(--bb-accent);
 
   font-size:
-    0.72rem;
+    0.63rem;
 
   font-weight:
     900;
 
   letter-spacing:
-    0.13em;
+    0.14em;
 }
 
 .commerce-close {
-  flex:
-    0 0 auto;
+  display:
+    grid;
 
   width:
-    42px;
+    40px;
 
   height:
-    42px;
+    40px;
+
+  place-items:
+    center;
 
   padding:
     0;
@@ -591,7 +749,10 @@ body:has(.lobby-card)
     var(--bb-text);
 
   font-size:
-    1.6rem;
+    1.35rem;
+
+  font-weight:
+    500;
 
   line-height:
     1;
@@ -608,17 +769,17 @@ body:has(.lobby-card)
 
 .commerce-appearance {
   margin-top:
-    22px;
+    18px;
 
   padding:
-    16px;
+    14px;
 
   border:
     1px solid
       var(--bb-border);
 
   border-radius:
-    18px;
+    17px;
 
   background:
     var(--bb-surface-soft);
@@ -635,18 +796,21 @@ body:has(.lobby-card)
     space-between;
 
   gap:
-    20px;
+    18px;
 }
 
 .commerce-appearance-heading > div {
   display:
     flex;
 
+  min-width:
+    0;
+
   flex-direction:
     column;
 
   gap:
-    2px;
+    1px;
 }
 
 .commerce-appearance-heading > div > span {
@@ -654,13 +818,13 @@ body:has(.lobby-card)
     var(--bb-muted);
 
   font-size:
-    0.64rem;
+    0.58rem;
 
   font-weight:
     900;
 
   letter-spacing:
-    0.1em;
+    0.11em;
 }
 
 .commerce-appearance-heading > div > strong {
@@ -668,25 +832,33 @@ body:has(.lobby-card)
     var(--bb-text);
 
   font-size:
-    1.05rem;
+    0.98rem;
+
+  font-weight:
+    850;
+
+  line-height:
+    1.2;
 }
 
 .commerce-appearance p {
   margin:
-    10px 0 0;
+    8px 0 0;
 
   color:
     var(--bb-muted);
 
   font-size:
-    0.78rem;
+    0.74rem;
 
   line-height:
-    1.45;
+    1.42;
 }
 
 /*
- * Automatisch switch
+ * =========================
+ * AUTOMATISCH SWITCH
+ * =========================
  */
 
 .commerce-switch {
@@ -697,10 +869,10 @@ body:has(.lobby-card)
     0 0 auto;
 
   width:
-    54px;
+    52px;
 
   height:
-    31px;
+    30px;
 
   padding:
     0;
@@ -736,10 +908,10 @@ body:has(.lobby-card)
     3px;
 
   width:
-    23px;
+    22px;
 
   height:
-    23px;
+    22px;
 
   border-radius:
     50%;
@@ -771,7 +943,7 @@ body:has(.lobby-card)
 .commerce-switch.active span {
   transform:
     translateX(
-      23px
+      22px
     );
 }
 
@@ -783,10 +955,10 @@ body:has(.lobby-card)
     1fr 1fr;
 
   gap:
-    8px;
+    7px;
 
   margin-top:
-    14px;
+    12px;
 
   padding:
     4px;
@@ -796,7 +968,7 @@ body:has(.lobby-card)
       var(--bb-border);
 
   border-radius:
-    14px;
+    13px;
 
   background:
     var(--bb-surface);
@@ -804,7 +976,7 @@ body:has(.lobby-card)
 
 .commerce-mode-selector button {
   min-height:
-    42px;
+    40px;
 
   margin:
     0;
@@ -813,7 +985,7 @@ body:has(.lobby-card)
     0;
 
   border-radius:
-    10px;
+    9px;
 
   background:
     transparent;
@@ -825,7 +997,7 @@ body:has(.lobby-card)
     inherit;
 
   font-size:
-    0.82rem;
+    0.78rem;
 
   font-weight:
     800;
@@ -853,10 +1025,10 @@ body:has(.lobby-card)
     flex;
 
   gap:
-    8px;
+    7px;
 
   margin:
-    18px -2px 20px;
+    16px -2px 17px;
 
   padding:
     2px;
@@ -881,13 +1053,13 @@ body:has(.lobby-card)
     auto;
 
   min-height:
-    42px;
+    38px;
 
   margin:
     0;
 
   padding:
-    0 14px;
+    0 12px;
 
   border:
     1px solid
@@ -906,10 +1078,13 @@ body:has(.lobby-card)
     inherit;
 
   font-size:
-    0.84rem;
+    0.75rem;
 
   font-weight:
-    750;
+    780;
+
+  white-space:
+    nowrap;
 
   cursor:
     pointer;
@@ -937,7 +1112,7 @@ body:has(.lobby-card)
     grid;
 
   gap:
-    13px;
+    11px;
 }
 
 .commerce-product {
@@ -948,13 +1123,17 @@ body:has(.lobby-card)
     grid;
 
   grid-template-columns:
-    94px 1fr;
+    88px
+    minmax(
+      0,
+      1fr
+    );
 
   gap:
-    15px;
+    13px;
 
   padding:
-    14px;
+    13px;
 
   overflow:
     hidden;
@@ -964,7 +1143,7 @@ body:has(.lobby-card)
       var(--bb-border);
 
   border-radius:
-    20px;
+    18px;
 
   background:
     var(--bb-surface-soft);
@@ -987,10 +1166,10 @@ body:has(.lobby-card)
     absolute;
 
   top:
-    9px;
+    8px;
 
   right:
-    9px;
+    8px;
 
   padding:
     4px 7px;
@@ -1005,7 +1184,7 @@ body:has(.lobby-card)
     #ffffff;
 
   font-size:
-    0.58rem;
+    0.53rem;
 
   font-weight:
     900;
@@ -1025,12 +1204,15 @@ body:has(.lobby-card)
     center;
 
   min-height:
-    108px;
+    102px;
 }
 
 .commerce-product-content {
   display:
     flex;
+
+  min-width:
+    0;
 
   flex-direction:
     column;
@@ -1039,12 +1221,15 @@ body:has(.lobby-card)
     space-between;
 
   gap:
-    12px;
+    10px;
 }
 
 .commerce-product-title {
   display:
     flex;
+
+  min-width:
+    0;
 
   align-items:
     flex-start;
@@ -1053,18 +1238,35 @@ body:has(.lobby-card)
     space-between;
 
   gap:
-    10px;
+    8px;
+}
+
+.commerce-product-title > div {
+  min-width:
+    0;
 }
 
 .commerce-product-title h2 {
   margin:
-    3px 0 5px;
+    2px 0 4px;
+
+  padding-right:
+    4px;
 
   color:
     var(--bb-text);
 
   font-size:
-    1rem;
+    0.93rem;
+
+  font-weight:
+    850;
+
+  line-height:
+    1.18;
+
+  letter-spacing:
+    -0.015em;
 }
 
 .commerce-product-title p {
@@ -1075,10 +1277,10 @@ body:has(.lobby-card)
     var(--bb-muted);
 
   font-size:
-    0.8rem;
+    0.73rem;
 
   line-height:
-    1.4;
+    1.38;
 }
 
 .commerce-owned {
@@ -1089,10 +1291,10 @@ body:has(.lobby-card)
     0 0 auto;
 
   width:
-    24px;
+    22px;
 
   height:
-    24px;
+    22px;
 
   place-items:
     center;
@@ -1107,7 +1309,7 @@ body:has(.lobby-card)
     #ffffff;
 
   font-size:
-    0.7rem;
+    0.66rem;
 
   font-weight:
     900;
@@ -1118,19 +1320,19 @@ body:has(.lobby-card)
     100%;
 
   min-height:
-    40px;
+    38px;
 
   margin:
     0;
 
   padding:
-    0 12px;
+    0 11px;
 
   border:
     0;
 
   border-radius:
-    12px;
+    11px;
 
   background:
     var(--bb-accent);
@@ -1142,7 +1344,7 @@ body:has(.lobby-card)
     inherit;
 
   font-size:
-    0.82rem;
+    0.77rem;
 
   font-weight:
     850;
@@ -1166,16 +1368,16 @@ body:has(.lobby-card)
 
 /*
  * =========================
- * DUBBELE THEME PREVIEW
+ * THEME PREVIEW
  * =========================
  */
 
 .commerce-theme-preview {
   width:
-    78px;
+    74px;
 
   height:
-    94px;
+    90px;
 
   overflow:
     hidden;
@@ -1190,10 +1392,10 @@ body:has(.lobby-card)
       );
 
   border-radius:
-    15px;
+    14px;
 
   box-shadow:
-    0 9px 22px
+    0 8px 20px
       rgba(
         0,
         0,
@@ -1226,10 +1428,10 @@ body:has(.lobby-card)
 
 .commerce-theme-half span {
   width:
-    25px;
+    24px;
 
   height:
-    56px;
+    52px;
 
   border-radius:
     7px;
@@ -1255,10 +1457,10 @@ body:has(.lobby-card)
     7px;
 
   width:
-    16px;
+    15px;
 
   height:
-    16px;
+    15px;
 
   border:
     2px solid
@@ -1284,10 +1486,10 @@ body:has(.lobby-card)
     grid;
 
   width:
-    66px;
+    62px;
 
   height:
-    92px;
+    87px;
 
   place-items:
     center;
@@ -1319,7 +1521,7 @@ body:has(.lobby-card)
       );
 
   font-size:
-    1.6rem;
+    1.5rem;
 }
 
 .commerce-card-gold {
@@ -1377,10 +1579,10 @@ body:has(.lobby-card)
     grid;
 
   width:
-    80px;
+    74px;
 
   height:
-    80px;
+    74px;
 
   place-items:
     center;
@@ -1399,7 +1601,7 @@ body:has(.lobby-card)
     #ffffff;
 
   font-size:
-    2.2rem;
+    2rem;
 
   animation:
     commercePreviewPulse
@@ -1414,7 +1616,7 @@ body:has(.lobby-card)
     absolute;
 
   top:
-    7px;
+    6px;
 
   right:
     8px;
@@ -1425,10 +1627,10 @@ body:has(.lobby-card)
     absolute;
 
   bottom:
-    7px;
+    6px;
 
   left:
-    9px;
+    8px;
 }
 
 @keyframes commercePreviewPulse {
@@ -1448,22 +1650,22 @@ body:has(.lobby-card)
     grid;
 
   width:
-    78px;
+    72px;
 
   height:
-    78px;
+    72px;
 
   place-items:
     center;
 
   border-radius:
-    20px;
+    18px;
 
   background:
     var(--bb-surface);
 
   font-size:
-    2rem;
+    1.9rem;
 
   box-shadow:
     0 7px 18px
@@ -1487,7 +1689,7 @@ body:has(.lobby-card)
     grid;
 
   min-height:
-    220px;
+    210px;
 
   place-items:
     center;
@@ -1496,7 +1698,7 @@ body:has(.lobby-card)
     center;
 
   gap:
-    10px;
+    9px;
 
   text-align:
     center;
@@ -1504,7 +1706,7 @@ body:has(.lobby-card)
 
 .commerce-empty span {
   font-size:
-    2.4rem;
+    2.3rem;
 }
 
 .commerce-empty h2,
@@ -1513,20 +1715,25 @@ body:has(.lobby-card)
     0;
 }
 
+.commerce-empty h2 {
+  font-size:
+    1rem;
+}
+
 .commerce-empty p {
   color:
     var(--bb-muted);
 
   font-size:
-    0.86rem;
+    0.8rem;
 }
 
 .commerce-loader {
   width:
-    32px;
+    30px;
 
   height:
-    32px;
+    30px;
 
   border:
     4px solid
@@ -1554,17 +1761,17 @@ body:has(.lobby-card)
 
 .commerce-info-message {
   margin:
-    0 0 14px;
+    0 0 13px;
 
   padding:
-    12px 14px;
+    11px 13px;
 
   border:
     1px solid
       #c89f2f;
 
   border-radius:
-    14px;
+    13px;
 
   background:
     #fff4c7;
@@ -1573,7 +1780,7 @@ body:has(.lobby-card)
     #4c3905;
 
   font-size:
-    0.78rem;
+    0.74rem;
 
   line-height:
     1.4;
@@ -1599,20 +1806,20 @@ body[data-bb-color-mode="dark"]
     center;
 
   gap:
-    10px;
+    9px;
 
   margin-top:
-    18px;
+    16px;
 
   padding:
-    14px;
+    12px;
 
   border:
     1px solid
       var(--bb-border);
 
   border-radius:
-    15px;
+    14px;
 
   background:
     var(--bb-surface-soft);
@@ -1621,12 +1828,18 @@ body[data-bb-color-mode="dark"]
     var(--bb-muted);
 
   font-size:
-    0.75rem;
+    0.71rem;
+
+  line-height:
+    1.4;
 }
 
 .commerce-shop-footer span {
+  flex:
+    0 0 auto;
+
   font-size:
-    1.2rem;
+    1.1rem;
 }
 
 .commerce-shop-footer p {
@@ -1679,14 +1892,14 @@ body[data-bb-color-mode="dark"]
     );
 
   padding:
-    27px;
+    25px;
 
   border:
     1px solid
       var(--bb-border);
 
   border-radius:
-    25px;
+    23px;
 
   background:
     var(--bb-surface);
@@ -1709,15 +1922,18 @@ body[data-bb-color-mode="dark"]
 
 .commerce-purchase-icon {
   margin-bottom:
-    9px;
+    8px;
 
   font-size:
-    2.4rem;
+    2.3rem;
 }
 
 .commerce-purchase-box h2 {
   margin:
     5px 0;
+
+  font-size:
+    1.3rem;
 }
 
 .commerce-price {
@@ -1728,10 +1944,10 @@ body[data-bb-color-mode="dark"]
     10px 0;
 
   color:
-    var(--bb-accent);
+    var(--bb-accent) !important;
 
   font-size:
-    1.5rem;
+    1.4rem;
 }
 
 .commerce-purchase-box p {
@@ -1739,7 +1955,7 @@ body[data-bb-color-mode="dark"]
     var(--bb-muted);
 
   font-size:
-    0.86rem;
+    0.83rem;
 
   line-height:
     1.5;
@@ -1750,7 +1966,7 @@ body[data-bb-color-mode="dark"]
     100%;
 
   min-height:
-    48px;
+    46px;
 
   margin:
     10px 0 0;
@@ -1759,7 +1975,7 @@ body[data-bb-color-mode="dark"]
     0;
 
   border-radius:
-    14px;
+    13px;
 
   background:
     var(--bb-accent);
@@ -1938,7 +2154,7 @@ body[data-bb-color-mode="dark"]
     0 0 8px;
 
   color:
-    #151515;
+    #151515 !important;
 
   font-size:
     1.5rem;
@@ -1983,7 +2199,7 @@ body[data-bb-color-mode="dark"]
 
 /*
  * =========================
- * MOBILE
+ * MOBIEL
  * =========================
  */
 
@@ -1991,51 +2207,245 @@ body[data-bb-color-mode="dark"]
   max-width:
     430px
 ) {
-  .commerce-shop {
-    padding:
-      18px;
+  .commerce-shop-layer {
+    padding-left:
+      9px;
 
-    border-radius:
-      24px;
+    padding-right:
+      9px;
   }
 
-  .commerce-product {
+  .commerce-shop {
+    padding:
+      16px;
+
+    border-radius:
+      22px;
+  }
+
+  .commerce-shop-header {
     grid-template-columns:
-      78px 1fr;
+      minmax(
+        0,
+        1fr
+      )
+      38px;
 
     gap:
-      11px;
+      10px;
+  }
+
+  .commerce-shop-header h1 {
+    margin-top:
+      3px;
+
+    font-size:
+      1.48rem;
+
+    line-height:
+      1.03;
+  }
+
+  .commerce-shop-header p {
+    max-width:
+      270px;
+
+    font-size:
+      0.76rem;
+
+    line-height:
+      1.35;
+  }
+
+  .commerce-close {
+    width:
+      37px;
+
+    height:
+      37px;
+
+    font-size:
+      1.25rem;
+  }
+
+  .commerce-appearance {
+    margin-top:
+      15px;
 
     padding:
       12px;
   }
 
+  .commerce-appearance-heading > div > strong {
+    font-size:
+      0.91rem;
+  }
+
+  .commerce-appearance p {
+    font-size:
+      0.69rem;
+  }
+
+  .commerce-categories {
+    margin-top:
+      14px;
+
+    margin-bottom:
+      15px;
+  }
+
+  .commerce-categories button {
+    min-height:
+      36px;
+
+    padding:
+      0 10px;
+
+    font-size:
+      0.7rem;
+  }
+
+  .commerce-product {
+    grid-template-columns:
+      72px
+      minmax(
+        0,
+        1fr
+      );
+
+    gap:
+      10px;
+
+    padding:
+      11px;
+
+    border-radius:
+      16px;
+  }
+
   .commerce-product-preview {
     min-height:
-      95px;
+      88px;
+  }
+
+  .commerce-product-title h2 {
+    padding-right:
+      0;
+
+    font-size:
+      0.86rem;
+  }
+
+  .commerce-product-title p {
+    font-size:
+      0.68rem;
+
+    line-height:
+      1.34;
+  }
+
+  .commerce-product-button {
+    min-height:
+      36px;
+
+    font-size:
+      0.72rem;
   }
 
   .commerce-theme-preview {
     width:
-      67px;
+      62px;
 
     height:
-      83px;
+      78px;
   }
 
   .commerce-theme-half span {
     width:
-      21px;
+      19px;
 
     height:
-      48px;
+      44px;
+  }
+
+  .commerce-theme-half strong {
+    width:
+      13px;
+
+    height:
+      13px;
   }
 
   .commerce-card-preview {
     width:
+      52px;
+
+    height:
+      74px;
+  }
+
+  .commerce-animation-preview {
+    width:
+      62px;
+
+    height:
+      62px;
+
+    font-size:
+      1.7rem;
+  }
+
+  .commerce-extra-preview {
+    width:
+      62px;
+
+    height:
+      62px;
+
+    font-size:
+      1.7rem;
+  }
+}
+
+/*
+ * =========================
+ * EXTRA KLEINE TELEFOONS
+ * =========================
+ */
+
+@media (
+  max-width:
+    350px
+) {
+  .commerce-shop {
+    padding:
+      13px;
+  }
+
+  .commerce-shop-header h1 {
+    font-size:
+      1.35rem;
+  }
+
+  .commerce-product {
+    grid-template-columns:
+      64px
+      minmax(
+        0,
+        1fr
+      );
+  }
+
+  .commerce-theme-preview {
+    width:
       56px;
 
     height:
-      79px;
+      72px;
+  }
+
+  .commerce-categories button {
+    font-size:
+      0.66rem;
   }
 }
