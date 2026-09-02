@@ -533,7 +533,8 @@ function App() {
 
     if (
       roomFromUrl &&
-      roomFromUrl.length === 5
+      roomFromUrl.length ===
+        5
     ) {
       setJoinCode(
         roomFromUrl
@@ -546,7 +547,9 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!announcement) {
+    if (
+      !announcement
+    ) {
       return;
     }
 
@@ -570,7 +573,9 @@ function App() {
   ]);
 
   useEffect(() => {
-    if (!discoCelebration) {
+    if (
+      !discoCelebration
+    ) {
       return;
     }
 
@@ -594,7 +599,9 @@ function App() {
   ]);
 
   useEffect(() => {
-    if (!stockShuffleNotice) {
+    if (
+      !stockShuffleNotice
+    ) {
       return;
     }
 
@@ -650,16 +657,45 @@ function App() {
     }
 
     function handleGameStarted() {
-      setDrawnCard(null);
-      setGuessResult(null);
-      setCountdown(0);
-      setDistribution({});
-      setSelectedCheckpoints([]);
-      setTreeSubmitting(false);
-      setBusSubmitting(false);
-      setAnnouncement(null);
-      setDiscoCelebration(null);
-      setStockShuffleNotice(null);
+      setDrawnCard(
+        null
+      );
+
+      setGuessResult(
+        null
+      );
+
+      setCountdown(
+        0
+      );
+
+      setDistribution(
+        {}
+      );
+
+      setSelectedCheckpoints(
+        []
+      );
+
+      setTreeSubmitting(
+        false
+      );
+
+      setBusSubmitting(
+        false
+      );
+
+      setAnnouncement(
+        null
+      );
+
+      setDiscoCelebration(
+        null
+      );
+
+      setStockShuffleNotice(
+        null
+      );
 
       previousBusRef.current = {
         exists:
@@ -696,7 +732,9 @@ function App() {
       const previousBus =
         previousBusRef.current;
 
-      if (state.bus) {
+      if (
+        state.bus
+      ) {
         if (
           !previousBus.exists &&
           state.phase ===
@@ -710,7 +748,9 @@ function App() {
                   ?.activeDriverId
             );
 
-          if (driver) {
+          if (
+            driver
+          ) {
             setAnnouncement({
               kind:
                 "driver",
@@ -733,7 +773,9 @@ function App() {
                   ?.activeDriverId
             );
 
-          if (newDriver) {
+          if (
+            newDriver
+          ) {
             setAnnouncement({
               kind:
                 "new-driver",
@@ -761,7 +803,9 @@ function App() {
                 newRiderId
             );
 
-          if (newRider) {
+          if (
+            newRider
+          ) {
             setAnnouncement({
               kind:
                 "passenger",
@@ -1050,7 +1094,8 @@ function App() {
       );
 
     if (
-      endTime <= 0
+      endTime <=
+      0
     ) {
       return;
     }
@@ -1109,20 +1154,61 @@ function App() {
   ]);
 
   function resetToHome() {
-    setRoomCode("");
-    setPlayerNames([]);
-    setIsHost(false);
-    setGameState(null);
-    setDrawnCard(null);
-    setGuessResult(null);
-    setCountdown(0);
-    setDistribution({});
-    setSelectedCheckpoints([]);
-    setTreeSubmitting(false);
-    setBusSubmitting(false);
-    setAnnouncement(null);
-    setDiscoCelebration(null);
-    setStockShuffleNotice(null);
+    setRoomCode(
+      ""
+    );
+
+    setPlayerNames(
+      []
+    );
+
+    setIsHost(
+      false
+    );
+
+    setGameState(
+      null
+    );
+
+    setDrawnCard(
+      null
+    );
+
+    setGuessResult(
+      null
+    );
+
+    setCountdown(
+      0
+    );
+
+    setDistribution(
+      {}
+    );
+
+    setSelectedCheckpoints(
+      []
+    );
+
+    setTreeSubmitting(
+      false
+    );
+
+    setBusSubmitting(
+      false
+    );
+
+    setAnnouncement(
+      null
+    );
+
+    setDiscoCelebration(
+      null
+    );
+
+    setStockShuffleNotice(
+      null
+    );
 
     previousBusRef.current = {
       exists:
@@ -1179,6 +1265,21 @@ function App() {
 
     return card.name;
   }
+
+  /*
+   * =========================
+   * NORMALE SPEELKAART
+   * =========================
+   *
+   * Deze functie gebruiken we nu voor ALLE
+   * grote kaarten waarop de speler focust.
+   *
+   * Dus:
+   * - kaart na een gok
+   * - boomkaart in het midden
+   * - Adtje
+   * - actieve kaart in de bus
+   */
 
   function renderPlayingCard(
     card: Card
@@ -1443,7 +1544,8 @@ function App() {
       BusState
   ) {
     if (
-      !bus.result?.busFull
+      !bus.result
+        ?.busFull
     ) {
       return null;
     }
@@ -1713,12 +1815,47 @@ function App() {
           />
 
           {[
-            ["12%", "18%", "✦", "0s"],
-            ["80%", "18%", "✧", ".2s"],
-            ["18%", "68%", "✦", ".4s"],
-            ["85%", "72%", "✧", ".1s"],
-            ["7%", "45%", "✦", ".3s"],
-            ["92%", "46%", "✦", ".5s"],
+            [
+              "12%",
+              "18%",
+              "✦",
+              "0s",
+            ],
+
+            [
+              "80%",
+              "18%",
+              "✧",
+              ".2s",
+            ],
+
+            [
+              "18%",
+              "68%",
+              "✦",
+              ".4s",
+            ],
+
+            [
+              "85%",
+              "72%",
+              "✧",
+              ".1s",
+            ],
+
+            [
+              "7%",
+              "45%",
+              "✦",
+              ".3s",
+            ],
+
+            [
+              "92%",
+              "46%",
+              "✦",
+              ".5s",
+            ],
           ].map(
             (
               item,
@@ -1940,7 +2077,9 @@ function App() {
     const name =
       hostName.trim();
 
-    if (!name) {
+    if (
+      !name
+    ) {
       alert(
         "Vul eerst je naam in."
       );
@@ -2029,9 +2168,13 @@ function App() {
         .trim()
         .toUpperCase();
 
-    setJoinError("");
+    setJoinError(
+      ""
+    );
 
-    if (!name) {
+    if (
+      !name
+    ) {
       setJoinError(
         "Vul eerst je naam in."
       );
@@ -2115,9 +2258,12 @@ function App() {
   }
 
   function removePlayer(
-    playerId: string
+    playerId:
+      string
   ) {
-    if (!isHost) {
+    if (
+      !isHost
+    ) {
       return;
     }
 
@@ -2128,7 +2274,9 @@ function App() {
   }
 
   function startGame() {
-    if (!isHost) {
+    if (
+      !isHost
+    ) {
       return;
     }
 
@@ -2138,7 +2286,9 @@ function App() {
   }
 
   function restartGame() {
-    if (!isHost) {
+    if (
+      !isHost
+    ) {
       return;
     }
 
@@ -2178,7 +2328,9 @@ function App() {
   }
 
   function returnToHome() {
-    if (!isHost) {
+    if (
+      !isHost
+    ) {
       return;
     }
 
@@ -2262,7 +2414,8 @@ function App() {
   ];
 
   function makeGuess(
-    guess: string
+    guess:
+      string
   ) {
     if (
       !gameState ||
@@ -2297,7 +2450,9 @@ function App() {
   }
 
   function getStepDescription() {
-    if (!gameState) {
+    if (
+      !gameState
+    ) {
       return "";
     }
 
@@ -2346,8 +2501,10 @@ function App() {
   }
 
   function changeDistribution(
-    playerId: string,
-    difference: number
+    playerId:
+      string,
+    difference:
+      number
   ) {
     const available =
       gameState?.tree
@@ -2355,7 +2512,9 @@ function App() {
       0;
 
     setDistribution(
-      (previous) => {
+      (
+        previous
+      ) => {
         const total =
           Object.values(
             previous
@@ -2364,13 +2523,16 @@ function App() {
               sum,
               value
             ) =>
-              sum + value,
+              sum +
+              value,
             0
           );
 
         if (
-          difference > 0 &&
-          total >= available
+          difference >
+            0 &&
+          total >=
+            available
         ) {
           return previous;
         }
@@ -2397,7 +2559,9 @@ function App() {
     const tree =
       gameState?.tree;
 
-    if (!tree) {
+    if (
+      !tree
+    ) {
       return;
     }
 
@@ -2409,7 +2573,8 @@ function App() {
           sum,
           value
         ) =>
-          sum + value,
+          sum +
+          value,
         0
       );
 
@@ -2437,7 +2602,8 @@ function App() {
                 ,
                 value,
               ]) =>
-                value > 0
+                value >
+                0
             )
             .map(
               ([
@@ -2501,7 +2667,8 @@ function App() {
   }
 
   function giveAdt(
-    playerId: string
+    playerId:
+      string
   ) {
     setTreeSubmitting(
       true
@@ -2651,7 +2818,8 @@ function App() {
   }
 
   function toggleCheckpoint(
-    index: number
+    index:
+      number
   ) {
     if (
       gameState?.bus
@@ -2666,8 +2834,11 @@ function App() {
         index
       )
         ? selectedCheckpoints.filter(
-            (item) =>
-              item !== index
+            (
+              item
+            ) =>
+              item !==
+              index
           )
         : [
             ...selectedCheckpoints,
@@ -2795,7 +2966,8 @@ function App() {
   }
 
   function chooseDoublePlayer(
-    playerId: string
+    playerId:
+      string
   ) {
     setBusSubmitting(
       true
@@ -2843,7 +3015,8 @@ function App() {
    */
 
   if (
-    screen === "game" &&
+    screen ===
+      "game" &&
     gameState?.phase ===
       "bus-setup" &&
     gameState.bus
@@ -2853,7 +3026,9 @@ function App() {
 
     const driver =
       gameState.players.find(
-        (player) =>
+        (
+          player
+        ) =>
           player.id ===
           bus.activeDriverId
       );
@@ -2865,6 +3040,7 @@ function App() {
     return (
       <main className="app">
         {renderAnnouncement()}
+
         {renderStockShufflePopup()}
 
         <section className="card game-card bus-screen">
@@ -3109,14 +3285,17 @@ function App() {
                           .filter(
                             Boolean
                           )
-                          .join(" ")}
+                          .join(
+                            " "
+                          )}
                         style={{
                           position:
                             "relative",
                         }}
                       >
                         <span className="bus-card-number">
-                          {index + 1}
+                          {index +
+                            1}
                         </span>
 
                         {pile.revealed &&
@@ -3205,7 +3384,8 @@ function App() {
                         index
                       }
                       disabled={
-                        index === 0 ||
+                        index ===
+                          0 ||
                         !canControl
                       }
                       className={
@@ -3221,7 +3401,8 @@ function App() {
                         )
                       }
                     >
-                      {index + 1}
+                      {index +
+                        1}
                     </button>
                   )
                 )}
@@ -3289,7 +3470,8 @@ function App() {
    */
 
   if (
-    screen === "game" &&
+    screen ===
+      "game" &&
     (
       gameState?.phase ===
         "bus" ||
@@ -3303,7 +3485,9 @@ function App() {
 
     const driver =
       gameState.players.find(
-        (player) =>
+        (
+          player
+        ) =>
           player.id ===
           bus.activeDriverId
       );
@@ -3314,7 +3498,9 @@ function App() {
 
     const riders =
       gameState.players.filter(
-        (player) =>
+        (
+          player
+        ) =>
           bus.riders.includes(
             player.id
           )
@@ -3327,7 +3513,9 @@ function App() {
 
     const doubleCandidates =
       gameState.players.filter(
-        (player) =>
+        (
+          player
+        ) =>
           player.id !==
             bus.activeDriverId &&
           (
@@ -3342,7 +3530,9 @@ function App() {
     return (
       <main className="app">
         {renderAnnouncement()}
+
         {renderStockShufflePopup()}
+
         {renderBusFullPopup(
           bus
         )}
@@ -3423,10 +3613,14 @@ function App() {
               <strong>
                 {riders
                   .map(
-                    (player) =>
+                    (
+                      player
+                    ) =>
                       player.name
                   )
-                  .join(", ")}
+                  .join(
+                    ", "
+                  )}
               </strong>
             </div>
           )}
@@ -3463,14 +3657,17 @@ function App() {
                     .filter(
                       Boolean
                     )
-                    .join(" ")}
+                    .join(
+                      " "
+                    )}
                   style={{
                     position:
                       "relative",
                   }}
                 >
                   <span className="bus-card-number">
-                    {index + 1}
+                    {index +
+                      1}
                   </span>
 
                   {pile.revealed &&
@@ -3662,21 +3859,16 @@ function App() {
                     {currentPile?.revealed &&
                     currentPile.card ? (
                       <>
+                        {/*
+                         * Grote centrale kaart in de bus
+                         * gebruikt nu de normale speelkaart.
+                         */}
                         <div
                           className={`bus-reference-card ${currentPile.card.color}`}
                         >
-                          <strong>
-                            {getCardRank(
-                              currentPile.card
-                            )}
-                          </strong>
-
-                          <span>
-                            {
-                              currentPile.card
-                                .symbol
-                            }
-                          </span>
+                          {renderPlayingCard(
+                            currentPile.card
+                          )}
                         </div>
 
                         <h2>
@@ -3879,7 +4071,8 @@ function App() {
                             bus.result
                               .restartIndex ??
                             0
-                          ) + 1}
+                          ) +
+                            1}
                         </strong>
                         .
                       </p>
@@ -4039,7 +4232,8 @@ function App() {
    */
 
   if (
-    screen === "game" &&
+    screen ===
+      "game" &&
     gameState &&
     (
       gameState.phase ===
@@ -4053,7 +4247,9 @@ function App() {
     const tree =
       gameState.tree;
 
-    if (!tree) {
+    if (
+      !tree
+    ) {
       return (
         <main className="app">
           <section className="card game-card">
@@ -4067,7 +4263,9 @@ function App() {
 
     const me =
       gameState.players.find(
-        (player) =>
+        (
+          player
+        ) =>
           player.id ===
           socketId
       );
@@ -4084,7 +4282,9 @@ function App() {
 
     const resolver =
       gameState.players.find(
-        (player) =>
+        (
+          player
+        ) =>
           player.id ===
           tree.currentResolverId
       );
@@ -4095,7 +4295,9 @@ function App() {
 
     const adtResolver =
       gameState.players.find(
-        (player) =>
+        (
+          player
+        ) =>
           player.id ===
           tree.adtCurrentResolverId
       );
@@ -4108,7 +4310,8 @@ function App() {
           sum,
           value
         ) =>
-          sum + value,
+          sum +
+          value,
         0
       );
 
@@ -4130,7 +4333,9 @@ function App() {
 
     const tieBreakPlayers =
       gameState.players.filter(
-        (player) =>
+        (
+          player
+        ) =>
           tree.tieBreakCandidateIds.includes(
             player.id
           )
@@ -4205,7 +4410,9 @@ function App() {
                     ) => {
                       const draw =
                         latestTieBreak.draws.find(
-                          (item) =>
+                          (
+                            item
+                          ) =>
                             item.playerId ===
                             player.id
                         );
@@ -4219,7 +4426,9 @@ function App() {
                         >
                           <div className="player-avatar">
                             {player.name
-                              .charAt(0)
+                              .charAt(
+                                0
+                              )
                               .toUpperCase()}
                           </div>
 
@@ -4367,7 +4576,9 @@ function App() {
                                 .filter(
                                   Boolean
                                 )
-                                .join(" ")}
+                                .join(
+                                  " "
+                                )}
                             >
                               {treeCard.revealed &&
                               treeCard.card ? (
@@ -4447,23 +4658,16 @@ function App() {
                     Huidige kaart
                   </span>
 
+                  {/*
+                   * Grote centrale boomkaart:
+                   * nu volledige speelkaart.
+                   */}
                   <div
                     className={`tree-active-card ${tree.activeCard.card.color}`}
                   >
-                    <strong>
-                      {getCardRank(
-                        tree.activeCard
-                          .card
-                      )}
-                    </strong>
-
-                    <span>
-                      {
-                        tree.activeCard
-                          .card
-                          .symbol
-                      }
-                    </span>
+                    {renderPlayingCard(
+                      tree.activeCard.card
+                    )}
                   </div>
 
                   <h2>
@@ -4486,23 +4690,16 @@ function App() {
                       ADTJE
                     </span>
 
+                    {/*
+                     * Grote centrale Adtje-kaart:
+                     * nu volledige speelkaart.
+                     */}
                     <div
                       className={`tree-active-card ${tree.adtCard.card.color}`}
                     >
-                      <strong>
-                        {getCardRank(
-                          tree.adtCard
-                            .card
-                        )}
-                      </strong>
-
-                      <span>
-                        {
-                          tree.adtCard
-                            .card
-                            .symbol
-                        }
-                      </span>
+                      {renderPlayingCard(
+                        tree.adtCard.card
+                      )}
                     </div>
 
                     <h2>
@@ -4574,7 +4771,9 @@ function App() {
                     <div className="drink-player-list">
                       {gameState.players
                         .filter(
-                          (player) =>
+                          (
+                            player
+                          ) =>
                             player.id !==
                             socketId
                         )
@@ -4590,7 +4789,9 @@ function App() {
                             >
                               <div className="player-avatar">
                                 {player.name
-                                  .charAt(0)
+                                  .charAt(
+                                    0
+                                  )
                                   .toUpperCase()}
                               </div>
 
@@ -4762,7 +4963,9 @@ function App() {
                     <div className="double-player-list">
                       {gameState.players
                         .filter(
-                          (player) =>
+                          (
+                            player
+                          ) =>
                             player.id !==
                             socketId
                         )
@@ -4872,7 +5075,9 @@ function App() {
                 >
                   <div className="player-avatar">
                     {player.name
-                      .charAt(0)
+                      .charAt(
+                        0
+                      )
                       .toUpperCase()}
                   </div>
 
@@ -4913,7 +5118,8 @@ function App() {
    */
 
   if (
-    screen === "game" &&
+    screen ===
+      "game" &&
     gameState
   ) {
     const currentPlayer =
@@ -4931,7 +5137,9 @@ function App() {
 
     const myPlayer =
       gameState.players.find(
-        (player) =>
+        (
+          player
+        ) =>
           player.id ===
           socketId
       );
@@ -5012,7 +5220,8 @@ function App() {
                   }
                 >
                   <span>
-                    {step + 1}
+                    {step +
+                      1}
                   </span>
 
                   <small>
@@ -5030,7 +5239,8 @@ function App() {
           <div className="game-info">
             <span>
               Stap{" "}
-              {currentStep + 1}{" "}
+              {currentStep +
+                1}{" "}
               van 4
             </span>
 
@@ -5165,21 +5375,19 @@ function App() {
                       : "Fout!"}
                 </h2>
 
+                {/*
+                 * Dit is de kaart die na je gok
+                 * centraal in beeld verschijnt.
+                 *
+                 * Hij gebruikt nu exact dezelfde
+                 * volledige speelkaart-opmaak.
+                 */}
                 <div
                   className={`revealed-card ${result.card.color}`}
                 >
-                  <span>
-                    {getCardRank(
-                      result.card
-                    )}
-                  </span>
-
-                  <strong>
-                    {
-                      result.card
-                        .symbol
-                    }
-                  </strong>
+                  {renderPlayingCard(
+                    result.card
+                  )}
                 </div>
 
                 <p>
@@ -5226,7 +5434,9 @@ function App() {
                 <div className="next-countdown">
                   Volgende speler over{" "}
                   <strong>
-                    {countdown}
+                    {
+                      countdown
+                    }
                   </strong>
                   ...
                 </div>
@@ -5436,7 +5646,9 @@ function App() {
                 >
                   <div className="player-avatar">
                     {player.name
-                      .charAt(0)
+                      .charAt(
+                        0
+                      )
                       .toUpperCase()}
                   </div>
 
@@ -5471,8 +5683,15 @@ function App() {
     );
   }
 
+  /*
+   * =========================
+   * LOBBY
+   * =========================
+   */
+
   if (
-    screen === "lobby"
+    screen ===
+    "lobby"
   ) {
     return (
       <main className="app">
@@ -5495,7 +5714,9 @@ function App() {
                 value={
                   getJoinUrl()
                 }
-                size={190}
+                size={
+                  190
+                }
                 level="M"
               />
             )}
@@ -5538,7 +5759,9 @@ function App() {
                 >
                   <div className="player-avatar">
                     {player.name
-                      .charAt(0)
+                      .charAt(
+                        0
+                      )
                       .toUpperCase()}
                   </div>
 
@@ -5597,8 +5820,15 @@ function App() {
     );
   }
 
+  /*
+   * =========================
+   * JOIN
+   * =========================
+   */
+
   if (
-    screen === "join"
+    screen ===
+    "join"
   ) {
     return (
       <main className="app">
@@ -5606,8 +5836,13 @@ function App() {
           <button
             className="back-button"
             onClick={() => {
-              setJoinError("");
-              setScreen("home");
+              setJoinError(
+                ""
+              );
+
+              setScreen(
+                "home"
+              );
             }}
           >
             ← Terug
@@ -5643,7 +5878,9 @@ function App() {
                   event.target.value
                 )
               }
-              maxLength={15}
+              maxLength={
+                15
+              }
             />
           </div>
 
@@ -5674,7 +5911,9 @@ function App() {
                     )
                 )
               }
-              maxLength={5}
+              maxLength={
+                5
+              }
             />
           </div>
 
@@ -5699,8 +5938,15 @@ function App() {
     );
   }
 
+  /*
+   * =========================
+   * HOW TO
+   * =========================
+   */
+
   if (
-    screen === "howto"
+    screen ===
+    "howto"
   ) {
     return (
       <main className="app">
@@ -5841,8 +6087,15 @@ function App() {
     );
   }
 
+  /*
+   * =========================
+   * RULE SETTINGS
+   * =========================
+   */
+
   if (
-    screen === "rules"
+    screen ===
+    "rules"
   ) {
     return (
       <main className="app">
@@ -6213,7 +6466,8 @@ function App() {
 
             <p>
               {decks} kaartspel
-              {decks === 1
+              {decks ===
+              1
                 ? ""
                 : "len"}
             </p>
@@ -6248,6 +6502,12 @@ function App() {
       </main>
     );
   }
+
+  /*
+   * =========================
+   * SETTINGS
+   * =========================
+   */
 
   if (
     screen ===
@@ -6297,7 +6557,9 @@ function App() {
                   event.target.value
                 )
               }
-              maxLength={15}
+              maxLength={
+                15
+              }
             />
           </div>
 
@@ -6312,7 +6574,8 @@ function App() {
                   setPlayers(
                     Math.max(
                       2,
-                      players - 1
+                      players -
+                        1
                     )
                   )
                 }
@@ -6331,7 +6594,8 @@ function App() {
                   setPlayers(
                     Math.min(
                       20,
-                      players + 1
+                      players +
+                        1
                     )
                   )
                 }
@@ -6369,7 +6633,8 @@ function App() {
               {rows} rijen
               {" · "}
               {decks} kaartspel
-              {decks === 1
+              {decks ===
+              1
                 ? ""
                 : "len"}
             </p>
@@ -6421,6 +6686,12 @@ function App() {
     );
   }
 
+  /*
+   * =========================
+   * HOME
+   * =========================
+   */
+
   return (
     <main className="app">
       <section className="card">
@@ -6450,10 +6721,21 @@ function App() {
         <button
           className="secondary"
           onClick={() => {
-            setJoinError("");
-            setPlayerName("");
-            setJoinCode("");
-            setScreen("join");
+            setJoinError(
+              ""
+            );
+
+            setPlayerName(
+              ""
+            );
+
+            setJoinCode(
+              ""
+            );
+
+            setScreen(
+              "join"
+            );
           }}
         >
           Meedoen met spel
