@@ -48,11 +48,8 @@ body {
     "Segoe UI",
     sans-serif;
 
-  -webkit-font-smoothing:
-    antialiased;
-
-  -moz-osx-font-smoothing:
-    grayscale;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 button,
@@ -130,7 +127,7 @@ input {
 
 /*
  * =========================================================
- * CARDS / PANELS
+ * MAIN CARDS
  * =========================================================
  */
 
@@ -186,9 +183,12 @@ input {
   overflow: hidden;
 }
 
-.tree-screen,
-.bus-screen {
+.tree-screen {
   overflow: visible;
+}
+
+.bus-screen {
+  overflow: hidden;
 }
 
 .settings-card,
@@ -215,7 +215,8 @@ p {
 }
 
 h1 {
-  margin: 12px 0 6px;
+  margin:
+    12px 0 6px;
 
   font-size:
     clamp(
@@ -268,7 +269,8 @@ h2 {
   width: 82px;
   height: 82px;
 
-  margin: 0 auto;
+  margin:
+    0 auto;
 
   place-items: center;
 
@@ -453,12 +455,6 @@ button:active:not(
   display: block;
 
   margin-bottom: 8px;
-
-  color:
-    var(
-      --bb-text,
-      #07150f
-    );
 
   font-size: 0.83rem;
   font-weight: 850;
@@ -876,6 +872,20 @@ button:active:not(
   color: #ffffff;
 }
 
+.step.completed > span {
+  border-color:
+    var(
+      --bb-accent,
+      #08745b
+    );
+
+  color:
+    var(
+      --bb-accent,
+      #08745b
+    );
+}
+
 /*
  * =========================================================
  * GAME INFO
@@ -1123,11 +1133,9 @@ button:active:not(
   color:
     inherit !important;
 
-  line-height:
-    1 !important;
+  line-height: 1 !important;
 
-  pointer-events:
-    none;
+  pointer-events: none;
 }
 
 /*
@@ -1158,7 +1166,6 @@ button:active:not(
 .playing-card,
 .empty-card {
   width: 100%;
-
   min-width: 0;
 
   aspect-ratio: 0.7;
@@ -1299,6 +1306,17 @@ button:active:not(
   gap: 8px;
 }
 
+.guess-grid.two {
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(
+        0,
+        1fr
+      )
+    );
+}
+
 .guess-grid button {
   width: 100%;
 
@@ -1353,6 +1371,14 @@ button:active:not(
 
 .result-area.correct,
 .bus-result.correct {
+  border-color:
+    rgba(
+      27,
+      154,
+      105,
+      0.42
+    );
+
   background:
     rgba(
       27,
@@ -1364,6 +1390,14 @@ button:active:not(
 
 .result-area.wrong,
 .bus-result.wrong {
+  border-color:
+    rgba(
+      205,
+      49,
+      68,
+      0.42
+    );
+
   background:
     rgba(
       205,
@@ -1418,8 +1452,24 @@ button:active:not(
   font-weight: 850;
 }
 
+.drink-message.success {
+  background:
+    rgba(
+      27,
+      154,
+      105,
+      0.13
+    );
+}
+
 .next-countdown {
   margin-top: 12px;
+
+  color:
+    var(
+      --bb-muted,
+      #4f5f58
+    );
 
   font-size: 0.72rem;
 }
@@ -1527,11 +1577,16 @@ button:active:not(
   font-weight: 800;
 
   text-overflow: ellipsis;
-
   white-space: nowrap;
 }
 
 .player-info small {
+  color:
+    var(
+      --bb-accent,
+      #08745b
+    );
+
   font-size: 0.54rem;
   font-weight: 900;
 }
@@ -1551,8 +1606,7 @@ button:active:not(
 .qr-placeholder {
   display: grid;
 
-  width:
-    fit-content;
+  width: fit-content;
 
   max-width: 100%;
 
@@ -1603,6 +1657,8 @@ button:active:not(
   align-items: center;
   justify-content: space-between;
 
+  gap: 12px;
+
   padding: 13px;
 
   border-radius: 15px;
@@ -1612,6 +1668,10 @@ button:active:not(
       --bb-surface-soft,
       #eef3f0
     );
+}
+
+.room-code span {
+  font-size: 0.72rem;
 }
 
 .room-code strong {
@@ -1626,6 +1686,12 @@ button:active:not(
 
 .player-list {
   margin-top: 9px;
+}
+
+.player > span:nth-child(
+  2
+) {
+  flex: 1;
 }
 
 .host-label {
@@ -1651,7 +1717,6 @@ button:active:not(
 .remove-player {
   width: 34px;
   height: 34px;
-
   min-height: 34px;
 
   padding: 0;
@@ -1667,6 +1732,16 @@ button:active:not(
     );
 
   color: #c6283a;
+}
+
+.join-error {
+  margin:
+    12px 0 0;
+
+  color: #be2035;
+
+  font-size: 0.75rem;
+  font-weight: 800;
 }
 
 /*
@@ -1698,6 +1773,13 @@ button:active:not(
 
   padding: 13px;
 
+  border:
+    1px solid
+    var(
+      --bb-border,
+      #bfcac4
+    );
+
   border-radius: 16px;
 
   background:
@@ -1728,9 +1810,23 @@ button:active:not(
   font-weight: 900;
 }
 
-.rule-guide-item p {
-  font-size: 0.74rem;
+.rule-guide-item h2 {
+  margin-bottom: 6px;
 
+  font-size: 0.9rem;
+}
+
+.rule-guide-item p {
+  margin:
+    5px 0;
+
+  color:
+    var(
+      --bb-muted,
+      #4f5f58
+    );
+
+  font-size: 0.74rem;
   line-height: 1.45;
 }
 
@@ -1743,13 +1839,15 @@ button:active:not(
 .tree-progress {
   display: flex;
 
-  justify-content:
-    space-between;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  margin-bottom: 14px;
 
   padding:
     10px 12px;
-
-  margin-bottom: 12px;
 
   border-radius: 13px;
 
@@ -1760,14 +1858,26 @@ button:active:not(
     );
 }
 
+.tree-progress span {
+  font-size: 0.72rem;
+}
+
+.tree-progress strong {
+  font-size: 0.8rem;
+}
+
 .tree-board {
   display: grid;
 
-  gap: 8px;
+  /*
+   * Meer verticale ruimte tussen de rijen.
+   */
+
+  gap: 13px;
 
   width: 100%;
 
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .tree-row {
@@ -1782,9 +1892,12 @@ button:active:not(
 
   align-items: center;
 
-  gap: 8px;
+  gap: 10px;
 
-  padding: 8px;
+  min-width: 0;
+
+  padding:
+    10px 9px;
 
   border:
     1px solid
@@ -1793,7 +1906,7 @@ button:active:not(
       #bfcac4
     );
 
-  border-radius: 14px;
+  border-radius: 15px;
 
   background:
     var(
@@ -1805,6 +1918,8 @@ button:active:not(
 .tree-row-info {
   display: flex;
 
+  min-width: 0;
+
   flex-direction: column;
 }
 
@@ -1813,13 +1928,14 @@ button:active:not(
 }
 
 .tree-row-info span {
+  margin-top: 3px;
+
   font-size: 0.58rem;
+  line-height: 1.2;
 }
 
 /*
- * BELANGRIJK:
- * kaarten staan nu in het midden,
- * waardoor de boom weer echt een boom wordt.
+ * Gecentreerde boom.
  */
 
 .tree-row-cards {
@@ -1828,7 +1944,11 @@ button:active:not(
   align-items: center;
   justify-content: center;
 
-  gap: 5px;
+  /*
+   * Iets meer afstand tussen kaarten.
+   */
+
+  gap: 8px;
 
   min-width: 0;
 
@@ -1836,9 +1956,12 @@ button:active:not(
   overflow-y: hidden;
 
   padding:
-    2px 2px 3px;
+    3px 4px 4px;
 
   scrollbar-width: none;
+
+  overscroll-behavior-x:
+    contain;
 
   -webkit-overflow-scrolling:
     touch;
@@ -1958,7 +2081,7 @@ button:active:not(
 
   width: 100%;
 
-  margin-top: 14px;
+  margin-top: 16px;
 
   flex-direction: column;
 
@@ -1966,7 +2089,14 @@ button:active:not(
 
   overflow: hidden;
 
-  padding: 14px;
+  padding: 15px;
+
+  border:
+    1px solid
+    var(
+      --bb-border,
+      #bfcac4
+    );
 
   border-radius: 18px;
 
@@ -1981,13 +2111,14 @@ button:active:not(
 
 .tree-active-label {
   font-size: 0.6rem;
-
   font-weight: 900;
+
+  letter-spacing: 0.1em;
 }
 
 .tree-active-card {
   margin:
-    12px auto 10px;
+    13px auto 10px;
 }
 
 /*
@@ -2025,21 +2156,35 @@ button:active:not(
 .tree-match-heading {
   display: flex;
 
+  align-items: flex-start;
+
   gap: 10px;
 }
 
 .tree-match-heading > span {
+  flex: 0 0 auto;
+
   font-size: 1.55rem;
 }
 
+.tree-match-heading h2 {
+  margin-bottom: 4px;
+}
+
 .tree-match-heading p {
+  margin: 0;
+
   font-size: 0.74rem;
+  line-height: 1.4;
 }
 
 .remaining-drinks {
   display: flex;
 
+  align-items: center;
   justify-content: space-between;
+
+  gap: 10px;
 
   margin-top: 12px;
 
@@ -2053,6 +2198,12 @@ button:active:not(
       --bb-surface,
       #ffffff
     );
+
+  font-size: 0.72rem;
+}
+
+.remaining-drinks strong {
+  font-size: 1.15rem;
 }
 
 .drink-player-list {
@@ -2065,6 +2216,8 @@ button:active:not(
 
 .drink-player {
   display: flex;
+
+  min-width: 0;
 
   align-items: center;
 
@@ -2084,15 +2237,23 @@ button:active:not(
 .drink-player > span {
   flex: 1;
 
+  min-width: 0;
+
   overflow: hidden;
 
   text-overflow: ellipsis;
-
   white-space: nowrap;
+}
+
+.drink-player .player-avatar {
+  width: 32px;
+  height: 32px;
 }
 
 .drink-counter {
   display: grid;
+
+  flex: 0 0 auto;
 
   grid-template-columns:
     34px
@@ -2107,7 +2268,6 @@ button:active:not(
 .drink-counter button {
   width: 34px;
   height: 34px;
-
   min-height: 34px;
 
   padding: 0;
@@ -2123,6 +2283,13 @@ button:active:not(
 }
 
 .tree-skip-button {
+  border:
+    1px solid
+    var(
+      --bb-border,
+      #bfcac4
+    );
+
   background:
     var(
       --bb-surface,
@@ -2146,6 +2313,8 @@ button:active:not(
   width: 43px;
   height: 60px;
 
+  border-radius: 7px;
+
   text-align: center;
 }
 
@@ -2153,31 +2322,43 @@ button:active:not(
   display: block;
 
   margin-top: 8px;
+
+  font-size: 0.82rem;
 }
 
 .mini-playing-card > span {
   display: block;
+
+  margin-top: 1px;
 
   font-size: 1rem;
 }
 
 /*
  * =========================================================
- * BUS
+ * BUS DRIVER
  * =========================================================
  */
 
 .bus-driver-banner {
   display: flex;
 
-  justify-content:
-    space-between;
+  align-items: center;
+  justify-content: space-between;
 
   gap: 10px;
 
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 
-  padding: 12px;
+  padding:
+    10px 12px;
+
+  border:
+    1px solid
+    var(
+      --bb-accent,
+      #08745b
+    );
 
   border-radius: 14px;
 
@@ -2192,6 +2373,21 @@ button:active:not(
       transparent
     );
 }
+
+.bus-driver-banner span {
+  font-size: 0.58rem;
+  font-weight: 900;
+}
+
+.bus-driver-banner strong {
+  font-size: 0.85rem;
+}
+
+/*
+ * =========================================================
+ * BUS SETUP
+ * =========================================================
+ */
 
 .bus-setup-steps {
   display: grid;
@@ -2210,6 +2406,13 @@ button:active:not(
 
   padding: 9px;
 
+  border:
+    1px solid
+    var(
+      --bb-border,
+      #bfcac4
+    );
+
   border-radius: 13px;
 
   opacity: 0.58;
@@ -2223,6 +2426,8 @@ button:active:not(
 .bus-setup-step > span {
   display: grid;
 
+  flex: 0 0 auto;
+
   width: 29px;
   height: 29px;
 
@@ -2235,6 +2440,9 @@ button:active:not(
       --bb-surface-soft,
       #eef3f0
     );
+
+  font-size: 0.68rem;
+  font-weight: 900;
 }
 
 .bus-setup-step.active > span,
@@ -2246,6 +2454,19 @@ button:active:not(
     );
 
   color: #ffffff;
+}
+
+.bus-setup-step strong {
+  display: block;
+
+  font-size: 0.76rem;
+}
+
+.bus-setup-step p {
+  margin:
+    2px 0 0;
+
+  font-size: 0.66rem;
 }
 
 .bus-setup-draws {
@@ -2268,11 +2489,14 @@ button:active:not(
 .bus-setup-draws > div {
   display: flex;
 
+  min-width: 0;
+
   flex-direction: column;
 
   align-items: center;
 
-  padding: 12px;
+  padding:
+    12px 8px;
 
   border-radius: 15px;
 
@@ -2281,6 +2505,16 @@ button:active:not(
       --bb-surface-soft,
       #eef3f0
     );
+}
+
+.bus-setup-draws > div > span {
+  font-size: 0.62rem;
+}
+
+.bus-setup-draws b {
+  margin-top: 6px;
+
+  font-size: 0.7rem;
 }
 
 .setup-card {
@@ -2294,10 +2528,14 @@ button:active:not(
   display: block;
 
   margin-top: 10px;
+
+  font-size: 1rem;
 }
 
 .setup-card > span {
   display: block;
+
+  margin-top: 2px;
 
   font-size: 1.4rem;
 }
@@ -2313,6 +2551,34 @@ button:active:not(
       --bb-border,
       #bfcac4
     );
+
+  background:
+    var(
+      --bb-surface,
+      #ffffff
+    );
+
+  font-size: 1.6rem;
+}
+
+.bus-preview-title {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  margin:
+    16px 0 8px;
+}
+
+.bus-preview-title h2 {
+  font-size: 0.92rem;
+}
+
+.bus-preview-title span {
+  font-size: 0.65rem;
 }
 
 /*
@@ -2326,6 +2592,8 @@ button:active:not(
 
   width: 100%;
 
+  min-width: 0;
+
   align-items: flex-start;
 
   gap: 7px;
@@ -2334,9 +2602,15 @@ button:active:not(
   overflow-y: hidden;
 
   padding:
-    7px 4px 32px;
+    7px 4px 30px;
+
+  scroll-padding:
+    8px;
 
   scrollbar-width: none;
+
+  overscroll-behavior-x:
+    contain;
 
   -webkit-overflow-scrolling:
     touch;
@@ -2357,9 +2631,9 @@ button:active:not(
 
   width: 54px;
 
-  flex-direction: column;
-
   align-items: center;
+
+  flex-direction: column;
 
   align-self:
     flex-start !important;
@@ -2398,8 +2672,13 @@ button:active:not(
   position:
     relative !important;
 
+  flex: 0 0 auto;
+
   width: 50px;
   height: 71px;
+
+  margin:
+    0 !important;
 
   overflow:
     hidden !important;
@@ -2408,7 +2687,8 @@ button:active:not(
 }
 
 .bus-card-face {
-  background: #ffffff;
+  background:
+    #ffffff;
 }
 
 .bus-card-face .card-corner {
@@ -2454,6 +2734,8 @@ button:active:not(
     );
 
   color: #ffffff;
+
+  font-size: 1rem;
 }
 
 .bus-card-slot.current
@@ -2468,6 +2750,10 @@ button:active:not(
     );
 
   outline-offset: 2px;
+}
+
+.bus-card-slot.passed {
+  opacity: 0.72;
 }
 
 .bus-card-slot > small {
@@ -2504,13 +2790,41 @@ button:active:not(
   font-weight: 950;
 
   white-space: nowrap;
+
+  pointer-events: none;
 }
 
 /*
  * =========================================================
- * CHECKPOINTS
+ * CHECKPOINT
  * =========================================================
  */
+
+.checkpoint-panel h2,
+.bus-draw-panel h2,
+.bus-ready-panel h2,
+.bus-choice-panel h2,
+.double-panel h2 {
+  margin-bottom: 6px;
+}
+
+.checkpoint-panel > p,
+.bus-draw-panel > p,
+.bus-ready-panel > p,
+.bus-choice-panel > p,
+.double-panel > p {
+  margin:
+    4px 0 10px;
+
+  color:
+    var(
+      --bb-muted,
+      #4f5f58
+    );
+
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
 
 .checkpoint-grid {
   display: grid;
@@ -2575,11 +2889,21 @@ button:active:not(
 
   gap: 8px;
 
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .bus-status-row > div {
-  padding: 10px;
+  min-width: 0;
+
+  padding:
+    9px 10px;
+
+  border:
+    1px solid
+    var(
+      --bb-border,
+      #bfcac4
+    );
 
   border-radius: 13px;
 
@@ -2607,14 +2931,21 @@ button:active:not(
   font-size: 0.78rem;
 
   text-overflow: ellipsis;
-
   white-space: nowrap;
 }
 
 .bus-riders {
-  margin-bottom: 9px;
+  margin-bottom: 7px;
 
-  padding: 10px;
+  padding:
+    8px 10px;
+
+  border:
+    1px solid
+    var(
+      --bb-border,
+      #bfcac4
+    );
 
   border-radius: 13px;
 
@@ -2625,10 +2956,68 @@ button:active:not(
     );
 }
 
+.bus-riders strong {
+  display: block;
+
+  margin-top: 2px;
+
+  font-size: 0.72rem;
+  line-height: 1.3;
+}
+
+/*
+ * =========================================================
+ * BUS CHOICE PANEL
+ * =========================================================
+ *
+ * Geen fixed / sticky layout meer.
+ *
+ * De kaart en knoppen staan gewoon
+ * direct onder de bus.
+ * =========================================================
+ */
+
+.bus-choice-panel {
+  position: static !important;
+
+  display: block;
+
+  width: 100%;
+
+  max-width: none;
+  max-height: none;
+
+  margin-top: 8px;
+
+  padding:
+    12px 14px 14px;
+
+  overflow: visible;
+
+  border:
+    1px solid
+    var(
+      --bb-border,
+      #bfcac4
+    );
+
+  border-radius: 17px;
+
+  background:
+    var(
+      --bb-surface-soft,
+      #eef3f0
+    );
+
+  box-shadow: none;
+
+  backdrop-filter: none;
+}
+
 .bus-position-label {
   display: block;
 
-  margin-bottom: 8px;
+  margin-bottom: 3px;
 
   color:
     var(
@@ -2636,24 +3025,38 @@ button:active:not(
       #08745b
     );
 
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   font-weight: 950;
+
+  letter-spacing: 0.1em;
+
+  text-align: center;
+}
+
+.bus-reference-card {
+  width: 88px;
+
+  margin:
+    7px auto 8px;
+}
+
+.bus-reference-card .card-center-symbol {
+  font-size: 2.7rem;
+}
+
+.bus-reference-card .card-corner {
+  font-size: 0.82rem;
 }
 
 .bus-hidden-reference {
   display: grid;
 
-  width:
-    clamp(
-      92px,
-      30vw,
-      124px
-    );
+  width: 88px;
 
   aspect-ratio: 0.7;
 
   margin:
-    14px auto;
+    7px auto 8px;
 
   place-items: center;
 
@@ -2664,7 +3067,7 @@ button:active:not(
       #bfcac4
     );
 
-  border-radius: 13px;
+  border-radius: 12px;
 
   background:
     var(
@@ -2672,7 +3075,41 @@ button:active:not(
       #ffffff
     );
 
-  font-size: 2.2rem;
+  font-size: 2rem;
+}
+
+.bus-choice-panel h2 {
+  margin:
+    0 0 4px;
+
+  text-align: center;
+
+  font-size: 1rem;
+}
+
+.bus-choice-panel > p {
+  margin:
+    0 auto 10px;
+
+  max-width: 330px;
+
+  text-align: center;
+
+  font-size: 0.68rem;
+  line-height: 1.35;
+}
+
+.bus-choice-panel
+  .guess-grid {
+  margin-top: 8px;
+}
+
+.bus-choice-panel
+  .guess-grid
+  button {
+  min-height: 48px;
+
+  font-size: 0.86rem;
 }
 
 /*
@@ -2703,6 +3140,14 @@ button:active:not(
   gap: 5px;
 }
 
+.bus-comparison > div > span {
+  font-size: 0.58rem;
+}
+
+.comparison-arrow {
+  font-size: 1.3rem;
+}
+
 .bus-drinks {
   margin-top: 10px;
 
@@ -2720,9 +3165,19 @@ button:active:not(
 }
 
 .double-icon {
+  margin-bottom: 6px;
+
   text-align: center;
 
   font-size: 2rem;
+}
+
+.double-question {
+  display: block;
+
+  margin-top: 12px;
+
+  font-size: 0.78rem;
 }
 
 .double-player-list {
@@ -2738,9 +3193,13 @@ button:active:not(
 
   width: 100%;
 
+  min-width: 0;
+
   align-items: center;
 
   gap: 9px;
+
+  min-height: 48px;
 
   padding:
     7px 10px;
@@ -2756,11 +3215,13 @@ button:active:not(
       --bb-text,
       #07150f
     );
+
+  text-align: left;
 }
 
 /*
  * =========================================================
- * FINISH
+ * FINISHED
  * =========================================================
  */
 
@@ -2794,15 +3255,72 @@ button:active:not(
 }
 
 .finish-label {
-  font-size: 0.58rem;
+  color:
+    var(
+      --bb-accent,
+      #08745b
+    );
 
+  font-size: 0.58rem;
   font-weight: 950;
+
+  letter-spacing: 0.12em;
 }
 
 .bus-finished-panel h2 {
   margin-top: 5px;
 
   font-size: 1.35rem;
+}
+
+.bus-finished-panel p {
+  margin:
+    6px 0 10px;
+
+  font-size: 0.76rem;
+}
+
+/*
+ * =========================================================
+ * WAITING CARD
+ * =========================================================
+ */
+
+.game-waiting {
+  margin-top: 15px;
+
+  text-align: center;
+}
+
+.hidden-card {
+  display: grid;
+
+  width: 64px;
+  height: 90px;
+
+  margin:
+    0 auto 10px;
+
+  place-items: center;
+
+  border-radius: 9px;
+
+  background:
+    linear-gradient(
+      145deg,
+      var(
+        --bb-accent,
+        #08745b
+      ),
+      var(
+        --bb-accent-strong,
+        #055744
+      )
+    );
+
+  color: #ffffff;
+
+  font-size: 1.8rem;
 }
 
 /*
@@ -2822,7 +3340,20 @@ button:active:not(
 
   place-items: center;
 
-  padding: 16px;
+  padding:
+    max(
+      18px,
+      env(
+        safe-area-inset-top
+      )
+    )
+    16px
+    max(
+      18px,
+      env(
+        safe-area-inset-bottom
+      )
+    );
 
   background:
     rgba(
@@ -2845,6 +3376,10 @@ button:active:not(
       380px
     );
 
+  max-height: 82dvh;
+
+  overflow-y: auto;
+
   padding: 22px;
 
   border-radius: 23px;
@@ -2855,18 +3390,32 @@ button:active:not(
   color: #ffffff;
 
   text-align: center;
+
+  box-shadow:
+    0 26px 90px
+    rgba(
+      0,
+      0,
+      0,
+      0.44
+    );
 }
 
 .announcement-icon {
+  margin-bottom: 8px;
+
   font-size: 2.5rem;
 }
 
 .announcement-label {
+  display: block;
+
   color: #58deb6;
 
   font-size: 0.58rem;
-
   font-weight: 950;
+
+  letter-spacing: 0.12em;
 }
 
 .game-announcement h2 {
@@ -2876,6 +3425,32 @@ button:active:not(
   color: #ffffff;
 
   font-size: 1.45rem;
+}
+
+.announcement-name {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #ffffff;
+
+  font-size: 1.1rem;
+}
+
+.game-announcement > p {
+  margin:
+    9px 0 0;
+
+  color:
+    rgba(
+      255,
+      255,
+      255,
+      0.72
+    );
+
+  font-size: 0.78rem;
+  line-height: 1.45;
 }
 
 /*
@@ -2941,6 +3516,8 @@ button:active:not(
 
 @keyframes confettiFall {
   from {
+    opacity: 1;
+
     transform:
       translateY(
         -20px
@@ -2951,6 +3528,8 @@ button:active:not(
   }
 
   to {
+    opacity: 0.1;
+
     transform:
       translateY(
         110vh
@@ -2963,7 +3542,7 @@ button:active:not(
 
 /*
  * =========================================================
- * MOBILE
+ * MOBILE <= 430
  * =========================================================
  */
 
@@ -3017,34 +3596,43 @@ button:active:not(
   }
 
   .small-logo {
-    width: 46px;
-    height: 46px;
+    width: 44px;
+    height: 44px;
 
-    font-size: 1.35rem;
+    border-radius: 13px;
+
+    font-size: 1.28rem;
   }
 
   .game-top {
     gap: 9px;
 
-    margin-bottom: 12px;
+    margin-bottom: 11px;
   }
 
   .game-top h1 {
-    font-size: 1.3rem;
+    font-size: 1.28rem;
   }
 
   .game-top .subtitle {
-    font-size: 0.67rem;
+    font-size: 0.66rem;
   }
 
   /*
    * =========================
-   * MOBILE TREE
+   * TREE MOBILE
    * =========================
    */
 
+  .tree-progress {
+    margin-bottom: 11px;
+  }
+
   .tree-board {
-    gap: 6px;
+    /*
+     * Meer ruimte tussen boomrijen.
+     */
+    gap: 11px;
   }
 
   .tree-row {
@@ -3055,30 +3643,33 @@ button:active:not(
         1fr
       );
 
-    gap: 4px;
+    gap: 7px;
 
     padding:
-      6px 5px;
+      8px 6px;
+
+    border-radius: 13px;
   }
 
   .tree-row-info strong {
-    font-size: 0.6rem;
+    font-size: 0.61rem;
   }
 
   .tree-row-info span {
-    font-size: 0.49rem;
+    font-size: 0.5rem;
   }
 
-  /*
-   * Belangrijk:
-   * ook op telefoon alle kaarten
-   * gecentreerd binnen hun rij.
-   */
-
   .tree-row-cards {
+    /*
+     * Ruimtelijker, maar nog steeds
+     * gecentreerd als piramide.
+     */
     justify-content: center;
 
-    gap: 4px;
+    gap: 6px;
+
+    padding:
+      3px 3px 4px;
   }
 
   .tree-playing-card {
@@ -3093,6 +3684,12 @@ button:active:not(
     font-size: 0.45rem;
   }
 
+  .tree-active-panel {
+    margin-top: 13px;
+
+    padding: 12px;
+  }
+
   .tree-active-card {
     width:
       clamp(
@@ -3102,251 +3699,308 @@ button:active:not(
       );
 
     margin:
-      9px auto 7px;
-  }
-
-  .tree-active-panel {
-    padding: 11px;
+      10px auto 8px;
   }
 
   /*
    * =========================
-   * MOBILE BUS
+   * BUS MOBILE
    * =========================
+   *
+   * Alles wordt bewust compacter boven
+   * het gokpaneel zodat kaart + knoppen
+   * gewoon zichtbaar blijven.
    */
+
+  .bus-screen {
+    padding: 13px;
+  }
+
+  .bus-screen
+    .game-top {
+    margin-bottom: 8px;
+  }
+
+  .bus-screen
+    .game-top
+    .small-logo {
+    width: 40px;
+    height: 40px;
+
+    font-size: 1.15rem;
+  }
+
+  .bus-screen
+    .game-top
+    h1 {
+    font-size: 1.18rem;
+  }
+
+  .bus-screen
+    .game-top
+    .subtitle {
+    font-size: 0.61rem;
+  }
 
   .bus-status-row {
     gap: 5px;
 
-    margin-bottom: 6px;
+    margin-bottom: 5px;
   }
 
   .bus-status-row > div {
     padding:
-      7px 8px;
+      6px 8px;
+
+    border-radius: 11px;
+  }
+
+  .bus-status-row span {
+    font-size: 0.5rem;
+  }
+
+  .bus-status-row strong {
+    margin-top: 1px;
+
+    font-size: 0.7rem;
   }
 
   .bus-riders {
     margin-bottom: 5px;
 
     padding:
-      7px 8px;
+      6px 8px;
+
+    border-radius: 11px;
   }
+
+  .bus-riders span {
+    font-size: 0.49rem;
+  }
+
+  .bus-riders strong {
+    margin-top: 1px;
+
+    font-size: 0.65rem;
+  }
+
+  /*
+   * Bus zelf iets compacter.
+   */
 
   .bus-track {
     gap: 5px;
 
+    margin:
+      0 -2px;
+
     padding:
-      4px 3px 29px;
+      4px 3px 27px;
   }
 
   .bus-card-slot {
-    flex-basis: 48px;
+    flex-basis: 47px;
 
-    width: 48px;
+    width: 47px;
+  }
+
+  .bus-card-number {
+    width: 18px;
+    height: 18px;
+
+    margin-bottom: 3px;
+
+    font-size: 0.49rem;
   }
 
   .bus-card-face,
   .bus-card-back {
-    width: 44px;
-    height: 63px;
+    width: 43px;
+    height: 61px;
   }
 
   .bus-card-face .card-center-symbol {
-    font-size: 1.1rem;
+    font-size: 1.08rem;
   }
 
   .bus-card-face .card-corner {
-    font-size: 0.43rem;
+    font-size: 0.42rem;
   }
 
   .bus-card-slot > small {
     top:
       calc(
-        20px +
-        4px +
-        63px +
+        18px +
+        3px +
+        61px +
         5px
       ) !important;
 
-    font-size: 0.41rem;
+    font-size: 0.4rem;
   }
 
   /*
-   * =====================================================
-   * HOGER / LAGER ALTIJD ONDERIN BESCHIKBAAR
-   * =====================================================
-   *
-   * Alleen wanneer het gokpaneel daadwerkelijk bestaat.
+   * Gokpaneel weer NORMAAL in de pagina.
    */
 
-  .bus-screen:has(
-    .bus-choice-panel
-  ) {
-    padding-bottom: 184px;
-  }
+  .bus-choice-panel {
+    position:
+      static !important;
 
-  .bus-screen
-    .bus-choice-panel {
-    position: fixed;
+    inset:
+      auto !important;
 
-    z-index: 850;
+    width: 100%;
 
-    right:
-      max(
-        8px,
-        env(
-          safe-area-inset-right
-        )
-      );
+    max-width: none;
+    max-height: none;
 
-    bottom:
-      max(
-        8px,
-        env(
-          safe-area-inset-bottom
-        )
-      );
-
-    left:
-      max(
-        8px,
-        env(
-          safe-area-inset-left
-        )
-      );
-
-    width: auto;
-
-    max-width: 500px;
-
-    max-height:
-      min(
-        174px,
-        40dvh
-      );
-
-    margin:
-      0 auto;
+    margin-top: 5px;
 
     padding:
-      9px 11px 10px;
+      9px 11px 11px;
 
-    overflow-y: auto;
+    overflow: visible;
 
-    border:
-      1px solid
-      var(
-        --bb-border,
-        #bfcac4
-      );
+    border-radius: 15px;
 
-    border-radius: 18px;
+    box-shadow: none;
 
-    background:
-      color-mix(
-        in srgb,
-        var(
-          --bb-surface,
-          #ffffff
-        )
-        95%,
-        transparent
-      );
-
-    box-shadow:
-      0 16px 48px
-      rgba(
-        0,
-        0,
-        0,
-        0.28
-      );
-
-    backdrop-filter:
-      blur(
-        14px
-      );
+    backdrop-filter: none;
   }
 
-  .bus-screen
-    .bus-choice-panel
-    .bus-position-label {
-    margin-bottom: 2px;
+  .bus-position-label {
+    margin-bottom: 1px;
 
-    text-align: center;
+    font-size: 0.52rem;
   }
 
-  .bus-screen
-    .bus-choice-panel
-    .bus-reference-card,
-  .bus-screen
-    .bus-choice-panel
-    .bus-hidden-reference {
-    width: 60px;
+  /*
+   * Huidige kaart blijft duidelijk zichtbaar,
+   * maar neemt geen halve pagina in.
+   */
+
+  .bus-reference-card {
+    width: 76px;
 
     margin:
-      2px auto 4px;
+      5px auto 5px;
   }
 
-  .bus-screen
-    .bus-choice-panel
-    .bus-reference-card
+  .bus-reference-card
     .card-center-symbol {
-    font-size: 1.75rem;
+    font-size: 2.25rem;
   }
 
-  .bus-screen
-    .bus-choice-panel
-    .bus-reference-card
+  .bus-reference-card
     .card-corner {
-    font-size: 0.62rem;
+    font-size: 0.7rem;
   }
 
-  .bus-screen
-    .bus-choice-panel
-    h2 {
-    margin:
-      2px 0 6px;
+  .bus-reference-card
+    .card-corner-top {
+    top:
+      6px !important;
 
-    text-align: center;
+    left:
+      6px !important;
+  }
+
+  .bus-reference-card
+    .card-corner-bottom {
+    right:
+      6px !important;
+
+    bottom:
+      6px !important;
+  }
+
+  .bus-hidden-reference {
+    width: 76px;
+
+    margin:
+      5px auto 5px;
+
+    font-size: 1.8rem;
+  }
+
+  .bus-choice-panel h2 {
+    margin:
+      2px 0 2px;
 
     font-size: 0.88rem;
   }
 
-  /*
-   * Uitlegtekst verbergen op mobiel.
-   * De keuze zelf blijft centraal.
-   */
+  .bus-choice-panel > p {
+    margin:
+      0 auto 6px;
 
-  .bus-screen
-    .bus-choice-panel
-    > p {
-    display: none;
+    max-width: 290px;
+
+    font-size: 0.61rem;
+
+    line-height: 1.3;
   }
 
-  .bus-screen
-    .bus-choice-panel
+  .bus-choice-panel
     .guess-grid {
     gap: 7px;
+
+    margin-top: 6px;
   }
 
-  .bus-screen
-    .bus-choice-panel
+  .bus-choice-panel
     .guess-grid
     button {
-    min-height: 43px;
+    min-height: 46px;
 
     padding:
       7px 5px;
 
-    font-size: 0.79rem;
+    border-radius: 12px;
+
+    font-size: 0.8rem;
   }
 
   /*
-   * =========================
-   * OTHER MOBILE
-   * =========================
+   * Resultaatpagina bus ook compact.
+   */
+
+  .bus-result {
+    margin-top: 7px;
+
+    padding: 12px;
+  }
+
+  .bus-result
+    .result-icon {
+    width: 40px;
+    height: 40px;
+
+    margin-bottom: 5px;
+
+    font-size: 1.3rem;
+  }
+
+  .bus-result h2 {
+    font-size: 1rem;
+  }
+
+  .bus-comparison {
+    margin:
+      9px 0;
+
+    gap: 10px;
+  }
+
+  .bus-drinks {
+    margin-top: 7px;
+
+    padding: 8px;
+  }
+
+  /*
+   * General mobile
    */
 
   .cards-row {
@@ -3359,6 +4013,8 @@ button:active:not(
   .bus-ready-panel,
   .double-panel {
     padding: 12px;
+
+    border-radius: 16px;
   }
 
   .game-player,
@@ -3375,12 +4031,14 @@ button:active:not(
 
   .game-announcement {
     padding: 19px;
+
+    border-radius: 20px;
   }
 }
 
 /*
  * =========================================================
- * SMALL PHONE
+ * SMALL MOBILE <= 360
  * =========================================================
  */
 
@@ -3405,6 +4063,14 @@ button:active:not(
     height: 29px;
   }
 
+  .step small {
+    font-size: 0.48rem;
+  }
+
+  .tree-board {
+    gap: 9px;
+  }
+
   .tree-row {
     grid-template-columns:
       46px
@@ -3413,59 +4079,62 @@ button:active:not(
         1fr
       );
 
+    gap: 5px;
+
     padding:
-      5px 4px;
+      7px 5px;
+  }
+
+  .tree-row-cards {
+    gap: 5px;
   }
 
   .tree-playing-card {
     width: 40px;
   }
 
-  .tree-row-cards {
-    gap: 3px;
-  }
-
   .bus-card-slot {
-    flex-basis: 45px;
+    flex-basis: 44px;
 
-    width: 45px;
+    width: 44px;
   }
 
   .bus-card-face,
   .bus-card-back {
-    width: 41px;
-    height: 59px;
+    width: 40px;
+    height: 57px;
   }
 
   .bus-card-slot > small {
     top:
       calc(
-        20px +
-        4px +
-        59px +
+        18px +
+        3px +
+        57px +
         5px
       ) !important;
   }
 
-  .bus-screen:has(
-    .bus-choice-panel
-  ) {
-    padding-bottom: 174px;
+  .bus-reference-card,
+  .bus-hidden-reference {
+    width: 70px;
   }
 
-  .bus-screen
-    .bus-choice-panel {
-    max-height:
-      164px;
-
+  .bus-choice-panel {
     padding:
-      8px 9px;
+      8px 9px 9px;
+  }
+
+  .bus-choice-panel
+    .guess-grid
+    button {
+    min-height: 44px;
   }
 }
 
 /*
  * =========================================================
- * VERY SMALL
+ * VERY SMALL <= 320
  * =========================================================
  */
 
@@ -3473,12 +4142,6 @@ button:active:not(
   max-width:
     320px
 ) {
-  /*
-   * Op een extreem smal scherm verbergen
-   * we alleen de rijtekst, maar houden we
-   * de kaarten gecentreerd.
-   */
-
   .tree-row-info {
     display: none;
   }
@@ -3528,6 +4191,10 @@ button:active:not(
     padding: 25px;
   }
 
+  .tree-board {
+    gap: 15px;
+  }
+
   .tree-row {
     grid-template-columns:
       76px
@@ -3537,10 +4204,14 @@ button:active:not(
       );
 
     gap: 12px;
+
+    padding: 11px;
   }
 
   .tree-row-cards {
     justify-content: center;
+
+    gap: 10px;
   }
 
   .tree-playing-card {
@@ -3568,6 +4239,10 @@ button:active:not(
         6px
       ) !important;
   }
+
+  .bus-reference-card {
+    width: 110px;
+  }
 }
 
 /*
@@ -3585,11 +4260,9 @@ and (
     landscape
 ) {
   .app {
-    align-items:
-      flex-start;
+    align-items: flex-start;
 
-    padding:
-      8px;
+    padding: 8px;
   }
 
   .card {
@@ -3603,13 +4276,7 @@ and (
   .revealed-card,
   .tree-active-card,
   .bus-reference-card {
-    width: 88px;
-  }
-
-  .bus-screen
-    .bus-choice-panel {
-    max-height:
-      150px;
+    width: 76px;
   }
 }
 
