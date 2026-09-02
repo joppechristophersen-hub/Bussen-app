@@ -1,7 +1,7 @@
 /*
  * =========================================================
  * BUSBAAS - APP.CSS
- * Mobile first
+ * MOBILE FIRST
  * =========================================================
  */
 
@@ -13,6 +13,7 @@ html {
   width: 100%;
   min-height: 100%;
   overflow-x: hidden;
+
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -21,7 +22,9 @@ body {
   width: 100%;
   min-width: 0;
   min-height: 100%;
+
   margin: 0;
+
   overflow-x: hidden;
 
   background:
@@ -58,11 +61,10 @@ input {
 }
 
 button {
+  touch-action: manipulation;
+
   -webkit-tap-highlight-color:
     transparent;
-
-  touch-action:
-    manipulation;
 }
 
 button:disabled {
@@ -76,16 +78,18 @@ input {
 
 /*
  * =========================================================
- * APP LAYOUT
+ * APP
  * =========================================================
  */
 
 .app {
   width: 100%;
+
   min-height: 100vh;
   min-height: 100dvh;
 
   display: flex;
+
   align-items: flex-start;
   justify-content: center;
 
@@ -126,15 +130,16 @@ input {
 
 /*
  * =========================================================
- * MAIN PANELS
+ * CARDS / PANELS
  * =========================================================
  */
 
 .card {
-  width: min(
-    100%,
-    520px
-  );
+  width:
+    min(
+      100%,
+      520px
+    );
 
   min-width: 0;
 
@@ -172,26 +177,33 @@ input {
 }
 
 .game-card {
-  width: min(
-    100%,
-    620px
-  );
+  width:
+    min(
+      100%,
+      620px
+    );
 
   overflow: hidden;
+}
+
+.tree-screen,
+.bus-screen {
+  overflow: visible;
 }
 
 .settings-card,
 .rules-guide-card,
 .lobby-card {
-  width: min(
-    100%,
-    520px
-  );
+  width:
+    min(
+      100%,
+      520px
+    );
 }
 
 /*
  * =========================================================
- * TYPOGRAPHY
+ * TEXT
  * =========================================================
  */
 
@@ -231,7 +243,8 @@ h2 {
 }
 
 .subtitle {
-  margin: 0 0 24px;
+  margin:
+    0 0 24px;
 
   color:
     var(
@@ -303,7 +316,7 @@ h2 {
 
 /*
  * =========================================================
- * COMMON BUTTONS
+ * BUTTONS
  * =========================================================
  */
 
@@ -337,7 +350,10 @@ button {
 button:active:not(
   :disabled
 ) {
-  transform: scale(0.985);
+  transform:
+    scale(
+      0.985
+    );
 }
 
 .start-button {
@@ -345,9 +361,10 @@ button:active:not(
 
   min-height: 50px;
 
-  padding: 12px 16px;
-
   margin-top: 16px;
+
+  padding:
+    12px 16px;
 
   border: 0;
   border-radius: 15px;
@@ -388,11 +405,14 @@ button:active:not(
 
 .back-button {
   width: auto;
+
   min-height: 40px;
 
-  padding: 7px 12px;
+  margin:
+    0 0 18px;
 
-  margin: 0 0 18px;
+  padding:
+    7px 12px;
 
   border:
     1px solid
@@ -421,7 +441,7 @@ button:active:not(
 
 /*
  * =========================================================
- * FORMS
+ * SETTINGS
  * =========================================================
  */
 
@@ -445,7 +465,8 @@ button:active:not(
 }
 
 .setting > p {
-  margin: 9px 2px 0;
+  margin:
+    9px 2px 0;
 
   color:
     var(
@@ -459,9 +480,11 @@ button:active:not(
 
 .setting input {
   width: 100%;
+
   min-height: 50px;
 
-  padding: 0 14px;
+  padding:
+    0 14px;
 
   border:
     1px solid
@@ -494,18 +517,6 @@ button:active:not(
     var(
       --bb-accent,
       #08745b
-    );
-
-  box-shadow:
-    0 0 0 3px
-    color-mix(
-      in srgb,
-      var(
-        --bb-accent,
-        #08745b
-      )
-      18%,
-      transparent
     );
 }
 
@@ -567,12 +578,6 @@ button:active:not(
   color: #ffffff;
 }
 
-/*
- * =========================================================
- * COUNTER
- * =========================================================
- */
-
 .counter {
   display: grid;
 
@@ -621,12 +626,6 @@ button:active:not(
   font-size: 1.15rem;
   font-weight: 900;
 }
-
-/*
- * =========================================================
- * RULE OPTIONS
- * =========================================================
- */
 
 .double-rule-options {
   display: grid;
@@ -699,12 +698,6 @@ button:active:not(
     );
 }
 
-/*
- * =========================================================
- * GAME SUMMARY
- * =========================================================
- */
-
 .game-summary {
   margin-top: 20px;
 
@@ -733,7 +726,8 @@ button:active:not(
 }
 
 .game-summary p {
-  margin: 4px 0;
+  margin:
+    4px 0;
 
   color:
     var(
@@ -767,7 +761,8 @@ button:active:not(
 }
 
 .game-top h1 {
-  margin: 0 0 3px;
+  margin:
+    0 0 3px;
 
   font-size:
     clamp(
@@ -818,7 +813,8 @@ button:active:not(
   width: 32px;
   height: 32px;
 
-  margin: 0 auto 5px;
+  margin:
+    0 auto 5px;
 
   place-items: center;
 
@@ -850,15 +846,7 @@ button:active:not(
 .step small {
   display: block;
 
-  min-width: 0;
-
   overflow: hidden;
-
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
 
   font-size:
     clamp(
@@ -888,23 +876,9 @@ button:active:not(
   color: #ffffff;
 }
 
-.step.completed > span {
-  border-color:
-    var(
-      --bb-accent,
-      #08745b
-    );
-
-  color:
-    var(
-      --bb-accent,
-      #08745b
-    );
-}
-
 /*
  * =========================================================
- * GAME INFO / TURN
+ * GAME INFO
  * =========================================================
  */
 
@@ -918,7 +892,8 @@ button:active:not(
 
   margin-bottom: 10px;
 
-  padding: 10px 12px;
+  padding:
+    10px 12px;
 
   border-radius: 13px;
 
@@ -987,12 +962,6 @@ button:active:not(
   line-height: 1.4;
 }
 
-/*
- * =========================================================
- * SECTION TITLES
- * =========================================================
- */
-
 .section-title {
   display: flex;
 
@@ -1021,13 +990,7 @@ button:active:not(
 
 /*
  * =========================================================
- * PLAYING CARDS - CORE
- * =========================================================
- *
- * BELANGRIJK:
- * Iedere zichtbare kaart is zelf position:relative.
- * Daardoor kunnen symbolen nooit meer relatief
- * aan het boomscherm of de pagina zweven.
+ * PLAYING CARDS
  * =========================================================
  */
 
@@ -1073,21 +1036,18 @@ button:active:not(
 }
 
 .rood {
-  color: #c8182b !important;
+  color:
+    #c8182b !important;
 }
 
 .zwart {
-  color: #101010 !important;
+  color:
+    #101010 !important;
 }
 
-/*
- * =========================================================
- * CARD CORNERS
- * =========================================================
- */
-
 .card-corner {
-  position: absolute !important;
+  position:
+    absolute !important;
 
   z-index: 3;
 
@@ -1096,12 +1056,10 @@ button:active:not(
   flex-direction: column;
 
   align-items: center;
-
   justify-content: center;
 
-  width: auto;
-
-  color: inherit !important;
+  color:
+    inherit !important;
 
   line-height: 0.92;
 
@@ -1114,43 +1072,47 @@ button:active:not(
 
   margin: 0;
 
-  color: inherit !important;
+  color:
+    inherit !important;
 
   line-height: 1;
 }
 
 .card-corner-top {
-  top: 7px !important;
-  left: 7px !important;
-  right: auto !important;
-  bottom: auto !important;
+  top:
+    7px !important;
+
+  left:
+    7px !important;
 }
 
 .card-corner-bottom {
-  right: 7px !important;
-  bottom: 7px !important;
-  top: auto !important;
-  left: auto !important;
+  right:
+    7px !important;
 
-  transform: rotate(
-    180deg
-  );
+  bottom:
+    7px !important;
+
+  transform:
+    rotate(
+      180deg
+    );
 }
 
 .card-center-symbol {
-  position: absolute !important;
+  position:
+    absolute !important;
 
   z-index: 1;
 
-  top: 50% !important;
-  left: 50% !important;
-  right: auto !important;
-  bottom: auto !important;
+  top:
+    50% !important;
 
-  width: auto !important;
-  height: auto !important;
+  left:
+    50% !important;
 
-  margin: 0 !important;
+  margin:
+    0 !important;
 
   transform:
     translate(
@@ -1158,16 +1120,19 @@ button:active:not(
       -50%
     ) !important;
 
-  color: inherit !important;
+  color:
+    inherit !important;
 
-  line-height: 1 !important;
+  line-height:
+    1 !important;
 
-  pointer-events: none;
+  pointer-events:
+    none;
 }
 
 /*
  * =========================================================
- * OWN HAND CARDS
+ * OWN CARDS
  * =========================================================
  */
 
@@ -1193,15 +1158,12 @@ button:active:not(
 .playing-card,
 .empty-card {
   width: 100%;
+
   min-width: 0;
 
   aspect-ratio: 0.7;
 
   border-radius: 9px;
-}
-
-.playing-card {
-  background: #ffffff;
 }
 
 .playing-card .card-corner {
@@ -1264,7 +1226,7 @@ button:active:not(
 
 /*
  * =========================================================
- * BIG REVEALED CARD
+ * LARGE CARDS
  * =========================================================
  */
 
@@ -1297,14 +1259,6 @@ button:active:not(
     );
 }
 
-.revealed-card .card-corner span,
-.tree-active-card .card-corner span,
-.bus-reference-card .card-corner span {
-  margin-top: 2px;
-
-  font-size: 0.9em;
-}
-
 .revealed-card .card-center-symbol,
 .tree-active-card .card-center-symbol,
 .bus-reference-card .card-center-symbol {
@@ -1318,7 +1272,7 @@ button:active:not(
 
 /*
  * =========================================================
- * GUESS AREA
+ * GUESS
  * =========================================================
  */
 
@@ -1345,23 +1299,13 @@ button:active:not(
   gap: 8px;
 }
 
-.guess-grid.two {
-  grid-template-columns:
-    repeat(
-      2,
-      minmax(
-        0,
-        1fr
-      )
-    );
-}
-
 .guess-grid button {
   width: 100%;
 
   min-height: 50px;
 
-  padding: 10px 8px;
+  padding:
+    10px 8px;
 
   border-radius: 14px;
 
@@ -1381,13 +1325,11 @@ button:active:not(
       #8137d3,
       #de3edf
     );
-
-  color: #ffffff;
 }
 
 /*
  * =========================================================
- * RESULT AREA
+ * RESULT
  * =========================================================
  */
 
@@ -1411,14 +1353,6 @@ button:active:not(
 
 .result-area.correct,
 .bus-result.correct {
-  border-color:
-    rgba(
-      27,
-      154,
-      105,
-      0.42
-    );
-
   background:
     rgba(
       27,
@@ -1430,14 +1364,6 @@ button:active:not(
 
 .result-area.wrong,
 .bus-result.wrong {
-  border-color:
-    rgba(
-      205,
-      49,
-      68,
-      0.42
-    );
-
   background:
     rgba(
       205,
@@ -1453,7 +1379,8 @@ button:active:not(
   width: 48px;
   height: 48px;
 
-  margin: 0 auto 8px;
+  margin:
+    0 auto 8px;
 
   place-items: center;
 
@@ -1469,13 +1396,7 @@ button:active:not(
   font-weight: 950;
 }
 
-.result-content h2 {
-  margin-bottom: 3px;
-}
-
 .result-content > p {
-  margin: 6px 0;
-
   font-size: 0.78rem;
 }
 
@@ -1497,24 +1418,8 @@ button:active:not(
   font-weight: 850;
 }
 
-.drink-message.success {
-  background:
-    rgba(
-      27,
-      154,
-      105,
-      0.13
-    );
-}
-
 .next-countdown {
   margin-top: 12px;
-
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
 
   font-size: 0.72rem;
 }
@@ -1569,13 +1474,6 @@ button:active:not(
       --bb-accent,
       #08745b
     );
-
-  box-shadow:
-    inset 0 0 0 1px
-    var(
-      --bb-accent,
-      #08745b
-    );
 }
 
 .player-avatar {
@@ -1622,42 +1520,24 @@ button:active:not(
   flex-direction: column;
 }
 
-.player-info > span,
-.player > span:not(
-  .host-label
-) {
-  min-width: 0;
-
+.player-info > span {
   overflow: hidden;
 
   font-size: 0.85rem;
   font-weight: 800;
 
   text-overflow: ellipsis;
+
   white-space: nowrap;
 }
 
 .player-info small {
-  margin-top: 2px;
-
-  color:
-    var(
-      --bb-accent,
-      #08745b
-    );
-
   font-size: 0.54rem;
   font-weight: 900;
 }
 
 .card-count {
   flex: 0 0 auto;
-
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
 
   font-size: 0.75rem;
 }
@@ -1671,11 +1551,13 @@ button:active:not(
 .qr-placeholder {
   display: grid;
 
-  width: fit-content;
+  width:
+    fit-content;
 
   max-width: 100%;
 
-  margin: 18px auto;
+  margin:
+    18px auto;
 
   padding: 14px;
 
@@ -1706,14 +1588,13 @@ button:active:not(
 }
 
 .qr-placeholder p {
-  margin: 10px 0 0;
+  margin:
+    10px 0 0;
 
   color: #45534d;
 
   font-size: 0.62rem;
   font-weight: 900;
-
-  letter-spacing: 0.07em;
 }
 
 .room-code {
@@ -1722,16 +1603,7 @@ button:active:not(
   align-items: center;
   justify-content: space-between;
 
-  gap: 12px;
-
   padding: 13px;
-
-  border:
-    1px solid
-    var(
-      --bb-border,
-      #bfcac4
-    );
 
   border-radius: 15px;
 
@@ -1742,18 +1614,9 @@ button:active:not(
     );
 }
 
-.room-code span {
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
-
-  font-size: 0.72rem;
-}
-
 .room-code strong {
   font-size: 1.22rem;
+
   letter-spacing: 0.12em;
 }
 
@@ -1761,26 +1624,15 @@ button:active:not(
   margin-top: 20px;
 }
 
-.players-header h2 {
-  font-size: 0.92rem;
-}
-
 .player-list {
   margin-top: 9px;
-}
-
-.player {
-  position: relative;
-}
-
-.player > span:nth-child(2) {
-  flex: 1;
 }
 
 .host-label {
   margin-left: auto;
 
-  padding: 5px 7px;
+  padding:
+    5px 7px;
 
   border-radius: 999px;
 
@@ -1799,6 +1651,7 @@ button:active:not(
 .remove-player {
   width: 34px;
   height: 34px;
+
   min-height: 34px;
 
   padding: 0;
@@ -1814,17 +1667,6 @@ button:active:not(
     );
 
   color: #c6283a;
-
-  font-size: 1.05rem;
-}
-
-.join-error {
-  margin: 12px 0 0;
-
-  color: #be2035;
-
-  font-size: 0.75rem;
-  font-weight: 800;
 }
 
 /*
@@ -1838,7 +1680,8 @@ button:active:not(
 
   gap: 12px;
 
-  margin: 20px 0;
+  margin:
+    20px 0;
 }
 
 .rule-guide-item {
@@ -1854,13 +1697,6 @@ button:active:not(
   gap: 11px;
 
   padding: 13px;
-
-  border:
-    1px solid
-    var(
-      --bb-border,
-      #bfcac4
-    );
 
   border-radius: 16px;
 
@@ -1889,35 +1725,13 @@ button:active:not(
 
   color: #ffffff;
 
-  font-size: 0.75rem;
   font-weight: 900;
 }
 
-.rule-guide-item h2 {
-  margin-bottom: 6px;
-
-  font-size: 0.9rem;
-}
-
 .rule-guide-item p {
-  margin: 5px 0;
-
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
-
   font-size: 0.74rem;
-  line-height: 1.45;
-}
 
-.final-rule {
-  border-color:
-    var(
-      --bb-accent,
-      #08745b
-    );
+  line-height: 1.45;
 }
 
 /*
@@ -1926,21 +1740,16 @@ button:active:not(
  * =========================================================
  */
 
-.tree-screen {
-  overflow: visible;
-}
-
 .tree-progress {
   display: flex;
 
-  align-items: center;
-  justify-content: space-between;
+  justify-content:
+    space-between;
 
-  gap: 10px;
+  padding:
+    10px 12px;
 
   margin-bottom: 12px;
-
-  padding: 10px 12px;
 
   border-radius: 13px;
 
@@ -1949,20 +1758,6 @@ button:active:not(
       --bb-surface-soft,
       #eef3f0
     );
-}
-
-.tree-progress span {
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
-
-  font-size: 0.72rem;
-}
-
-.tree-progress strong {
-  font-size: 0.8rem;
 }
 
 .tree-board {
@@ -1989,8 +1784,6 @@ button:active:not(
 
   gap: 8px;
 
-  min-width: 0;
-
   padding: 8px;
 
   border:
@@ -2012,8 +1805,6 @@ button:active:not(
 .tree-row-info {
   display: flex;
 
-  min-width: 0;
-
   flex-direction: column;
 }
 
@@ -2022,22 +1813,20 @@ button:active:not(
 }
 
 .tree-row-info span {
-  margin-top: 2px;
-
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
-
   font-size: 0.58rem;
-  line-height: 1.2;
 }
+
+/*
+ * BELANGRIJK:
+ * kaarten staan nu in het midden,
+ * waardoor de boom weer echt een boom wordt.
+ */
 
 .tree-row-cards {
   display: flex;
 
   align-items: center;
+  justify-content: center;
 
   gap: 5px;
 
@@ -2050,9 +1839,6 @@ button:active:not(
     2px 2px 3px;
 
   scrollbar-width: none;
-
-  overscroll-behavior-x:
-    contain;
 
   -webkit-overflow-scrolling:
     touch;
@@ -2085,29 +1871,14 @@ button:active:not(
 }
 
 .tree-card-face {
-  border:
-    1px solid
-    #c8d0cc;
-
-  background: #ffffff;
+  background:
+    #ffffff;
 }
 
 .tree-card-back {
   display: grid;
 
   place-items: center;
-
-  border:
-    1px solid
-    color-mix(
-      in srgb,
-      var(
-        --bb-accent,
-        #08745b
-      )
-      72%,
-      #ffffff
-    );
 
   background:
     linear-gradient(
@@ -2125,47 +1896,24 @@ button:active:not(
   color: #ffffff;
 }
 
-.tree-card-back > span {
-  font-size: 1rem;
-}
-
-.tree-card-back > strong {
-  position: absolute;
-
-  right: 3px;
-  bottom: 3px;
-
-  padding: 2px 4px;
-
-  border-radius: 999px;
-
-  background: #ffffff;
-
-  color:
-    var(
-      --bb-accent-strong,
-      #055744
-    );
-
-  font-size: 0.48rem;
-}
-
 .tree-card-face .card-corner {
   font-size: 0.52rem;
 }
 
 .tree-card-face .card-corner-top {
-  top: 4px !important;
-  left: 4px !important;
+  top:
+    4px !important;
+
+  left:
+    4px !important;
 }
 
 .tree-card-face .card-corner-bottom {
-  right: 4px !important;
-  bottom: 4px !important;
-}
+  right:
+    4px !important;
 
-.tree-card-face .card-corner span {
-  font-size: 0.8em;
+  bottom:
+    4px !important;
 }
 
 .tree-card-face .card-center-symbol {
@@ -2173,14 +1921,16 @@ button:active:not(
 }
 
 .double-badge {
-  position: absolute !important;
+  position:
+    absolute !important;
 
   z-index: 8;
 
   top: 3px;
   right: 3px;
 
-  padding: 2px 4px;
+  padding:
+    2px 4px;
 
   border-radius: 999px;
 
@@ -2190,7 +1940,8 @@ button:active:not(
       #08745b
     );
 
-  color: #ffffff !important;
+  color:
+    #ffffff !important;
 
   font-size: 0.44rem;
   font-weight: 950;
@@ -2198,17 +1949,11 @@ button:active:not(
 
 /*
  * =========================================================
- * TREE ACTIVE CARD
- * =========================================================
- *
- * Deze container vangt ALLE symbolen van de
- * grote boomkaart op. Niets kan hier buiten zweven.
+ * ACTIVE TREE CARD
  * =========================================================
  */
 
 .tree-active-panel {
-  position: relative;
-
   display: flex;
 
   width: 100%;
@@ -2223,13 +1968,6 @@ button:active:not(
 
   padding: 14px;
 
-  border:
-    1px solid
-    var(
-      --bb-border,
-      #bfcac4
-    );
-
   border-radius: 18px;
 
   background:
@@ -2242,35 +1980,14 @@ button:active:not(
 }
 
 .tree-active-label {
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
-
   font-size: 0.6rem;
-  font-weight: 900;
 
-  letter-spacing: 0.1em;
+  font-weight: 900;
 }
 
 .tree-active-card {
-  position: relative !important;
-
-  display: block;
-
-  flex: 0 0 auto;
-
-  overflow: hidden !important;
-
-  isolation: isolate;
-
   margin:
     12px auto 10px;
-}
-
-.tree-active-panel h2 {
-  margin-top: 2px;
 }
 
 /*
@@ -2308,45 +2025,26 @@ button:active:not(
 .tree-match-heading {
   display: flex;
 
-  align-items: flex-start;
-
   gap: 10px;
 }
 
 .tree-match-heading > span {
-  flex: 0 0 auto;
-
   font-size: 1.55rem;
 }
 
-.tree-match-heading h2 {
-  margin-bottom: 4px;
-}
-
 .tree-match-heading p {
-  margin: 0;
-
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
-
   font-size: 0.74rem;
-  line-height: 1.4;
 }
 
 .remaining-drinks {
   display: flex;
 
-  align-items: center;
   justify-content: space-between;
-
-  gap: 10px;
 
   margin-top: 12px;
 
-  padding: 10px 12px;
+  padding:
+    10px 12px;
 
   border-radius: 12px;
 
@@ -2355,12 +2053,6 @@ button:active:not(
       --bb-surface,
       #ffffff
     );
-
-  font-size: 0.72rem;
-}
-
-.remaining-drinks strong {
-  font-size: 1.15rem;
 }
 
 .drink-player-list {
@@ -2374,20 +2066,11 @@ button:active:not(
 .drink-player {
   display: flex;
 
-  min-width: 0;
-
   align-items: center;
 
   gap: 8px;
 
   padding: 8px;
-
-  border:
-    1px solid
-    var(
-      --bb-border,
-      #bfcac4
-    );
 
   border-radius: 13px;
 
@@ -2401,28 +2084,15 @@ button:active:not(
 .drink-player > span {
   flex: 1;
 
-  min-width: 0;
-
   overflow: hidden;
 
-  font-size: 0.78rem;
-  font-weight: 800;
-
   text-overflow: ellipsis;
+
   white-space: nowrap;
-}
-
-.drink-player .player-avatar {
-  width: 32px;
-  height: 32px;
-
-  font-size: 0.72rem;
 }
 
 .drink-counter {
   display: grid;
-
-  flex: 0 0 auto;
 
   grid-template-columns:
     34px
@@ -2437,15 +2107,10 @@ button:active:not(
 .drink-counter button {
   width: 34px;
   height: 34px;
+
   min-height: 34px;
 
   padding: 0;
-
-  border-radius: 10px;
-}
-
-.drink-counter strong {
-  text-align: center;
 }
 
 .tree-confirm-button,
@@ -2455,20 +2120,9 @@ button:active:not(
   min-height: 48px;
 
   margin-top: 10px;
-
-  padding: 10px;
-
-  border-radius: 14px;
 }
 
 .tree-skip-button {
-  border:
-    1px solid
-    var(
-      --bb-border,
-      #bfcac4
-    );
-
   background:
     var(
       --bb-surface,
@@ -2492,8 +2146,6 @@ button:active:not(
   width: 43px;
   height: 60px;
 
-  border-radius: 7px;
-
   text-align: center;
 }
 
@@ -2501,42 +2153,31 @@ button:active:not(
   display: block;
 
   margin-top: 8px;
-
-  font-size: 0.82rem;
 }
 
 .mini-playing-card > span {
   display: block;
-
-  margin-top: 1px;
 
   font-size: 1rem;
 }
 
 /*
  * =========================================================
- * BUS DRIVER BANNER
+ * BUS
  * =========================================================
  */
 
 .bus-driver-banner {
   display: flex;
 
-  align-items: center;
-  justify-content: space-between;
+  justify-content:
+    space-between;
 
   gap: 10px;
 
   margin-bottom: 14px;
 
   padding: 12px;
-
-  border:
-    1px solid
-    var(
-      --bb-accent,
-      #08745b
-    );
 
   border-radius: 14px;
 
@@ -2551,29 +2192,6 @@ button:active:not(
       transparent
     );
 }
-
-.bus-driver-banner span {
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
-
-  font-size: 0.58rem;
-  font-weight: 900;
-
-  letter-spacing: 0.08em;
-}
-
-.bus-driver-banner strong {
-  font-size: 0.85rem;
-}
-
-/*
- * =========================================================
- * BUS SETUP STEPS
- * =========================================================
- */
 
 .bus-setup-steps {
   display: grid;
@@ -2592,13 +2210,6 @@ button:active:not(
 
   padding: 9px;
 
-  border:
-    1px solid
-    var(
-      --bb-border,
-      #bfcac4
-    );
-
   border-radius: 13px;
 
   opacity: 0.58;
@@ -2612,8 +2223,6 @@ button:active:not(
 .bus-setup-step > span {
   display: grid;
 
-  flex: 0 0 auto;
-
   width: 29px;
   height: 29px;
 
@@ -2626,9 +2235,6 @@ button:active:not(
       --bb-surface-soft,
       #eef3f0
     );
-
-  font-size: 0.68rem;
-  font-weight: 900;
 }
 
 .bus-setup-step.active > span,
@@ -2641,30 +2247,6 @@ button:active:not(
 
   color: #ffffff;
 }
-
-.bus-setup-step strong {
-  display: block;
-
-  font-size: 0.76rem;
-}
-
-.bus-setup-step p {
-  margin: 2px 0 0;
-
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
-
-  font-size: 0.66rem;
-}
-
-/*
- * =========================================================
- * BUS SETUP DRAW CARDS
- * =========================================================
- */
 
 .bus-setup-draws {
   display: grid;
@@ -2686,20 +2268,11 @@ button:active:not(
 .bus-setup-draws > div {
   display: flex;
 
-  min-width: 0;
-
   flex-direction: column;
 
   align-items: center;
 
-  padding: 12px 8px;
-
-  border:
-    1px solid
-    var(
-      --bb-border,
-      #bfcac4
-    );
+  padding: 12px;
 
   border-radius: 15px;
 
@@ -2710,45 +2283,21 @@ button:active:not(
     );
 }
 
-.bus-setup-draws > div > span {
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
-
-  font-size: 0.62rem;
-}
-
-.bus-setup-draws b {
-  margin-top: 6px;
-
-  font-size: 0.7rem;
-}
-
 .setup-card {
   width: 56px;
   height: 78px;
 
   margin-top: 8px;
-
-  border-radius: 8px;
-
-  text-align: center;
 }
 
 .setup-card > strong {
   display: block;
 
   margin-top: 10px;
-
-  font-size: 1rem;
 }
 
 .setup-card > span {
   display: block;
-
-  margin-top: 2px;
 
   font-size: 1.4rem;
 }
@@ -2764,62 +2313,11 @@ button:active:not(
       --bb-border,
       #bfcac4
     );
-
-  background:
-    var(
-      --bb-surface,
-      #ffffff
-    );
-
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
-
-  font-size: 1.6rem;
-}
-
-/*
- * =========================================================
- * BUS PREVIEW TITLE
- * =========================================================
- */
-
-.bus-preview-title {
-  display: flex;
-
-  align-items: center;
-  justify-content: space-between;
-
-  gap: 10px;
-
-  margin:
-    16px 0 8px;
-}
-
-.bus-preview-title h2 {
-  font-size: 0.92rem;
-}
-
-.bus-preview-title span {
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
-
-  font-size: 0.65rem;
 }
 
 /*
  * =========================================================
  * BUS TRACK
- * =========================================================
- *
- * Alle buskaarten hebben exact dezelfde y-positie.
- * Checkpointvlaggen zijn absolute overlays.
- * Zij nemen dus GEEN ruimte in boven de kaart.
  * =========================================================
  */
 
@@ -2827,8 +2325,6 @@ button:active:not(
   display: flex;
 
   width: 100%;
-
-  min-width: 0;
 
   align-items: flex-start;
 
@@ -2840,12 +2336,7 @@ button:active:not(
   padding:
     7px 4px 32px;
 
-  scroll-padding: 10px;
-
   scrollbar-width: none;
-
-  overscroll-behavior-x:
-    contain;
 
   -webkit-overflow-scrolling:
     touch;
@@ -2856,7 +2347,8 @@ button:active:not(
 }
 
 .bus-card-slot {
-  position: relative !important;
+  position:
+    relative !important;
 
   display: flex;
 
@@ -2865,17 +2357,18 @@ button:active:not(
 
   width: 54px;
 
-  align-items: center;
-
   flex-direction: column;
 
-  align-self: flex-start !important;
+  align-items: center;
 
-  margin: 0 !important;
+  align-self:
+    flex-start !important;
 
-  padding: 0 !important;
+  margin:
+    0 !important;
 
-  transform: none !important;
+  padding:
+    0 !important;
 }
 
 .bus-card-number {
@@ -2896,37 +2389,25 @@ button:active:not(
       #eef3f0
     );
 
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
-
   font-size: 0.54rem;
   font-weight: 900;
 }
 
 .bus-card-face,
 .bus-card-back {
-  position: relative !important;
-
-  flex: 0 0 auto;
+  position:
+    relative !important;
 
   width: 50px;
   height: 71px;
 
-  margin: 0 !important;
-
-  overflow: hidden !important;
+  overflow:
+    hidden !important;
 
   border-radius: 7px;
 }
 
 .bus-card-face {
-  border:
-    1px solid
-    #c8d0cc;
-
   background: #ffffff;
 }
 
@@ -2935,13 +2416,19 @@ button:active:not(
 }
 
 .bus-card-face .card-corner-top {
-  top: 4px !important;
-  left: 4px !important;
+  top:
+    4px !important;
+
+  left:
+    4px !important;
 }
 
 .bus-card-face .card-corner-bottom {
-  right: 4px !important;
-  bottom: 4px !important;
+  right:
+    4px !important;
+
+  bottom:
+    4px !important;
 }
 
 .bus-card-face .card-center-symbol {
@@ -2952,18 +2439,6 @@ button:active:not(
   display: grid;
 
   place-items: center;
-
-  border:
-    1px solid
-    color-mix(
-      in srgb,
-      var(
-        --bb-accent,
-        #08745b
-      )
-      75%,
-      #ffffff
-    );
 
   background:
     linear-gradient(
@@ -2979,8 +2454,6 @@ button:active:not(
     );
 
   color: #ffffff;
-
-  font-size: 1rem;
 }
 
 .bus-card-slot.current
@@ -2997,36 +2470,24 @@ button:active:not(
   outline-offset: 2px;
 }
 
-.bus-card-slot.passed {
-  opacity: 0.7;
-}
-
-/*
- * Checkpoint labels ALWAYS underneath card.
- */
-
 .bus-card-slot > small {
-  position: absolute !important;
+  position:
+    absolute !important;
 
   z-index: 5;
 
-  top: calc(
-    20px +
-    4px +
-    71px +
-    6px
-  ) !important;
+  top:
+    calc(
+      20px +
+      4px +
+      71px +
+      6px
+    ) !important;
 
-  left: 50% !important;
-
-  right: auto !important;
-  bottom: auto !important;
+  left:
+    50% !important;
 
   width: max-content;
-
-  max-width: 72px;
-
-  margin: 0 !important;
 
   transform:
     translateX(
@@ -3042,45 +2503,14 @@ button:active:not(
   font-size: 0.46rem;
   font-weight: 950;
 
-  line-height: 1;
-
-  text-align: center;
   white-space: nowrap;
-
-  pointer-events: none;
 }
 
 /*
  * =========================================================
- * CHECKPOINT GRID
+ * CHECKPOINTS
  * =========================================================
  */
-
-.checkpoint-panel h2,
-.bus-draw-panel h2,
-.bus-ready-panel h2,
-.bus-choice-panel h2,
-.double-panel h2 {
-  margin-bottom: 6px;
-}
-
-.checkpoint-panel > p,
-.bus-draw-panel > p,
-.bus-ready-panel > p,
-.bus-choice-panel > p,
-.double-panel > p {
-  margin:
-    4px 0 10px;
-
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
-
-  font-size: 0.72rem;
-  line-height: 1.45;
-}
 
 .checkpoint-grid {
   display: grid;
@@ -3102,15 +2532,6 @@ button:active:not(
 .checkpoint-grid button {
   min-height: 42px;
 
-  padding: 5px;
-
-  border:
-    1px solid
-    var(
-      --bb-border,
-      #bfcac4
-    );
-
   background:
     var(
       --bb-surface,
@@ -3125,12 +2546,6 @@ button:active:not(
 }
 
 .checkpoint-grid button.selected {
-  border-color:
-    var(
-      --bb-accent,
-      #08745b
-    );
-
   background:
     var(
       --bb-accent,
@@ -3164,16 +2579,7 @@ button:active:not(
 }
 
 .bus-status-row > div {
-  min-width: 0;
-
   padding: 10px;
-
-  border:
-    1px solid
-    var(
-      --bb-border,
-      #bfcac4
-    );
 
   border-radius: 13px;
 
@@ -3188,19 +2594,11 @@ button:active:not(
 .bus-riders span {
   display: block;
 
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
-
   font-size: 0.58rem;
 }
 
 .bus-status-row strong {
   display: block;
-
-  min-width: 0;
 
   margin-top: 3px;
 
@@ -3209,6 +2607,7 @@ button:active:not(
   font-size: 0.78rem;
 
   text-overflow: ellipsis;
+
   white-space: nowrap;
 }
 
@@ -3216,13 +2615,6 @@ button:active:not(
   margin-bottom: 9px;
 
   padding: 10px;
-
-  border:
-    1px solid
-    var(
-      --bb-border,
-      #bfcac4
-    );
 
   border-radius: 13px;
 
@@ -3232,21 +2624,6 @@ button:active:not(
       #eef3f0
     );
 }
-
-.bus-riders strong {
-  display: block;
-
-  margin-top: 3px;
-
-  font-size: 0.72rem;
-  line-height: 1.35;
-}
-
-/*
- * =========================================================
- * BUS REFERENCE
- * =========================================================
- */
 
 .bus-position-label {
   display: block;
@@ -3261,8 +2638,6 @@ button:active:not(
 
   font-size: 0.6rem;
   font-weight: 950;
-
-  letter-spacing: 0.1em;
 }
 
 .bus-hidden-reference {
@@ -3297,12 +2672,6 @@ button:active:not(
       #ffffff
     );
 
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
-
   font-size: 2.2rem;
 }
 
@@ -3320,7 +2689,8 @@ button:active:not(
 
   gap: 12px;
 
-  margin: 14px 0;
+  margin:
+    14px 0;
 }
 
 .bus-comparison > div {
@@ -3331,26 +2701,6 @@ button:active:not(
   align-items: center;
 
   gap: 5px;
-}
-
-.bus-comparison > div > span {
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
-
-  font-size: 0.58rem;
-}
-
-.comparison-arrow {
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
-
-  font-size: 1.3rem;
 }
 
 .bus-drinks {
@@ -3369,26 +2719,10 @@ button:active:not(
     );
 }
 
-/*
- * =========================================================
- * DOUBLE PLAYER CHOICE
- * =========================================================
- */
-
 .double-icon {
-  margin-bottom: 6px;
-
   text-align: center;
 
   font-size: 2rem;
-}
-
-.double-question {
-  display: block;
-
-  margin-top: 12px;
-
-  font-size: 0.78rem;
 }
 
 .double-player-list {
@@ -3404,22 +2738,12 @@ button:active:not(
 
   width: 100%;
 
-  min-width: 0;
-
   align-items: center;
 
   gap: 9px;
 
-  min-height: 48px;
-
-  padding: 7px 10px;
-
-  border:
-    1px solid
-    var(
-      --bb-border,
-      #bfcac4
-    );
+  padding:
+    7px 10px;
 
   background:
     var(
@@ -3432,21 +2756,11 @@ button:active:not(
       --bb-text,
       #07150f
     );
-
-  text-align: left;
-}
-
-.double-player-list button > span:last-child {
-  min-width: 0;
-
-  overflow: hidden;
-
-  text-overflow: ellipsis;
 }
 
 /*
  * =========================================================
- * FINISHED
+ * FINISH
  * =========================================================
  */
 
@@ -3480,85 +2794,15 @@ button:active:not(
 }
 
 .finish-label {
-  color:
-    var(
-      --bb-accent,
-      #08745b
-    );
-
   font-size: 0.58rem;
-  font-weight: 950;
 
-  letter-spacing: 0.12em;
+  font-weight: 950;
 }
 
 .bus-finished-panel h2 {
   margin-top: 5px;
 
   font-size: 1.35rem;
-}
-
-.bus-finished-panel p {
-  margin:
-    6px 0 10px;
-
-  color:
-    var(
-      --bb-muted,
-      #4f5f58
-    );
-
-  font-size: 0.76rem;
-}
-
-/*
- * =========================================================
- * GAME WAITING
- * =========================================================
- */
-
-.game-waiting {
-  margin-top: 15px;
-
-  text-align: center;
-}
-
-.hidden-card {
-  display: grid;
-
-  width: 64px;
-  height: 90px;
-
-  margin:
-    0 auto 10px;
-
-  place-items: center;
-
-  border:
-    1px solid
-    var(
-      --bb-border,
-      #bfcac4
-    );
-
-  border-radius: 9px;
-
-  background:
-    linear-gradient(
-      145deg,
-      var(
-        --bb-accent,
-        #08745b
-      ),
-      var(
-        --bb-accent-strong,
-        #055744
-      )
-    );
-
-  color: #ffffff;
-
-  font-size: 1.8rem;
 }
 
 /*
@@ -3578,20 +2822,7 @@ button:active:not(
 
   place-items: center;
 
-  padding:
-    max(
-      18px,
-      env(
-        safe-area-inset-top
-      )
-    )
-    16px
-    max(
-      18px,
-      env(
-        safe-area-inset-bottom
-      )
-    );
+  padding: 16px;
 
   background:
     rgba(
@@ -3602,7 +2833,9 @@ button:active:not(
     );
 
   backdrop-filter:
-    blur(8px);
+    blur(
+      8px
+    );
 }
 
 .game-announcement {
@@ -3612,21 +2845,7 @@ button:active:not(
       380px
     );
 
-  max-height:
-    82dvh;
-
-  overflow-y: auto;
-
   padding: 22px;
-
-  border:
-    1px solid
-    rgba(
-      255,
-      255,
-      255,
-      0.15
-    );
 
   border-radius: 23px;
 
@@ -3636,66 +2855,27 @@ button:active:not(
   color: #ffffff;
 
   text-align: center;
-
-  box-shadow:
-    0 26px 90px
-    rgba(
-      0,
-      0,
-      0,
-      0.44
-    );
 }
 
 .announcement-icon {
-  margin-bottom: 8px;
-
   font-size: 2.5rem;
 }
 
 .announcement-label {
-  display: block;
-
   color: #58deb6;
 
   font-size: 0.58rem;
-  font-weight: 950;
 
-  letter-spacing: 0.12em;
+  font-weight: 950;
 }
 
 .game-announcement h2 {
-  margin: 7px 0;
+  margin:
+    7px 0;
 
   color: #ffffff;
 
   font-size: 1.45rem;
-}
-
-.announcement-name {
-  display: block;
-
-  margin-top: 4px;
-
-  color: #ffffff;
-
-  font-size: 1.1rem;
-}
-
-.game-announcement > p {
-  margin:
-    9px 0 0;
-
-  color:
-    rgba(
-      255,
-      255,
-      255,
-      0.72
-    );
-
-  font-size: 0.78rem;
-  line-height: 1.45;
 }
 
 /*
@@ -3730,7 +2910,7 @@ button:active:not(
 
   animation:
     confettiFall
-    3s
+    2.6s
     linear
     forwards;
 }
@@ -3760,9 +2940,7 @@ button:active:not(
 }
 
 @keyframes confettiFall {
-  0% {
-    opacity: 1;
-
+  from {
     transform:
       translateY(
         -20px
@@ -3772,9 +2950,7 @@ button:active:not(
       );
   }
 
-  100% {
-    opacity: 0.1;
-
+  to {
     transform:
       translateY(
         110vh
@@ -3782,6 +2958,549 @@ button:active:not(
       rotate(
         720deg
       );
+  }
+}
+
+/*
+ * =========================================================
+ * MOBILE
+ * =========================================================
+ */
+
+@media (
+  max-width:
+    430px
+) {
+  .app {
+    padding:
+      max(
+        10px,
+        env(
+          safe-area-inset-top
+        )
+      )
+      max(
+        8px,
+        env(
+          safe-area-inset-right
+        )
+      )
+      max(
+        18px,
+        env(
+          safe-area-inset-bottom
+        )
+      )
+      max(
+        8px,
+        env(
+          safe-area-inset-left
+        )
+      );
+  }
+
+  .card {
+    padding: 16px;
+
+    border-radius: 21px;
+  }
+
+  .game-card {
+    padding: 14px;
+  }
+
+  .logo {
+    width: 68px;
+    height: 68px;
+
+    font-size: 2rem;
+  }
+
+  .small-logo {
+    width: 46px;
+    height: 46px;
+
+    font-size: 1.35rem;
+  }
+
+  .game-top {
+    gap: 9px;
+
+    margin-bottom: 12px;
+  }
+
+  .game-top h1 {
+    font-size: 1.3rem;
+  }
+
+  .game-top .subtitle {
+    font-size: 0.67rem;
+  }
+
+  /*
+   * =========================
+   * MOBILE TREE
+   * =========================
+   */
+
+  .tree-board {
+    gap: 6px;
+  }
+
+  .tree-row {
+    grid-template-columns:
+      50px
+      minmax(
+        0,
+        1fr
+      );
+
+    gap: 4px;
+
+    padding:
+      6px 5px;
+  }
+
+  .tree-row-info strong {
+    font-size: 0.6rem;
+  }
+
+  .tree-row-info span {
+    font-size: 0.49rem;
+  }
+
+  /*
+   * Belangrijk:
+   * ook op telefoon alle kaarten
+   * gecentreerd binnen hun rij.
+   */
+
+  .tree-row-cards {
+    justify-content: center;
+
+    gap: 4px;
+  }
+
+  .tree-playing-card {
+    width: 43px;
+  }
+
+  .tree-card-face .card-center-symbol {
+    font-size: 1.1rem;
+  }
+
+  .tree-card-face .card-corner {
+    font-size: 0.45rem;
+  }
+
+  .tree-active-card {
+    width:
+      clamp(
+        86px,
+        27vw,
+        104px
+      );
+
+    margin:
+      9px auto 7px;
+  }
+
+  .tree-active-panel {
+    padding: 11px;
+  }
+
+  /*
+   * =========================
+   * MOBILE BUS
+   * =========================
+   */
+
+  .bus-status-row {
+    gap: 5px;
+
+    margin-bottom: 6px;
+  }
+
+  .bus-status-row > div {
+    padding:
+      7px 8px;
+  }
+
+  .bus-riders {
+    margin-bottom: 5px;
+
+    padding:
+      7px 8px;
+  }
+
+  .bus-track {
+    gap: 5px;
+
+    padding:
+      4px 3px 29px;
+  }
+
+  .bus-card-slot {
+    flex-basis: 48px;
+
+    width: 48px;
+  }
+
+  .bus-card-face,
+  .bus-card-back {
+    width: 44px;
+    height: 63px;
+  }
+
+  .bus-card-face .card-center-symbol {
+    font-size: 1.1rem;
+  }
+
+  .bus-card-face .card-corner {
+    font-size: 0.43rem;
+  }
+
+  .bus-card-slot > small {
+    top:
+      calc(
+        20px +
+        4px +
+        63px +
+        5px
+      ) !important;
+
+    font-size: 0.41rem;
+  }
+
+  /*
+   * =====================================================
+   * HOGER / LAGER ALTIJD ONDERIN BESCHIKBAAR
+   * =====================================================
+   *
+   * Alleen wanneer het gokpaneel daadwerkelijk bestaat.
+   */
+
+  .bus-screen:has(
+    .bus-choice-panel
+  ) {
+    padding-bottom: 184px;
+  }
+
+  .bus-screen
+    .bus-choice-panel {
+    position: fixed;
+
+    z-index: 850;
+
+    right:
+      max(
+        8px,
+        env(
+          safe-area-inset-right
+        )
+      );
+
+    bottom:
+      max(
+        8px,
+        env(
+          safe-area-inset-bottom
+        )
+      );
+
+    left:
+      max(
+        8px,
+        env(
+          safe-area-inset-left
+        )
+      );
+
+    width: auto;
+
+    max-width: 500px;
+
+    max-height:
+      min(
+        174px,
+        40dvh
+      );
+
+    margin:
+      0 auto;
+
+    padding:
+      9px 11px 10px;
+
+    overflow-y: auto;
+
+    border:
+      1px solid
+      var(
+        --bb-border,
+        #bfcac4
+      );
+
+    border-radius: 18px;
+
+    background:
+      color-mix(
+        in srgb,
+        var(
+          --bb-surface,
+          #ffffff
+        )
+        95%,
+        transparent
+      );
+
+    box-shadow:
+      0 16px 48px
+      rgba(
+        0,
+        0,
+        0,
+        0.28
+      );
+
+    backdrop-filter:
+      blur(
+        14px
+      );
+  }
+
+  .bus-screen
+    .bus-choice-panel
+    .bus-position-label {
+    margin-bottom: 2px;
+
+    text-align: center;
+  }
+
+  .bus-screen
+    .bus-choice-panel
+    .bus-reference-card,
+  .bus-screen
+    .bus-choice-panel
+    .bus-hidden-reference {
+    width: 60px;
+
+    margin:
+      2px auto 4px;
+  }
+
+  .bus-screen
+    .bus-choice-panel
+    .bus-reference-card
+    .card-center-symbol {
+    font-size: 1.75rem;
+  }
+
+  .bus-screen
+    .bus-choice-panel
+    .bus-reference-card
+    .card-corner {
+    font-size: 0.62rem;
+  }
+
+  .bus-screen
+    .bus-choice-panel
+    h2 {
+    margin:
+      2px 0 6px;
+
+    text-align: center;
+
+    font-size: 0.88rem;
+  }
+
+  /*
+   * Uitlegtekst verbergen op mobiel.
+   * De keuze zelf blijft centraal.
+   */
+
+  .bus-screen
+    .bus-choice-panel
+    > p {
+    display: none;
+  }
+
+  .bus-screen
+    .bus-choice-panel
+    .guess-grid {
+    gap: 7px;
+  }
+
+  .bus-screen
+    .bus-choice-panel
+    .guess-grid
+    button {
+    min-height: 43px;
+
+    padding:
+      7px 5px;
+
+    font-size: 0.79rem;
+  }
+
+  /*
+   * =========================
+   * OTHER MOBILE
+   * =========================
+   */
+
+  .cards-row {
+    gap: 5px;
+  }
+
+  .tree-distribute-panel,
+  .checkpoint-panel,
+  .bus-draw-panel,
+  .bus-ready-panel,
+  .double-panel {
+    padding: 12px;
+  }
+
+  .game-player,
+  .player {
+    padding: 8px;
+  }
+
+  .player-avatar {
+    width: 34px;
+    height: 34px;
+
+    font-size: 0.76rem;
+  }
+
+  .game-announcement {
+    padding: 19px;
+  }
+}
+
+/*
+ * =========================================================
+ * SMALL PHONE
+ * =========================================================
+ */
+
+@media (
+  max-width:
+    360px
+) {
+  .card {
+    padding: 13px;
+  }
+
+  .game-card {
+    padding: 11px;
+  }
+
+  .step-progress {
+    gap: 2px;
+  }
+
+  .step > span {
+    width: 29px;
+    height: 29px;
+  }
+
+  .tree-row {
+    grid-template-columns:
+      46px
+      minmax(
+        0,
+        1fr
+      );
+
+    padding:
+      5px 4px;
+  }
+
+  .tree-playing-card {
+    width: 40px;
+  }
+
+  .tree-row-cards {
+    gap: 3px;
+  }
+
+  .bus-card-slot {
+    flex-basis: 45px;
+
+    width: 45px;
+  }
+
+  .bus-card-face,
+  .bus-card-back {
+    width: 41px;
+    height: 59px;
+  }
+
+  .bus-card-slot > small {
+    top:
+      calc(
+        20px +
+        4px +
+        59px +
+        5px
+      ) !important;
+  }
+
+  .bus-screen:has(
+    .bus-choice-panel
+  ) {
+    padding-bottom: 174px;
+  }
+
+  .bus-screen
+    .bus-choice-panel {
+    max-height:
+      164px;
+
+    padding:
+      8px 9px;
+  }
+}
+
+/*
+ * =========================================================
+ * VERY SMALL
+ * =========================================================
+ */
+
+@media (
+  max-width:
+    320px
+) {
+  /*
+   * Op een extreem smal scherm verbergen
+   * we alleen de rijtekst, maar houden we
+   * de kaarten gecentreerd.
+   */
+
+  .tree-row-info {
+    display: none;
+  }
+
+  .tree-row {
+    grid-template-columns:
+      minmax(
+        0,
+        1fr
+      );
+  }
+
+  .tree-row-cards {
+    justify-content: center;
+  }
+
+  .tree-playing-card {
+    width: 39px;
+  }
+
+  .cards-row {
+    gap: 3px;
   }
 }
 
@@ -3818,20 +3537,14 @@ button:active:not(
       );
 
     gap: 12px;
+  }
 
-    padding: 10px;
+  .tree-row-cards {
+    justify-content: center;
   }
 
   .tree-playing-card {
     width: 61px;
-  }
-
-  .tree-card-face .card-center-symbol {
-    font-size: 1.6rem;
-  }
-
-  .tree-card-face .card-corner {
-    font-size: 0.62rem;
   }
 
   .bus-card-slot {
@@ -3846,446 +3559,20 @@ button:active:not(
     height: 85px;
   }
 
-  .bus-card-face .card-center-symbol {
-    font-size: 1.55rem;
-  }
-
   .bus-card-slot > small {
-    top: calc(
-      20px +
-      4px +
-      85px +
-      6px
-    ) !important;
+    top:
+      calc(
+        20px +
+        4px +
+        85px +
+        6px
+      ) !important;
   }
 }
 
 /*
  * =========================================================
- * MOBILE <= 430px
- * =========================================================
- */
-
-@media (
-  max-width:
-    430px
-) {
-  .app {
-    padding-top:
-      max(
-        10px,
-        env(
-          safe-area-inset-top
-        )
-      );
-
-    padding-right:
-      max(
-        8px,
-        env(
-          safe-area-inset-right
-        )
-      );
-
-    padding-bottom:
-      max(
-        18px,
-        env(
-          safe-area-inset-bottom
-        )
-      );
-
-    padding-left:
-      max(
-        8px,
-        env(
-          safe-area-inset-left
-        )
-      );
-  }
-
-  .card {
-    padding: 16px;
-
-    border-radius: 21px;
-  }
-
-  .game-card {
-    padding: 14px;
-  }
-
-  .logo {
-    width: 68px;
-    height: 68px;
-
-    border-radius: 20px;
-
-    font-size: 2rem;
-  }
-
-  .small-logo {
-    width: 46px;
-    height: 46px;
-
-    border-radius: 14px;
-
-    font-size: 1.35rem;
-  }
-
-  h1 {
-    font-size: 1.7rem;
-  }
-
-  .subtitle {
-    margin-bottom: 19px;
-
-    font-size: 0.82rem;
-  }
-
-  .game-top {
-    gap: 9px;
-
-    margin-bottom: 14px;
-  }
-
-  .game-top h1 {
-    font-size: 1.35rem;
-  }
-
-  .game-top .subtitle {
-    font-size: 0.69rem;
-  }
-
-  /*
-   * Cards in own hand
-   */
-
-  .cards-row {
-    gap: 5px;
-  }
-
-  .playing-card .card-corner-top {
-    top: 5px !important;
-    left: 5px !important;
-  }
-
-  .playing-card .card-corner-bottom {
-    right: 5px !important;
-    bottom: 5px !important;
-  }
-
-  /*
-   * Tree
-   */
-
-  .tree-board {
-    gap: 6px;
-  }
-
-  .tree-row {
-    grid-template-columns:
-      54px
-      minmax(
-        0,
-        1fr
-      );
-
-    gap: 5px;
-
-    padding: 6px;
-
-    border-radius: 12px;
-  }
-
-  .tree-row-info strong {
-    font-size: 0.62rem;
-  }
-
-  .tree-row-info span {
-    font-size: 0.51rem;
-  }
-
-  .tree-row-cards {
-    gap: 4px;
-  }
-
-  .tree-playing-card {
-    width: 45px;
-  }
-
-  .tree-card-face .card-center-symbol {
-    font-size: 1.18rem;
-  }
-
-  .tree-card-face .card-corner {
-    font-size: 0.47rem;
-  }
-
-  /*
-   * Dit is de centrale boomkaart.
-   * Op mobiel bewust niet te groot,
-   * zodat hij binnen het paneel blijft.
-   */
-
-  .tree-active-card {
-    width:
-      clamp(
-        88px,
-        28vw,
-        108px
-      );
-
-    margin:
-      10px auto 8px;
-  }
-
-  .tree-active-card .card-center-symbol {
-    font-size:
-      clamp(
-        2.7rem,
-        14vw,
-        3.7rem
-      );
-  }
-
-  .tree-active-panel {
-    padding: 12px;
-  }
-
-  /*
-   * Bus
-   */
-
-  .bus-track {
-    gap: 5px;
-
-    margin-left: -2px;
-    margin-right: -2px;
-
-    padding-left: 3px;
-    padding-right: 3px;
-  }
-
-  .bus-card-slot {
-    flex-basis: 50px;
-
-    width: 50px;
-  }
-
-  .bus-card-face,
-  .bus-card-back {
-    width: 46px;
-    height: 66px;
-  }
-
-  .bus-card-face .card-center-symbol {
-    font-size: 1.15rem;
-  }
-
-  .bus-card-face .card-corner {
-    font-size: 0.45rem;
-  }
-
-  .bus-card-slot > small {
-    top: calc(
-      20px +
-      4px +
-      66px +
-      6px
-    ) !important;
-
-    font-size: 0.42rem;
-  }
-
-  /*
-   * Panels
-   */
-
-  .tree-distribute-panel,
-  .checkpoint-panel,
-  .bus-draw-panel,
-  .bus-ready-panel,
-  .bus-choice-panel,
-  .double-panel {
-    padding: 12px;
-
-    border-radius: 16px;
-  }
-
-  /*
-   * Players
-   */
-
-  .game-player,
-  .player {
-    padding: 8px;
-  }
-
-  .player-avatar {
-    width: 34px;
-    height: 34px;
-
-    font-size: 0.76rem;
-  }
-
-  /*
-   * Announcements
-   */
-
-  .game-announcement {
-    padding: 19px;
-
-    border-radius: 20px;
-  }
-
-  .announcement-icon {
-    font-size: 2.25rem;
-  }
-
-  .game-announcement h2 {
-    font-size: 1.3rem;
-  }
-}
-
-/*
- * =========================================================
- * SMALL MOBILE <= 360px
- * =========================================================
- */
-
-@media (
-  max-width:
-    360px
-) {
-  .card {
-    padding: 13px;
-  }
-
-  .game-card {
-    padding: 11px;
-  }
-
-  .step-progress {
-    gap: 2px;
-  }
-
-  .step > span {
-    width: 29px;
-    height: 29px;
-  }
-
-  .step small {
-    font-size: 0.48rem;
-  }
-
-  .tree-row {
-    grid-template-columns:
-      48px
-      minmax(
-        0,
-        1fr
-      );
-  }
-
-  .tree-playing-card {
-    width: 42px;
-  }
-
-  .tree-card-face .card-center-symbol {
-    font-size: 1.05rem;
-  }
-
-  .tree-card-face .card-corner {
-    font-size: 0.43rem;
-  }
-
-  .bus-card-slot {
-    flex-basis: 47px;
-
-    width: 47px;
-  }
-
-  .bus-card-face,
-  .bus-card-back {
-    width: 43px;
-    height: 61px;
-  }
-
-  .bus-card-face .card-center-symbol {
-    font-size: 1.05rem;
-  }
-
-  .bus-card-slot > small {
-    top: calc(
-      20px +
-      4px +
-      61px +
-      6px
-    ) !important;
-  }
-
-  .guess-grid button {
-    padding:
-      8px 5px;
-
-    font-size: 0.77rem;
-  }
-
-  .bus-status-row {
-    gap: 5px;
-  }
-
-  .bus-status-row > div {
-    padding: 8px;
-  }
-}
-
-/*
- * =========================================================
- * VERY SMALL MOBILE <= 320px
- * =========================================================
- */
-
-@media (
-  max-width:
-    320px
-) {
-  .game-top h1 {
-    font-size: 1.22rem;
-  }
-
-  .tree-row-info {
-    display: none;
-  }
-
-  .tree-row {
-    grid-template-columns:
-      minmax(
-        0,
-        1fr
-      );
-  }
-
-  .tree-row-cards {
-    padding-left: 2px;
-  }
-
-  .cards-row {
-    gap: 3px;
-  }
-
-  .playing-card .card-corner {
-    font-size: 0.55rem;
-  }
-
-  .playing-card .card-center-symbol {
-    font-size: 1.35rem;
-  }
-}
-
-/*
- * =========================================================
- * LANDSCAPE PHONE
+ * LANDSCAPE
  * =========================================================
  */
 
@@ -4298,10 +3585,11 @@ and (
     landscape
 ) {
   .app {
-    align-items: flex-start;
+    align-items:
+      flex-start;
 
-    padding-top: 8px;
-    padding-bottom: 8px;
+    padding:
+      8px;
   }
 
   .card {
@@ -4312,28 +3600,16 @@ and (
       );
   }
 
-  .logo:not(
-    .small-logo
-  ) {
-    width: 54px;
-    height: 54px;
-
-    font-size: 1.6rem;
-  }
-
   .revealed-card,
   .tree-active-card,
   .bus-reference-card {
     width: 88px;
   }
 
-  .announcement-layer {
-    align-items: flex-start;
-
-    overflow-y: auto;
-
-    padding-top: 10px;
-    padding-bottom: 10px;
+  .bus-screen
+    .bus-choice-panel {
+    max-height:
+      150px;
   }
 }
 
@@ -4350,8 +3626,6 @@ and (
   *,
   *::before,
   *::after {
-    scroll-behavior: auto !important;
-
     animation-duration:
       0.01ms !important;
 

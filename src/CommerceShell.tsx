@@ -93,19 +93,6 @@ const APPEARANCE_STORAGE_KEY =
 const MANUAL_APPEARANCE_STORAGE_KEY =
   "busbaas-manual-appearance-mode";
 
-/*
- * =========================
- * CLASSIC PALETTEN
- * =========================
- *
- * Licht heeft bewust sterker contrast:
- * - donkerdere tekst
- * - duidelijkere borders
- * - donkerder groen
- * - duidelijk verschil tussen achtergrond
- *   en witte kaarten/panelen
- */
-
 const CLASSIC_LIGHT: ThemePalette = {
   background:
     "#e3e9e5",
@@ -221,12 +208,6 @@ const CATEGORY_ORDER: ShopCategory[] = [
   "extras",
 ];
 
-/*
- * =========================
- * LOCAL STORAGE
- * =========================
- */
-
 function readOwnedItems() {
   try {
     const stored =
@@ -264,10 +245,6 @@ function readOwnedItems() {
           "string"
       );
 
-    /*
-     * Oude gratis licht/donker-items
-     * verwijderen we uit eigendom.
-     */
     const migrated =
       cleaned.filter(
         (item) =>
@@ -328,11 +305,6 @@ function readEquippedItems() {
         ? parsed.theme
         : "theme-classic";
 
-    /*
-     * Migratie van de vorige versie:
-     * auto / light / dark waren toen
-     * aparte shopproducten.
-     */
     if (
       selectedTheme ===
         "theme-auto" ||
@@ -403,12 +375,6 @@ function readManualAppearanceMode():
   }
 }
 
-/*
- * =========================
- * COMPONENT
- * =========================
- */
-
 function CommerceShell({
   children,
 }: CommerceShellProps) {
@@ -477,12 +443,6 @@ function CommerceShell({
       null
     );
 
-  /*
-   * =========================
-   * LICHT / DONKER
-   * =========================
-   */
-
   const [
     appearanceMode,
     setAppearanceMode,
@@ -514,7 +474,7 @@ function CommerceShell({
 
   /*
    * =========================
-   * ADVERTENTIE NA POTJE
+   * ADVERTENTIE
    * =========================
    */
 
@@ -532,6 +492,11 @@ function CommerceShell({
 
   const gameWasFinishedRef =
     useRef(false);
+
+  const adStartTimerRef =
+    useRef<number | null>(
+      null
+    );
 
   /*
    * =========================
@@ -624,11 +589,6 @@ function CommerceShell({
           return;
         }
 
-        /*
-         * Oude licht/donker-producten worden
-         * niet meer getoond als een oude
-         * catalogus nog even in cache staat.
-         */
         const cleanedItems =
           data.items.filter(
             (item) =>
@@ -659,10 +619,6 @@ function CommerceShell({
           loadedItems
         );
 
-        /*
-         * Alle gratis items automatisch
-         * als eigendom registreren.
-         */
         setOwnedItems(
           (
             current
@@ -938,11 +894,8 @@ function CommerceShell({
 
   /*
    * =========================
-   * UI COPY
+   * VOORBEELDNAMEN
    * =========================
-   *
-   * Zo hoeven we de grote App.tsx hiervoor
-   * niet aan te raken.
    */
 
   useEffect(() => {
@@ -1013,6 +966,9 @@ function CommerceShell({
    * =========================
    * EINDE SPEL DETECTEREN
    * =========================
+   *
+   * Eerst 2,2 seconden alleen confetti.
+   * Daarna verschijnt pas de advertentie.
    */
 
   useEffect(() => {
@@ -1023,6 +979,20 @@ function CommerceShell({
 
     if (!root) {
       return;
+    }
+
+    function clearAdStartTimer() {
+      if (
+        adStartTimerRef.current !==
+        null
+      ) {
+        window.clearTimeout(
+          adStartTimerRef.current
+        );
+
+        adStartTimerRef.current =
+          null;
+      }
     }
 
     function checkFinishedGame() {
@@ -1037,12 +1007,53 @@ function CommerceShell({
         gameFinished &&
         !gameWasFinishedRef.current
       ) {
+        clearAdStartTimer();
+
+        setAdVisible(
+          false
+        );
+
         setAdCountdown(
           3
         );
 
+        adStartTimerRef.current =
+          window.setTimeout(
+            () => {
+              const stillFinished =
+                Boolean(
+                  document.querySelector(
+                    ".bus-finished-panel"
+                  )
+                );
+
+              if (
+                stillFinished
+              ) {
+                setAdVisible(
+                  true
+                );
+              }
+
+              adStartTimerRef.current =
+                null;
+            },
+            2200
+          );
+      }
+
+      if (
+        !gameFinished &&
+        gameWasFinishedRef.current
+      ) {
+        clearAdStartTimer();
+
         setAdVisible(
-          true
+          false
+        );
+
+        setAdCountdown(
+          3
         );
       }
 
@@ -1070,6 +1081,8 @@ function CommerceShell({
 
     return () => {
       observer.disconnect();
+
+      clearAdStartTimer();
     };
   }, []);
 
@@ -1135,7 +1148,7 @@ function CommerceShell({
 
   /*
    * =========================
-   * APPEARANCE CONTROLS
+   * APPEARANCE
    * =========================
    */
 
@@ -1174,7 +1187,7 @@ function CommerceShell({
 
   /*
    * =========================
-   * SHOP HELPERS
+   * SHOP
    * =========================
    */
 
@@ -1424,12 +1437,6 @@ function CommerceShell({
                 ×
               </button>
             </header>
-
-            {/*
-             * =========================
-             * WEERGAVE
-             * =========================
-             */}
 
             <section className="commerce-appearance">
               <div className="commerce-appearance-heading">
