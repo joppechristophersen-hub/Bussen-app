@@ -1,0 +1,519 @@
+/*
+ * =========================================================
+ * BUSBAAS — PLAYFUL HOME + LOBBY POLISH
+ * =========================================================
+ *
+ * Deze stylesheet raakt bewust alleen:
+ * - het home-scherm
+ * - de lobby
+ *
+ * Gameplay, boom, bus, settings, shop en sounds blijven
+ * volledig ongemoeid.
+ */
+
+:root {
+  --bb-ink: #173b37;
+  --bb-paper: #fffaf1;
+  --bb-paper-strong: #ffffff;
+  --bb-mint: #28c7b7;
+  --bb-mint-dark: #15998d;
+  --bb-yellow: #ffd85a;
+  --bb-coral: #ff6f6f;
+  --bb-violet: #735cff;
+  --bb-soft: #edf7f4;
+  --bb-line: rgba(23, 59, 55, 0.13);
+  --bb-shadow: rgba(23, 59, 55, 0.16);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bb-ink: #f7faf8;
+    --bb-paper: #182421;
+    --bb-paper-strong: #202e2a;
+    --bb-soft: #263631;
+    --bb-line: rgba(255, 255, 255, 0.10);
+    --bb-shadow: rgba(0, 0, 0, 0.26);
+  }
+}
+
+html[data-theme="dark"],
+body[data-theme="dark"],
+body.theme-dark,
+body.dark {
+  --bb-ink: #f7faf8;
+  --bb-paper: #182421;
+  --bb-paper-strong: #202e2a;
+  --bb-soft: #263631;
+  --bb-line: rgba(255, 255, 255, 0.10);
+  --bb-shadow: rgba(0, 0, 0, 0.26);
+}
+
+/* =========================================================
+   GEDEELDE SPEELSE ACHTERGROND
+   ========================================================= */
+
+body:has(.app > .card > .logo:not(.small-logo)),
+body:has(.lobby-card) {
+  background-image:
+    radial-gradient(circle at 14% 16%, rgba(255, 216, 90, 0.20) 0 8%, transparent 8.5%),
+    radial-gradient(circle at 88% 28%, rgba(115, 92, 255, 0.11) 0 7%, transparent 7.5%),
+    radial-gradient(circle at 78% 88%, rgba(255, 111, 111, 0.11) 0 9%, transparent 9.5%);
+  background-attachment: fixed;
+}
+
+body:has(.app > .card > .logo:not(.small-logo)) .app,
+body:has(.lobby-card) .app {
+  position: relative;
+  isolation: isolate;
+}
+
+body:has(.app > .card > .logo:not(.small-logo)) .app::before,
+body:has(.lobby-card) .app::before {
+  content: "♥   ♣";
+  position: fixed;
+  left: max(18px, env(safe-area-inset-left));
+  top: calc(18px + env(safe-area-inset-top));
+  z-index: -1;
+  font-size: clamp(22px, 7vw, 34px);
+  font-weight: 900;
+  letter-spacing: 16px;
+  color: rgba(255, 111, 111, 0.28);
+  transform: rotate(-9deg);
+  pointer-events: none;
+}
+
+body:has(.app > .card > .logo:not(.small-logo)) .app::after,
+body:has(.lobby-card) .app::after {
+  content: "♦   ♠";
+  position: fixed;
+  right: max(10px, env(safe-area-inset-right));
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  z-index: -1;
+  font-size: clamp(20px, 6vw, 32px);
+  font-weight: 900;
+  letter-spacing: 14px;
+  color: rgba(40, 199, 183, 0.24);
+  transform: rotate(8deg);
+  pointer-events: none;
+}
+
+/* =========================================================
+   HOME
+   De grote .logo zonder .small-logo komt alleen op home voor.
+   ========================================================= */
+
+.app > .card:has(> .logo:not(.small-logo)) {
+  position: relative;
+  overflow: visible;
+  width: min(92vw, 430px);
+  padding: clamp(26px, 7vw, 38px) clamp(20px, 6vw, 32px) 28px;
+  border: 0 !important;
+  border-radius: 32px !important;
+  background: var(--bb-paper) !important;
+  box-shadow:
+    0 18px 50px var(--bb-shadow),
+    0 5px 0 rgba(40, 199, 183, 0.14) !important;
+}
+
+.app > .card:has(> .logo:not(.small-logo))::before {
+  content: "";
+  position: absolute;
+  width: 74px;
+  height: 74px;
+  right: -16px;
+  top: -20px;
+  border-radius: 22px;
+  background: var(--bb-yellow);
+  transform: rotate(13deg);
+  box-shadow: 0 8px 0 rgba(23, 59, 55, 0.08);
+  z-index: -1;
+}
+
+.app > .card:has(> .logo:not(.small-logo))::after {
+  content: "♣";
+  position: absolute;
+  left: -13px;
+  bottom: 74px;
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 17px;
+  background: var(--bb-coral);
+  color: #fff;
+  font-size: 29px;
+  font-weight: 900;
+  transform: rotate(-11deg);
+  box-shadow: 0 7px 0 rgba(23, 59, 55, 0.10);
+  z-index: -1;
+}
+
+.app > .card:has(> .logo:not(.small-logo)) > .logo {
+  width: 88px !important;
+  height: 88px !important;
+  margin: 0 auto 17px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 28px !important;
+  background: var(--bb-mint) !important;
+  box-shadow:
+    0 7px 0 var(--bb-mint-dark),
+    0 15px 28px rgba(40, 199, 183, 0.22) !important;
+  transform: rotate(-4deg);
+  font-size: 45px !important;
+  line-height: 1 !important;
+}
+
+.app > .card:has(> .logo:not(.small-logo)) > h1 {
+  margin: 0 !important;
+  color: var(--bb-ink) !important;
+  font-family: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif !important;
+  font-size: clamp(3.25rem, 15vw, 4.85rem) !important;
+  font-weight: 950 !important;
+  line-height: 0.92 !important;
+  letter-spacing: -0.075em !important;
+  transform: rotate(-1.5deg);
+  text-shadow: 0 3px 0 rgba(40, 199, 183, 0.10);
+}
+
+.app > .card:has(> .logo:not(.small-logo)) > .subtitle {
+  max-width: 280px;
+  margin: 15px auto 27px !important;
+  color: color-mix(in srgb, var(--bb-ink) 72%, transparent) !important;
+  font-size: 1.02rem !important;
+  font-weight: 700 !important;
+  line-height: 1.45 !important;
+}
+
+/* Visueel wordt Bussen voortaan Busbaas zonder gameplaycode te wijzigen. */
+.app > .card:has(> .logo:not(.small-logo)) > h1 {
+  font-size: 0 !important;
+}
+
+.app > .card:has(> .logo:not(.small-logo)) > h1::after {
+  content: "BUSBAAS";
+  display: block;
+  font-size: clamp(3.25rem, 15vw, 4.85rem);
+}
+
+.app > .card:has(> .logo:not(.small-logo)) > button {
+  min-height: 58px !important;
+  margin-top: 11px !important;
+  border: 0 !important;
+  border-radius: 18px !important;
+  font-family: inherit !important;
+  font-size: 1rem !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.015em !important;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    filter 120ms ease !important;
+}
+
+.app > .card:has(> .logo:not(.small-logo)) > button:not(.secondary) {
+  background: var(--bb-mint) !important;
+  color: #102e2b !important;
+  box-shadow:
+    0 6px 0 var(--bb-mint-dark),
+    0 10px 24px rgba(40, 199, 183, 0.18) !important;
+}
+
+.app > .card:has(> .logo:not(.small-logo)) > button.secondary {
+  background: var(--bb-paper-strong) !important;
+  color: var(--bb-ink) !important;
+  border: 2px solid var(--bb-line) !important;
+  box-shadow: 0 4px 0 var(--bb-line) !important;
+}
+
+.app > .card:has(> .logo:not(.small-logo)) > button:hover {
+  filter: brightness(1.02);
+}
+
+.app > .card:has(> .logo:not(.small-logo)) > button:active {
+  transform: translateY(4px) scale(0.99) !important;
+  box-shadow: 0 2px 0 var(--bb-line) !important;
+}
+
+/* =========================================================
+   LOBBY
+   ========================================================= */
+
+.lobby-card {
+  position: relative;
+  overflow: visible !important;
+  width: min(94vw, 470px) !important;
+  padding: clamp(23px, 6vw, 34px) clamp(18px, 5vw, 30px) 28px !important;
+  border: 0 !important;
+  border-radius: 30px !important;
+  background: var(--bb-paper) !important;
+  box-shadow:
+    0 18px 50px var(--bb-shadow),
+    0 5px 0 rgba(115, 92, 255, 0.10) !important;
+}
+
+.lobby-card::before {
+  content: "";
+  position: absolute;
+  left: -15px;
+  top: 104px;
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  background: var(--bb-violet);
+  transform: rotate(-12deg);
+  z-index: -1;
+}
+
+.lobby-card::after {
+  content: "♥";
+  position: absolute;
+  right: -12px;
+  top: 46px;
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--bb-yellow);
+  color: #bf4850;
+  font-size: 27px;
+  transform: rotate(10deg);
+  z-index: -1;
+}
+
+.lobby-card > .logo.small-logo {
+  width: 62px !important;
+  height: 62px !important;
+  margin-bottom: 12px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 20px !important;
+  background: var(--bb-mint) !important;
+  box-shadow: 0 5px 0 var(--bb-mint-dark) !important;
+  transform: rotate(-4deg);
+  font-size: 31px !important;
+}
+
+.lobby-card > h1 {
+  margin: 2px 0 4px !important;
+  color: var(--bb-ink) !important;
+  font-family: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif !important;
+  font-size: clamp(2rem, 9vw, 2.8rem) !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  letter-spacing: -0.055em !important;
+}
+
+.lobby-card > .subtitle {
+  margin: 9px auto 19px !important;
+  color: color-mix(in srgb, var(--bb-ink) 68%, transparent) !important;
+  font-weight: 700 !important;
+}
+
+.lobby-card .qr-placeholder {
+  position: relative;
+  width: fit-content !important;
+  max-width: 100%;
+  margin: 12px auto 18px !important;
+  padding: 16px 16px 11px !important;
+  border: 0 !important;
+  border-radius: 24px !important;
+  background: var(--bb-paper-strong) !important;
+  box-shadow:
+    0 0 0 7px var(--bb-yellow),
+    0 9px 0 rgba(23, 59, 55, 0.10) !important;
+  transform: rotate(-0.8deg);
+}
+
+.lobby-card .qr-placeholder svg {
+  display: block;
+  max-width: min(55vw, 190px);
+  height: auto;
+  border-radius: 8px;
+}
+
+.lobby-card .qr-placeholder p {
+  margin: 10px 0 0 !important;
+  color: var(--bb-ink) !important;
+  font-size: 0.67rem !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.12em !important;
+}
+
+.lobby-card .room-code {
+  margin: 24px 0 17px !important;
+  padding: 13px 16px !important;
+  border: 2px dashed color-mix(in srgb, var(--bb-violet) 50%, var(--bb-line)) !important;
+  border-radius: 18px !important;
+  background: color-mix(in srgb, var(--bb-violet) 8%, var(--bb-paper-strong)) !important;
+  transform: rotate(0.4deg);
+}
+
+.lobby-card .room-code span {
+  color: color-mix(in srgb, var(--bb-ink) 60%, transparent) !important;
+  font-weight: 800 !important;
+}
+
+.lobby-card .room-code strong {
+  color: var(--bb-ink) !important;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace !important;
+  font-size: 1.55rem !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.15em !important;
+}
+
+.lobby-card .players-header {
+  margin-top: 22px !important;
+  padding: 0 2px !important;
+}
+
+.lobby-card .players-header h2 {
+  color: var(--bb-ink) !important;
+  font-size: 1.02rem !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.025em !important;
+}
+
+.lobby-card .player-list {
+  display: grid !important;
+  gap: 9px !important;
+  margin-bottom: 20px !important;
+}
+
+.lobby-card .player {
+  min-height: 54px !important;
+  padding: 8px 10px !important;
+  border: 0 !important;
+  border-radius: 17px !important;
+  background: var(--bb-soft) !important;
+  box-shadow: inset 0 0 0 1px var(--bb-line) !important;
+}
+
+.lobby-card .player:nth-child(3n + 2) {
+  transform: rotate(0.35deg);
+}
+
+.lobby-card .player:nth-child(3n + 3) {
+  transform: rotate(-0.3deg);
+}
+
+.lobby-card .player-avatar {
+  width: 39px !important;
+  height: 39px !important;
+  border-radius: 13px !important;
+  background: var(--bb-mint) !important;
+  color: #123b36 !important;
+  font-weight: 950 !important;
+  box-shadow: 0 3px 0 var(--bb-mint-dark) !important;
+}
+
+.lobby-card .player:nth-child(4n + 2) .player-avatar {
+  background: var(--bb-yellow) !important;
+  box-shadow: 0 3px 0 #d3aa2f !important;
+}
+
+.lobby-card .player:nth-child(4n + 3) .player-avatar {
+  background: var(--bb-coral) !important;
+  color: white !important;
+  box-shadow: 0 3px 0 #d95555 !important;
+}
+
+.lobby-card .player:nth-child(4n + 4) .player-avatar {
+  background: var(--bb-violet) !important;
+  color: white !important;
+  box-shadow: 0 3px 0 #5540d1 !important;
+}
+
+.lobby-card .player > span:not(.host-label) {
+  color: var(--bb-ink) !important;
+  font-weight: 850 !important;
+}
+
+.lobby-card .host-label {
+  padding: 5px 8px !important;
+  border-radius: 999px !important;
+  background: var(--bb-yellow) !important;
+  color: #604c0f !important;
+  font-size: 0.61rem !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.07em !important;
+}
+
+.lobby-card .remove-player {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 11px !important;
+  background: color-mix(in srgb, var(--bb-coral) 14%, transparent) !important;
+  color: var(--bb-coral) !important;
+  box-shadow: none !important;
+}
+
+.lobby-card > .start-button {
+  min-height: 58px !important;
+  border: 0 !important;
+  border-radius: 18px !important;
+  background: var(--bb-mint) !important;
+  color: #102e2b !important;
+  font-size: 1rem !important;
+  font-weight: 950 !important;
+  box-shadow:
+    0 6px 0 var(--bb-mint-dark),
+    0 10px 24px rgba(40, 199, 183, 0.17) !important;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    filter 120ms ease !important;
+}
+
+.lobby-card > .start-button:active:not(:disabled) {
+  transform: translateY(4px) scale(0.99) !important;
+  box-shadow: 0 2px 0 var(--bb-mint-dark) !important;
+}
+
+.lobby-card > .start-button:disabled {
+  filter: grayscale(0.3) saturate(0.6);
+  opacity: 0.62 !important;
+}
+
+.lobby-card > .waiting-message {
+  margin-top: 18px !important;
+  padding: 14px 15px !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  background: var(--bb-soft) !important;
+  color: color-mix(in srgb, var(--bb-ink) 72%, transparent) !important;
+  font-weight: 800 !important;
+}
+
+/* =========================================================
+   MOBIEL
+   ========================================================= */
+
+@media (max-width: 520px) {
+  .app > .card:has(> .logo:not(.small-logo)) {
+    width: min(91vw, 390px);
+    border-radius: 28px !important;
+  }
+
+  .lobby-card {
+    width: min(92vw, 420px) !important;
+    border-radius: 27px !important;
+  }
+
+  .app > .card:has(> .logo:not(.small-logo))::before,
+  .lobby-card::after {
+    transform: scale(0.88) rotate(10deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app > .card:has(> .logo:not(.small-logo)),
+  .app > .card:has(> .logo:not(.small-logo)) > .logo,
+  .lobby-card,
+  .lobby-card > .logo.small-logo,
+  .lobby-card .qr-placeholder,
+  .lobby-card .player {
+    transform: none !important;
+  }
+}
