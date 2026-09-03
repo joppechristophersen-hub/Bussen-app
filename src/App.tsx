@@ -302,6 +302,22 @@ type StockShuffleNotice = {
   count: number;
 };
 
+type SoundEffectPayload = {
+  type:
+    | "card"
+    | "card-result"
+    | "bus-card-result"
+    | "glass"
+    | "bus-horn"
+    | "finish";
+
+  result?:
+    | "correct"
+    | "wrong";
+
+  eventId?: string;
+};
+
 const socket = io(
   "https://bussen-server.onrender.com",
   {
@@ -961,6 +977,30 @@ function App() {
       });
     }
 
+    /*
+     * =========================
+     * SERVERGESTUURDE SOUNDS
+     * =========================
+     *
+     * De server bepaalt het echte spelmoment.
+     * ExperienceShell speelt vervolgens lokaal
+     * het juiste audiobestand af.
+     */
+    function handleSoundEffect(
+      effect:
+        SoundEffectPayload
+    ) {
+      window.dispatchEvent(
+        new CustomEvent(
+          "busbaas-sound-effect",
+          {
+            detail:
+              effect,
+          }
+        )
+      );
+    }
+
     function handleRoomClosed() {
       alert(
         "De host heeft de kamer gesloten."
@@ -1012,6 +1052,11 @@ function App() {
     );
 
     socket.on(
+      "sound-effect",
+      handleSoundEffect
+    );
+
+    socket.on(
       "room-closed",
       handleRoomClosed
     );
@@ -1055,6 +1100,11 @@ function App() {
       socket.off(
         "stock-reshuffled",
         handleStockReshuffled
+      );
+
+      socket.off(
+        "sound-effect",
+        handleSoundEffect
       );
 
       socket.off(

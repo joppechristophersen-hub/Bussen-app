@@ -9,7 +9,7 @@ const TREE_START_DELAY = 1400;
 const TIE_BREAK_RESULT_DELAY = 2500;
 const BUS_RESULT_DELAY = 2000;
 
-const SERVER_VERSION = "BUS_V12_REPEAT_STOCK";
+const SERVER_VERSION = "BUS_V13_SOCKET_SOUNDS";
 
 const io = new Server(PORT, {
   cors: {
@@ -595,6 +595,38 @@ function sendGameState(roomCode) {
   io.to(roomCode).emit(
     "game-state",
     publicGameState(room)
+  );
+}
+
+/*
+ * =========================
+ * GESYNCHRONISEERDE SOUNDS
+ * =========================
+ *
+ * De server bepaalt het echte spelmoment.
+ * Iedere telefoon in dezelfde kamer krijgt
+ * daardoor exact hetzelfde sound-event.
+ */
+function emitSoundEffect(
+  roomCode,
+  effect
+) {
+  if (
+    !roomCode ||
+    !effect
+  ) {
+    return;
+  }
+
+  io.to(roomCode).emit(
+    "sound-effect",
+    {
+      ...effect,
+      eventId:
+        `${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(2, 9)}`,
+    }
   );
 }
 
@@ -1233,6 +1265,13 @@ function revealAdtCard(
   tree.adtCard.revealed =
     true;
 
+  emitSoundEffect(
+    roomCode,
+    {
+      type: "card",
+    }
+  );
+
   tree.adtLastAction =
     null;
 
@@ -1772,6 +1811,13 @@ function revealNextTreeCard(
       treeCard.card,
   };
 
+  emitSoundEffect(
+    roomCode,
+    {
+      type: "card",
+    }
+  );
+
   tree.drinksToDistribute =
     location.rowNumber *
     (
@@ -2226,6 +2272,13 @@ function finishBus(
 
   sendGameState(
     roomCode
+  );
+
+  emitSoundEffect(
+    roomCode,
+    {
+      type: "finish",
+    }
   );
 }
 
@@ -3074,6 +3127,19 @@ io.on(
         sendGameState(
           roomCode
         );
+
+        emitSoundEffect(
+          roomCode,
+          {
+            type:
+              "card-result",
+
+            result:
+              correct
+                ? "correct"
+                : "wrong",
+          }
+        );
       }
     );
 
@@ -3286,6 +3352,13 @@ io.on(
 
         sendGameState(
           roomCode
+        );
+
+        emitSoundEffect(
+          roomCode,
+          {
+            type: "glass",
+          }
         );
 
         advanceTreeResolver(
@@ -3679,6 +3752,13 @@ io.on(
           roomCode
         );
 
+        emitSoundEffect(
+          roomCode,
+          {
+            type: "card",
+          }
+        );
+
         done({
           success: true,
         });
@@ -3789,6 +3869,13 @@ io.on(
           roomCode
         );
 
+        emitSoundEffect(
+          roomCode,
+          {
+            type: "card",
+          }
+        );
+
         done({
           success: true,
         });
@@ -3890,6 +3977,13 @@ io.on(
 
         sendGameState(
           roomCode
+        );
+
+        emitSoundEffect(
+          roomCode,
+          {
+            type: "card",
+          }
         );
 
         done({
@@ -4102,6 +4196,13 @@ io.on(
 
         sendGameState(
           roomCode
+        );
+
+        emitSoundEffect(
+          roomCode,
+          {
+            type: "bus-horn",
+          }
         );
 
         done({
@@ -4319,6 +4420,17 @@ io.on(
               roomCode
             );
 
+            emitSoundEffect(
+              roomCode,
+              {
+                type:
+                  "bus-card-result",
+
+                result:
+                  "wrong",
+              }
+            );
+
             continueBusAfterResult(
               roomCode,
               false,
@@ -4372,6 +4484,17 @@ io.on(
 
           sendGameState(
             roomCode
+          );
+
+          emitSoundEffect(
+            roomCode,
+            {
+              type:
+                "bus-card-result",
+
+              result:
+                "wrong",
+            }
           );
 
           done({
@@ -4436,6 +4559,17 @@ io.on(
 
           sendGameState(
             roomCode
+          );
+
+          emitSoundEffect(
+            roomCode,
+            {
+              type:
+                "bus-card-result",
+
+              result:
+                "correct",
+            }
           );
 
           continueBusAfterResult(
@@ -4562,6 +4696,17 @@ io.on(
 
         sendGameState(
           roomCode
+        );
+
+        emitSoundEffect(
+          roomCode,
+          {
+            type:
+              "bus-card-result",
+
+            result:
+              "wrong",
+          }
         );
 
         continueBusAfterResult(
