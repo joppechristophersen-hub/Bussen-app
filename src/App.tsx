@@ -313,9 +313,16 @@ type SoundEffectPayload = {
 
   result?:
     | "correct"
-    | "wrong";
+    | "wrong"
+    | "disco";
 
   eventId?: string;
+
+  variant?: number;
+
+  playAt?: number;
+
+  localPlayAt?: number;
 };
 
 const socket = io(
@@ -535,6 +542,28 @@ function App() {
       riders:
         [],
     });
+
+  /*
+   * =========================
+   * AUDIO KLOK
+   * =========================
+   *
+   * We meten het verschil tussen de klok van
+   * dit apparaat en die van de server.
+   *
+   * Daardoor kan ieder toestel hetzelfde
+   * toekomstige afspeelmoment gebruiken.
+   */
+  const soundServerOffsetRef =
+    useRef(0);
+
+  const soundClockReadyRef =
+    useRef(false);
+
+  const soundSyncTimersRef =
+    useRef<number[]>(
+      []
+    );
 
   useEffect(() => {
     const params =
@@ -982,20 +1011,167 @@ function App() {
      * SERVERGESTUURDE SOUNDS
      * =========================
      *
-     * De server bepaalt het echte spelmoment.
-     * ExperienceShell speelt vervolgens lokaal
-     * het juiste audiobestand af.
+     * Voor echte gelijktijdigheid meten we
+     * eerst het klokverschil met de server.
      */
+    function syncSoundClock() {
+      if (
+        !socket.connected
+      ) {
+        return;
+      }
+
+      const samples:
+        {
+          rtt: number;
+          offset: number;
+        }[] =
+        [];
+
+      let attempt =
+        0;
+
+      const runProbe =
+        () => {
+          if (
+            !socket.connected
+          ) {
+            return;
+          }
+
+          const startedAt =
+            Date.now();
+
+          socket.emit(
+            "sound-sync",
+
+            (
+              response: {
+                serverNow?:
+                  number;
+              }
+            ) => {
+              const endedAt =
+                Date.now();
+
+              const serverNow =
+                Number(
+                  response?.serverNow
+                );
+
+              if (
+                Number.isFinite(
+                  serverNow
+                )
+              ) {
+                const rtt =
+                  endedAt -
+                  startedAt;
+
+                const midpoint =
+                  (
+                    startedAt +
+                    endedAt
+                  ) /
+                  2;
+
+                samples.push({
+                  rtt,
+
+                  offset:
+                    serverNow -
+                    midpoint,
+                });
+              }
+
+              attempt += 1;
+
+              if (
+                attempt <
+                5
+              ) {
+                const timer =
+                  window.setTimeout(
+                    runProbe,
+                    70
+                  );
+
+                soundSyncTimersRef.current.push(
+                  timer
+                );
+
+                return;
+              }
+
+              if (
+                samples.length ===
+                0
+              ) {
+                return;
+              }
+
+              samples.sort(
+                (
+                  a,
+                  b
+                ) =>
+                  a.rtt -
+                  b.rtt
+              );
+
+              const best =
+                samples[0];
+
+              soundServerOffsetRef.current =
+                best.offset;
+
+              soundClockReadyRef.current =
+                true;
+            }
+          );
+        };
+
+      runProbe();
+    }
+
+    function handleSocketConnect() {
+      soundClockReadyRef.current =
+        false;
+
+      syncSoundClock();
+    }
+
     function handleSoundEffect(
       effect:
         SoundEffectPayload
     ) {
+      const serverPlayAt =
+        Number(
+          effect?.playAt
+        );
+
+      const localPlayAt =
+        Number.isFinite(
+          serverPlayAt
+        )
+          ? serverPlayAt -
+            (
+              soundClockReadyRef.current
+                ? soundServerOffsetRef.current
+                : 0
+            )
+          : Date.now() +
+            80;
+
       window.dispatchEvent(
         new CustomEvent(
           "busbaas-sound-effect",
           {
-            detail:
-              effect,
+            detail: {
+              ...effect,
+
+              localPlayAt,
+            },
           }
         )
       );
@@ -1020,6 +1196,11 @@ function App() {
     function handleReturnHome() {
       resetToHome();
     }
+
+    socket.on(
+      "connect",
+      handleSocketConnect
+    );
 
     socket.on(
       "players-updated",
@@ -1071,7 +1252,18 @@ function App() {
       handleReturnHome
     );
 
+    if (
+      socket.connected
+    ) {
+      syncSoundClock();
+    }
+
     return () => {
+      socket.off(
+        "connect",
+        handleSocketConnect
+      );
+
       socket.off(
         "players-updated",
         handlePlayersUpdated
@@ -1121,6 +1313,17 @@ function App() {
         "return-home",
         handleReturnHome
       );
+
+      soundSyncTimersRef.current.forEach(
+        (timer) => {
+          window.clearTimeout(
+            timer
+          );
+        }
+      );
+
+      soundSyncTimersRef.current =
+        [];
     };
   }, []);
 

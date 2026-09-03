@@ -8,8 +8,9 @@ const TREE_RESOLUTION_DELAY = 2600;
 const TREE_START_DELAY = 1400;
 const TIE_BREAK_RESULT_DELAY = 2500;
 const BUS_RESULT_DELAY = 2000;
+const SOUND_SYNC_LEAD_MS = 450;
 
-const SERVER_VERSION = "BUS_V13_SOCKET_SOUNDS";
+const SERVER_VERSION = "BUS_V14_SYNCED_AUDIO";
 
 const io = new Server(PORT, {
   cors: {
@@ -609,7 +610,8 @@ function sendGameState(roomCode) {
  */
 function emitSoundEffect(
   roomCode,
-  effect
+  effect,
+  leadMs = SOUND_SYNC_LEAD_MS
 ) {
   if (
     !roomCode ||
@@ -618,14 +620,44 @@ function emitSoundEffect(
     return;
   }
 
+  const serverNow =
+    Date.now();
+
+  const normalizedEffect = {
+    ...effect,
+  };
+
+  if (
+    (
+      normalizedEffect.type === "card" ||
+      normalizedEffect.type === "card-result"
+    ) &&
+    !Number.isInteger(
+      normalizedEffect.variant
+    )
+  ) {
+    normalizedEffect.variant =
+      Math.floor(
+        Math.random() * 3
+      );
+  }
+
   io.to(roomCode).emit(
     "sound-effect",
     {
-      ...effect,
+      ...normalizedEffect,
+
       eventId:
-        `${Date.now()}-${Math.random()
+        `${serverNow}-${Math.random()
           .toString(36)
           .substring(2, 9)}`,
+
+      playAt:
+        serverNow +
+        Math.max(
+          0,
+          Number(leadMs) || 0
+        ),
     }
   );
 }
@@ -2464,6 +2496,32 @@ io.on(
       socket.id
     );
 
+    /*
+     * =========================
+     * AUDIO KLOK SYNCHRONISEREN
+     * =========================
+     *
+     * De client meet meerdere keren de round-trip.
+     * Met het snelste antwoord kan hij de klok van
+     * deze server zeer nauwkeurig benaderen.
+     */
+    socket.on(
+      "sound-sync",
+      (callback) => {
+        if (
+          typeof callback !==
+          "function"
+        ) {
+          return;
+        }
+
+        callback({
+          serverNow:
+            Date.now(),
+        });
+      }
+    );
+
     socket.on(
       "create-room",
       (
@@ -3135,9 +3193,12 @@ io.on(
               "card-result",
 
             result:
+              isDisco &&
               correct
-                ? "correct"
-                : "wrong",
+                ? "disco"
+                : correct
+                  ? "correct"
+                  : "wrong",
           }
         );
       }

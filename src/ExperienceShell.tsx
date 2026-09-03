@@ -41,9 +41,16 @@ type SoundEffectPayload = {
 
   result?:
     | "correct"
-    | "wrong";
+    | "wrong"
+    | "disco";
 
   eventId?: string;
+
+  variant?: number;
+
+  playAt?: number;
+
+  localPlayAt?: number;
 };
 
 const SOUND_STORAGE_KEY =
@@ -74,26 +81,111 @@ const BUS_HORN_SOUND =
   "/sounds/bus-horn.mp3";
 
 /*
- * =========================================================
- * REAL AUDIO ENGINE
- * =========================================================
+ * Optioneel nieuw bestand.
+ *
+ * Als disco.mp3 nog niet aanwezig is,
+ * gebruiken we automatisch een kort stukje
+ * van finish-cheer.mp3 als fallback.
  */
+const DISCO_SOUND =
+  "/sounds/disco.mp3";
 
+/*
+ * =========================================================
+ * REAL AUDIO ENGINE - WEB AUDIO
+ * =========================================================
+ *
+ * Waarom geen losse HTMLAudioElement's meer?
+ *
+ * - Android/WebView mist daar soms snelle remote sounds.
+ * - ieder toestel start een .play() net iets anders.
+ * - AudioBufferSourceNode kan een exact toekomstig
+ *   startmoment plannen.
+ *
+ * Daardoor spelen alle toestellen veel strakker gelijk.
+ */
 class BusbaasAudioEngine {
-  private templates =
+  private context:
+    AudioContext;
+
+  private bufferPromises =
     new Map<
       string,
-      HTMLAudioElement
+      Promise<AudioBuffer>
     >();
 
-  private lastCardTime =
-    0;
-
-  private lastGlassTime =
-    0;
 
   constructor() {
-    [
+    this.context =
+      new AudioContext();
+
+    /*
+     * Bestanden alvast laden/decode-en.
+     * Dit mag ook wanneer de AudioContext nog suspended is.
+     */
+    void this.preloadAll();
+  }
+
+  private async loadBuffer(
+    source:
+      string
+  ) {
+    const existing =
+      this.bufferPromises.get(
+        source
+      );
+
+    if (existing) {
+      return existing;
+    }
+
+    const promise =
+      fetch(source)
+        .then(
+          async (
+            response
+          ) => {
+            if (
+              !response.ok
+            ) {
+              throw new Error(
+                `Audio niet gevonden: ${source}`
+              );
+            }
+
+            const data =
+              await response.arrayBuffer();
+
+            return this.context.decodeAudioData(
+              data
+            );
+          }
+        );
+
+    this.bufferPromises.set(
+      source,
+      promise
+    );
+
+    try {
+      return await promise;
+    } catch (
+      error
+    ) {
+      /*
+       * Bij een tijdelijk probleem mag een volgende
+       * poging opnieuw proberen te laden.
+       */
+      this.bufferPromises.delete(
+        source
+      );
+
+      throw error;
+    }
+  }
+
+  private async preloadAll() {
+    const required = [
       ...CARD_SOUNDS,
       CARD_PLACE_SOUND,
       GLASS_SOUND,
@@ -101,217 +193,334 @@ class BusbaasAudioEngine {
       CORRECT_SOUND,
       WRONG_SOUND,
       BUS_HORN_SOUND,
-    ].forEach(
-      (source) => {
-        const audio =
-          new Audio(
+    ];
+
+    await Promise.allSettled(
+      required.map(
+        (
+          source
+        ) =>
+          this.loadBuffer(
             source
-          );
+          )
+      )
+    );
 
-        audio.preload =
-          "auto";
-
-        this.templates.set(
-          source,
-          audio
-        );
+    /*
+     * Disco is optioneel zodat een ontbrekend
+     * disco.mp3 de rest nooit kan blokkeren.
+     */
+    void this.loadBuffer(
+      DISCO_SOUND
+    ).catch(
+      () => {
+        // Fallback wordt later gebruikt.
       }
     );
   }
 
   async unlock() {
     try {
-      const template =
-        this.templates.get(
-          CARD_PLACE_SOUND
-        );
-
-      if (!template) {
-        return;
+      if (
+        this.context.state ===
+        "suspended"
+      ) {
+        await this.context.resume();
       }
 
-      const player =
-        template.cloneNode(
-          true
-        ) as HTMLAudioElement;
+      /*
+       * Een bijna-stille buffer tijdens een echte
+       * pointeractie helpt mobiele WebViews om
+       * remote audio daarna betrouwbaar toe te laten.
+       */
+      const buffer =
+        this.context.createBuffer(
+          1,
+          1,
+          this.context.sampleRate
+        );
 
-      player.volume =
-        0;
+      const source =
+        this.context.createBufferSource();
 
-      await player.play();
+      source.buffer =
+        buffer;
 
-      player.pause();
+      source.connect(
+        this.context.destination
+      );
 
-      player.currentTime =
-        0;
+      source.start();
+
     } catch {
       // Audio mag gameplay nooit blokkeren.
     }
   }
 
-  private playFile(
-    source: string,
-    volume = 1,
-    playbackRate = 1
-  ) {
+  private async ensureRunning() {
     try {
-      const template =
-        this.templates.get(
+      if (
+        this.context.state ===
+        "suspended"
+      ) {
+        await this.context.resume();
+      }
+    } catch {
+      // Als het OS blokkeert, proberen we bij de volgende actie opnieuw.
+    }
+  }
+
+  private async scheduleFile(
+    source:
+      string,
+
+    localPlayAt:
+      number,
+
+    options?: {
+      volume?: number;
+      playbackRate?: number;
+      stopAfterMs?: number;
+      fallbackSource?: string;
+    }
+  ) {
+    let buffer:
+      AudioBuffer;
+
+    try {
+      buffer =
+        await this.loadBuffer(
           source
         );
-
-      if (!template) {
+    } catch {
+      if (
+        !options?.fallbackSource
+      ) {
         return;
       }
 
-      const player =
-        template.cloneNode(
-          true
-        ) as HTMLAudioElement;
-
-      player.volume =
-        Math.max(
-          0,
-          Math.min(
-            1,
-            volume
-          )
-        );
-
-      player.playbackRate =
-        playbackRate;
-
-      player.currentTime =
-        0;
-
-      const promise =
-        player.play();
-
-      if (promise) {
-        void promise.catch(
-          () => {
-            // Stil falen als het platform audio blokkeert.
-          }
-        );
+      try {
+        buffer =
+          await this.loadBuffer(
+            options.fallbackSource
+          );
+      } catch {
+        return;
       }
-    } catch {
-      // Audio mag de app nooit crashen.
     }
-  }
 
-  playCard() {
-    const now =
-      performance.now();
+    await this.ensureRunning();
 
     if (
-      now -
-        this.lastCardTime <
-      90
+      this.context.state !==
+      "running"
     ) {
       return;
     }
 
-    this.lastCardTime =
-      now;
+    const node =
+      this.context.createBufferSource();
 
-    const source =
-      CARD_SOUNDS[
-        Math.floor(
-          Math.random() *
-            CARD_SOUNDS.length
+    const gain =
+      this.context.createGain();
+
+    node.buffer =
+      buffer;
+
+    node.playbackRate.value =
+      options?.playbackRate ??
+      1;
+
+    gain.gain.value =
+      Math.max(
+        0,
+        Math.min(
+          1,
+          options?.volume ??
+            1
         )
-      ];
+      );
 
-    const playbackRate =
-      0.98 +
-      Math.random() *
-        0.04;
+    node.connect(
+      gain
+    );
 
-    const volume =
-      0.71 +
-      Math.random() *
-        0.06;
+    gain.connect(
+      this.context.destination
+    );
 
-    this.playFile(
-      source,
-      volume,
-      playbackRate
+    /*
+     * localPlayAt is een epoch timestamp op DIT toestel.
+     * De App heeft hem vooraf gecorrigeerd voor
+     * het klokverschil met de server.
+     */
+    const delayMs =
+      Math.max(
+        0,
+        localPlayAt -
+          Date.now()
+      );
+
+    const startAt =
+      this.context.currentTime +
+      delayMs /
+        1000;
+
+    node.start(
+      startAt
+    );
+
+    const stopAfterMs =
+      Number(
+        options?.stopAfterMs ??
+        0
+      );
+
+    if (
+      stopAfterMs >
+      0
+    ) {
+      node.stop(
+        startAt +
+          stopAfterMs /
+            1000
+      );
+    }
+  }
+
+  playCard(
+    localPlayAt:
+      number,
+    variant =
+      0
+  ) {
+    const safeIndex =
+      Math.abs(
+        Number(
+          variant
+        ) || 0
+      ) %
+      CARD_SOUNDS.length;
+
+    void this.scheduleFile(
+      CARD_SOUNDS[
+        safeIndex
+      ],
+      localPlayAt,
+      {
+        volume:
+          0.75,
+        playbackRate:
+          1,
+      }
     );
   }
 
-  playCardPlace() {
-    const now =
-      performance.now();
-
-    if (
-      now -
-        this.lastCardTime <
-      90
-    ) {
-      return;
-    }
-
-    this.lastCardTime =
-      now;
-
-    this.playFile(
+  playCardPlace(
+    localPlayAt:
+      number
+  ) {
+    void this.scheduleFile(
       CARD_PLACE_SOUND,
-      0.76,
-      1
+      localPlayAt,
+      {
+        volume:
+          0.78,
+      }
     );
   }
 
-  playCorrect() {
-    this.playFile(
+  playCorrect(
+    localPlayAt:
+      number
+  ) {
+    void this.scheduleFile(
       CORRECT_SOUND,
-      0.66,
-      1
+      localPlayAt,
+      {
+        volume:
+          0.68,
+      }
     );
   }
 
-  playWrong() {
-    this.playFile(
+  playWrong(
+    localPlayAt:
+      number
+  ) {
+    void this.scheduleFile(
       WRONG_SOUND,
-      0.64,
-      1
+      localPlayAt,
+      {
+        volume:
+          0.66,
+      }
     );
   }
 
-  playGlass() {
-    const now =
-      performance.now();
-
-    if (
-      now -
-        this.lastGlassTime <
-      400
-    ) {
-      return;
-    }
-
-    this.lastGlassTime =
-      now;
-
-    this.playFile(
+  playGlass(
+    localPlayAt:
+      number
+  ) {
+    void this.scheduleFile(
       GLASS_SOUND,
-      0.82,
-      1
+      localPlayAt,
+      {
+        volume:
+          0.84,
+      }
     );
   }
 
-  playBusHorn() {
-    this.playFile(
+  playBusHorn(
+    localPlayAt:
+      number
+  ) {
+    void this.scheduleFile(
       BUS_HORN_SOUND,
-      0.74,
-      1
+      localPlayAt,
+      {
+        volume:
+          0.82,
+      }
     );
   }
 
-  playFinish() {
-    this.playFile(
+  playDisco(
+    localPlayAt:
+      number
+  ) {
+    void this.scheduleFile(
+      DISCO_SOUND,
+      localPlayAt,
+      {
+        volume:
+          0.82,
+
+        /*
+         * Zonder disco.mp3 wordt een kort stukje
+         * van het bestaande juichgeluid gebruikt.
+         */
+        fallbackSource:
+          FINISH_SOUND,
+
+        stopAfterMs:
+          1500,
+      }
+    );
+  }
+
+  playFinish(
+    localPlayAt:
+      number
+  ) {
+    void this.scheduleFile(
       FINISH_SOUND,
-      0.72,
-      1
+      localPlayAt,
+      {
+        volume:
+          0.74,
+      }
     );
   }
 }
@@ -457,10 +666,6 @@ function ExperienceShell({
       null
     );
 
-  const soundTimersRef =
-    useRef<number[]>(
-      []
-    );
 
   const handledSoundIdsRef =
     useRef(
@@ -539,39 +744,20 @@ function ExperienceShell({
     );
   }
 
-  function queueSound(
-    callback:
-      () => void,
-    delay:
-      number
-  ) {
-    const timer =
-      window.setTimeout(
-        () => {
-          soundTimersRef.current =
-            soundTimersRef.current.filter(
-              (item) =>
-                item !==
-                timer
-            );
-
-          callback();
-        },
-        delay
-      );
-
-    soundTimersRef.current.push(
-      timer
-    );
-  }
 
   /*
    * =========================================================
    * SERVERGESTUURDE SOUNDS
    * =========================================================
    *
-   * Er zit hier GEEN DOM-kaartdetectie meer in.
-   * De server stuurt het moment naar iedere telefoon.
+   * Alle geluiden krijgen van de server één toekomstig
+   * afspeelmoment. AudioContext plant ze op dat moment.
+   *
+   * Daardoor:
+   * - host en telefoon horen hetzelfde fragment;
+   * - kaartvarianten zijn gelijk;
+   * - verschil door netwerk/HTMLAudio is veel kleiner;
+   * - card -> correct/wrong blijft exact op volgorde.
    */
   useEffect(() => {
     function handleSoundEvent(
@@ -607,12 +793,9 @@ function ExperienceShell({
           effect.eventId
         );
 
-        /*
-         * Voorkom dat deze set onbeperkt groeit.
-         */
         if (
           handledSoundIdsRef.current.size >
-          250
+          300
         ) {
           handledSoundIdsRef.current.clear();
 
@@ -622,11 +805,26 @@ function ExperienceShell({
         }
       }
 
+      const playAt =
+        Number.isFinite(
+          Number(
+            effect.localPlayAt
+          )
+        )
+          ? Number(
+              effect.localPlayAt
+            )
+          : Date.now() +
+            60;
+
       if (
         effect.type ===
         "card"
       ) {
-        audioEngine.playCard();
+        audioEngine.playCard(
+          playAt,
+          effect.variant
+        );
 
         return;
       }
@@ -635,7 +833,9 @@ function ExperienceShell({
         effect.type ===
         "glass"
       ) {
-        audioEngine.playGlass();
+        audioEngine.playGlass(
+          playAt
+        );
 
         return;
       }
@@ -644,7 +844,9 @@ function ExperienceShell({
         effect.type ===
         "bus-horn"
       ) {
-        audioEngine.playBusHorn();
+        audioEngine.playBusHorn(
+          playAt
+        );
 
         return;
       }
@@ -653,7 +855,9 @@ function ExperienceShell({
         effect.type ===
         "finish"
       ) {
-        audioEngine.playFinish();
+        audioEngine.playFinish(
+          playAt
+        );
 
         return;
       }
@@ -665,31 +869,42 @@ function ExperienceShell({
         /*
          * Voorronde:
          *
-         * kaart wordt getoond
-         * -> kaart schuift
-         * -> daarna goed/fout.
+         * kaart wordt zichtbaar
+         * -> kaartgeluid
+         * -> 260 ms later resultaat
          */
-        audioEngine.playCard();
-
-        queueSound(
-          () => {
-            if (
-              !soundIsOn()
-            ) {
-              return;
-            }
-
-            if (
-              effect.result ===
-              "correct"
-            ) {
-              audioEngine.playCorrect();
-            } else {
-              audioEngine.playWrong();
-            }
-          },
-          260
+        audioEngine.playCard(
+          playAt,
+          effect.variant
         );
+
+        const resultAt =
+          playAt +
+          260;
+
+        if (
+          effect.result ===
+          "disco"
+        ) {
+          audioEngine.playDisco(
+            resultAt
+          );
+
+          return;
+        }
+
+        if (
+          effect.result ===
+          "correct"
+        ) {
+          audioEngine.playCorrect(
+            resultAt
+          );
+        } else {
+          audioEngine.playWrong(
+            resultAt
+          );
+        }
 
         return;
       }
@@ -699,37 +914,32 @@ function ExperienceShell({
         "bus-card-result"
       ) {
         /*
-         * Bus:
+         * Tijdens de bus:
          *
-         * GEEN geluid bij pakken.
-         * GEEN geluid bij oude kaart weg.
-         *
-         * Alleen:
-         * nieuwe kaart opleggen
+         * alleen nieuwe kaart OPLEGGEN
          * -> card-place
-         * -> daarna goed/fout.
+         * -> 300 ms later goed/fout.
          */
-        audioEngine.playCardPlace();
-
-        queueSound(
-          () => {
-            if (
-              !soundIsOn()
-            ) {
-              return;
-            }
-
-            if (
-              effect.result ===
-              "correct"
-            ) {
-              audioEngine.playCorrect();
-            } else {
-              audioEngine.playWrong();
-            }
-          },
-          300
+        audioEngine.playCardPlace(
+          playAt
         );
+
+        const resultAt =
+          playAt +
+          300;
+
+        if (
+          effect.result ===
+          "correct"
+        ) {
+          audioEngine.playCorrect(
+            resultAt
+          );
+        } else {
+          audioEngine.playWrong(
+            resultAt
+          );
+        }
       }
     }
 
@@ -743,17 +953,6 @@ function ExperienceShell({
         "busbaas-sound-effect",
         handleSoundEvent
       );
-
-      soundTimersRef.current.forEach(
-        (timer) => {
-          window.clearTimeout(
-            timer
-          );
-        }
-      );
-
-      soundTimersRef.current =
-        [];
     };
   }, []);
 
