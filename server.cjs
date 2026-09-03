@@ -10,7 +10,7 @@ const TIE_BREAK_RESULT_DELAY = 2500;
 const BUS_RESULT_DELAY = 2000;
 const SOUND_SYNC_LEAD_MS = 450;
 
-const SERVER_VERSION = "BUS_V14_SYNCED_AUDIO";
+const SERVER_VERSION = "BUS_V15_HORN_ON_DRIVER";
 
 const io = new Server(PORT, {
   cors: {
@@ -2151,6 +2151,18 @@ function startBusSetup(
   sendGameState(
     roomCode
   );
+
+  /*
+   * De claxon hoort bij het moment waarop de
+   * chauffeur bekend wordt en de busfase verschijnt.
+   * Niet pas wanneer de chauffeur op "Start bus" drukt.
+   */
+  emitSoundEffect(
+    roomCode,
+    {
+      type: "bus-horn",
+    }
+  );
 }
 
 function dealBusCards(room) {
@@ -4257,13 +4269,6 @@ io.on(
 
         sendGameState(
           roomCode
-        );
-
-        emitSoundEffect(
-          roomCode,
-          {
-            type: "bus-horn",
-          }
         );
 
         done({
