@@ -5,13 +5,16 @@ import "./index.css";
 
 import App from "./App.tsx";
 import CommerceShell from "./CommerceShell.tsx";
+import ExperienceShell from "./ExperienceShell.tsx";
 
 createRoot(
   document.getElementById("root")!
 ).render(
   <StrictMode>
     <CommerceShell>
-      <App />
+      <ExperienceShell>
+        <App />
+      </ExperienceShell>
     </CommerceShell>
   </StrictMode>
 );
