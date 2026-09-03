@@ -77,6 +77,9 @@ class BusbaasAudioEngine {
   private lastCardSoundTime =
     0;
 
+  private lastGlassSoundTime =
+    0;
+
   constructor() {
     [
       ...CARD_SOUNDS,
@@ -102,12 +105,6 @@ class BusbaasAudioEngine {
       }
     );
   }
-
-  /*
-   * =========================================================
-   * UNLOCK
-   * =========================================================
-   */
 
   async unlock() {
     try {
@@ -138,18 +135,9 @@ class BusbaasAudioEngine {
       player.currentTime =
         0;
     } catch {
-      /*
-       * Audio mag nooit voorkomen dat
-       * het spel verder werkt.
-       */
+      // Audio mag gameplay nooit blokkeren.
     }
   }
-
-  /*
-   * =========================================================
-   * PLAY FILE
-   * =========================================================
-   */
 
   private playFile(
     source: string,
@@ -196,15 +184,12 @@ class BusbaasAudioEngine {
       if (promise) {
         void promise.catch(
           () => {
-            /*
-             * Geen foutmelding in de game
-             * wanneer audio geblokkeerd wordt.
-             */
+            // Geen foutmelding in de game.
           }
         );
       }
     } catch {
-      // Stil falen.
+      // Audio mag nooit crashen.
     }
   }
 
@@ -219,8 +204,8 @@ class BusbaasAudioEngine {
       performance.now();
 
     /*
-     * Bescherming tegen twee React DOM-updates
-     * die bij exact dezelfde onthulling horen.
+     * Voorkomt dubbel geluid door meerdere
+     * React DOM-updates van dezelfde kaart.
      */
 
     if (
@@ -241,11 +226,6 @@ class BusbaasAudioEngine {
             CARD_SOUNDS.length
         )
       ];
-
-    /*
-     * Heel subtiele variatie zodat iedere
-     * kaart niet exact hetzelfde klinkt.
-     */
 
     const playbackRate =
       0.98 +
@@ -305,10 +285,29 @@ class BusbaasAudioEngine {
    */
 
   playGlass() {
+    const now =
+      performance.now();
+
+    /*
+     * Beschermt ook hier tegen twee events
+     * van dezelfde bevestiging.
+     */
+
+    if (
+      now -
+        this.lastGlassSoundTime <
+      500
+    ) {
+      return;
+    }
+
+    this.lastGlassSoundTime =
+      now;
+
     this.playFile(
       GLASS_SOUND,
       {
-        volume: 0.78,
+        volume: 0.8,
         playbackRate: 1,
       }
     );
@@ -352,7 +351,7 @@ const audioEngine =
 
 /*
  * =========================================================
- * SOUND STORAGE
+ * STORAGE
  * =========================================================
  */
 
@@ -417,19 +416,13 @@ function detectPhase():
  * CARD REVEAL SIGNATURE
  * =========================================================
  *
- * BELANGRIJK:
+ * Alleen kaarten die echt zichtbaar worden.
  *
- * We kijken NIET meer naar:
- *
- * .playing-card
- *
- * Daarmee voorkom je:
- * - geluid bij spelers toevoegen
- * - geluid bij handkaart update
- * - dubbele kaartgeluiden
- *
- * We luisteren alleen naar kaarten die op dat
- * moment echt centraal / actief worden getoond.
+ * Dus NIET:
+ * - naam invoeren
+ * - spelers toevoegen
+ * - algemene UI veranderingen
+ * - alle handkaart DOM-updates
  */
 
 function getRevealSignature() {
@@ -491,10 +484,6 @@ function getRevealSignature() {
    * =========================
    * BUS SETUP
    * =========================
-   *
-   * Bijvoorbeeld:
-   * - lengte bepalen
-   * - aantal open kaarten bepalen
    */
 
   const setupCards =
@@ -511,9 +500,7 @@ function getRevealSignature() {
     parts.push(
       `setup:${setupCards
         .map(
-          (
-            card
-          ) =>
+          (card) =>
             card.textContent
               ?.replace(
                 /\s+/g,
@@ -530,7 +517,7 @@ function getRevealSignature() {
 
   /*
    * =========================
-   * GELIJKSPEL / MINI DRAW
+   * GELIJKSPEL
    * =========================
    */
 
@@ -548,9 +535,7 @@ function getRevealSignature() {
     parts.push(
       `mini:${visibleMiniCards
         .map(
-          (
-            card
-          ) =>
+          (card) =>
             card.textContent
               ?.replace(
                 /\s+/g,
@@ -594,12 +579,6 @@ function getRevealSignature() {
    * =========================
    * BUS RESULTAAT
    * =========================
-   *
-   * Als het resultaat twee kaarten laat zien,
-   * maken we daar één gezamenlijke signature van.
-   *
-   * Resultaat = dus één kaart-sound,
-   * niet één sound per DOM-kaart.
    */
 
   const busResultCards =
@@ -616,9 +595,7 @@ function getRevealSignature() {
     parts.push(
       `bus-result:${busResultCards
         .map(
-          (
-            card
-          ) =>
+          (card) =>
             card.textContent
               ?.replace(
                 /\s+/g,
@@ -666,6 +643,7 @@ function SpeakerIcon({
       {!muted && (
         <>
           <path d="M15 9.2a4 4 0 0 1 0 5.6" />
+
           <path d="M17.8 6.8a7.3 7.3 0 0 1 0 10.4" />
         </>
       )}
@@ -673,6 +651,7 @@ function SpeakerIcon({
       {muted && (
         <>
           <path d="m15.5 9 5 6" />
+
           <path d="m20.5 9-5 6" />
         </>
       )}
@@ -756,7 +735,7 @@ function ExperienceShell({
 
   /*
    * =========================================================
-   * SOUND ENABLED
+   * SOUND SETTING
    * =========================================================
    */
 
@@ -776,7 +755,7 @@ function ExperienceShell({
 
   /*
    * =========================================================
-   * UNLOCK MOBILE AUDIO
+   * AUDIO UNLOCK
    * =========================================================
    */
 
@@ -923,8 +902,18 @@ function ExperienceShell({
         previousPhaseRef.current =
           phase;
 
+        /*
+         * BELANGRIJK:
+         *
+         * We vullen hier bewust NIET alvast
+         * de reveal-signature met een kaart.
+         *
+         * Daardoor kan de allereerste kaart
+         * van stap 1 straks gewoon geluid geven.
+         */
+
         previousRevealSignatureRef.current =
-          getRevealSignature();
+          "";
 
         return false;
       }
@@ -984,10 +973,6 @@ function ExperienceShell({
         phase ===
           "bus"
       ) {
-        /*
-         * Echte busclaxon.
-         */
-
         if (
           soundIsOn()
         ) {
@@ -1019,8 +1004,8 @@ function ExperienceShell({
         phase;
 
       /*
-       * Voorkomt dat het openen van een compleet
-       * nieuw scherm meteen als kaartactie telt.
+       * Nieuwe fase zelf niet behandelen
+       * als losse kaartbeweging.
        */
 
       previousRevealSignatureRef.current =
@@ -1042,10 +1027,6 @@ function ExperienceShell({
       const signature =
         getRevealSignature();
 
-      /*
-       * Nieuwe fase zelf krijgt geen kaartgeluid.
-       */
-
       if (
         phaseChanged
       ) {
@@ -1055,48 +1036,88 @@ function ExperienceShell({
         return;
       }
 
+      const previousSignature =
+        previousRevealSignatureRef.current;
+
+      /*
+       * =====================================================
+       * FIX EERSTE KAART
+       * =====================================================
+       *
+       * Oude versie:
+       *
+       * vorige signature leeg + nieuwe kaart
+       * -> alleen opslaan
+       * -> GEEN geluid
+       *
+       * Nieuwe versie:
+       *
+       * vorige signature leeg + kaart verschijnt
+       * -> 1x kaartgeluid
+       */
+
       if (
-        previousRevealSignatureRef.current ===
-        ""
+        previousSignature ===
+          "" &&
+        signature !==
+          ""
       ) {
         previousRevealSignatureRef.current =
           signature;
 
-        return;
-      }
-
-      if (
-        signature ===
-        previousRevealSignatureRef.current
-      ) {
-        return;
-      }
-
-      /*
-       * Alleen geluid als er daadwerkelijk
-       * een kaart zichtbaar is.
-       *
-       * Dus NIET bij verdwijnen van een kaart.
-       */
-
-      if (
-        signature !==
-        ""
-      ) {
         if (
           soundIsOn()
         ) {
           audioEngine.playCard();
         }
+
+        return;
       }
+
+      /*
+       * Geen verandering.
+       */
+
+      if (
+        signature ===
+        previousSignature
+      ) {
+        return;
+      }
+
+      /*
+       * Kaart verdwijnt.
+       *
+       * Geen geluid.
+       */
+
+      if (
+        signature ===
+        ""
+      ) {
+        previousRevealSignatureRef.current =
+          "";
+
+        return;
+      }
+
+      /*
+       * Echte nieuwe zichtbare kaart.
+       */
 
       previousRevealSignatureRef.current =
         signature;
+
+      if (
+        soundIsOn()
+      ) {
+        audioEngine.playCard();
+      }
     }
 
     /*
      * =========================
-     * GOED / FOUT
+     * VOORRONDE GOED / FOUT
      * =========================
      */
 
@@ -1118,11 +1139,6 @@ function ExperienceShell({
       seenResultRef.current.add(
         result
       );
-
-      /*
-       * Eerst hoor je de fysieke kaart.
-       * Heel even daarna goed of fout.
-       */
 
       window.setTimeout(
         () => {
@@ -1225,12 +1241,6 @@ function ExperienceShell({
       }
     }
 
-    /*
-     * =========================
-     * UPDATE
-     * =========================
-     */
-
     function update() {
       const phaseChanged =
         handlePhase();
@@ -1291,14 +1301,23 @@ function ExperienceShell({
 
   /*
    * =========================================================
-   * GLASS CLINK
+   * GLASS CLINK BIJ SLOKKEN UITDELEN
    * =========================================================
+   *
+   * Vorige versie keek alleen naar:
+   *
+   * .tree-confirm-button
+   *
+   * Dat blijkt niet overal de echte knop te zijn.
+   *
+   * Nu kijken we naar knoppen BINNEN het
+   * verdelingspaneel en controleren we de tekst.
    */
 
   useEffect(() => {
-    function handleClick(
+    function handleTreeDistribution(
       event:
-        MouseEvent
+        PointerEvent
     ) {
       const target =
         event.target;
@@ -1312,26 +1331,110 @@ function ExperienceShell({
         return;
       }
 
-      /*
-       * Alleen slokken uitdelen in de boom.
-       */
-
       const button =
         target.closest(
-          ".tree-confirm-button"
+          "button"
         );
 
-      if (!button) {
+      if (
+        !(
+          button instanceof
+          HTMLButtonElement
+        )
+      ) {
         return;
       }
 
       if (
-        button instanceof
-          HTMLButtonElement &&
         button.disabled
       ) {
         return;
       }
+
+      /*
+       * Moet echt binnen het verdeelpaneel zitten.
+       */
+
+      const distributionPanel =
+        button.closest(
+          ".tree-distribute-panel"
+        );
+
+      if (
+        !distributionPanel
+      ) {
+        return;
+      }
+
+      const text =
+        button.textContent
+          ?.replace(
+            /\s+/g,
+            " "
+          )
+          .trim()
+          .toLowerCase() ??
+        "";
+
+      /*
+       * + en - mogen uiteraard geen klink geven.
+       */
+
+      if (
+        text === "+" ||
+        text === "-" ||
+        text === "−"
+      ) {
+        return;
+      }
+
+      /*
+       * Overslaan = geen drank uitgedeeld.
+       */
+
+      if (
+        text.includes(
+          "overslaan"
+        ) ||
+        text.includes(
+          "skip"
+        )
+      ) {
+        return;
+      }
+
+      /*
+       * We accepteren zowel de bestaande class
+       * als verschillende logische knopteksten.
+       */
+
+      const isConfirmButton =
+        button.classList.contains(
+          "tree-confirm-button"
+        ) ||
+        text.includes(
+          "bevestig"
+        ) ||
+        text.includes(
+          "uitdelen"
+        ) ||
+        text.includes(
+          "verde"
+        ) ||
+        text.includes(
+          "slokken"
+        );
+
+      if (
+        !isConfirmButton
+      ) {
+        return;
+      }
+
+      /*
+       * Kleine vertraging zodat het geluid
+       * voelt alsof de verdeling net is uitgevoerd.
+       */
 
       window.setTimeout(
         () => {
@@ -1341,19 +1444,24 @@ function ExperienceShell({
             audioEngine.playGlass();
           }
         },
-        90
+        110
       );
     }
 
+    /*
+     * pointerup werkt betrouwbaarder op
+     * zowel Android als web dan alleen click.
+     */
+
     document.addEventListener(
-      "click",
-      handleClick
+      "pointerup",
+      handleTreeDistribution
     );
 
     return () => {
       document.removeEventListener(
-        "click",
-        handleClick
+        "pointerup",
+        handleTreeDistribution
       );
     };
   }, []);
