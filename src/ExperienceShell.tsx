@@ -30,801 +30,251 @@ type TransitionState = {
   icon: string;
 };
 
-type SoundType =
-  | "tap"
-  | "card"
-  | "correct"
-  | "wrong"
-  | "disco"
-  | "tree"
-  | "bus"
-  | "double"
-  | "clink"
-  | "finish";
-
 const SOUND_STORAGE_KEY =
   "busbaas-sound-enabled";
 
+const CARD_SOUNDS = [
+  "/sounds/card-take-1.mp3",
+  "/sounds/card-take-2.mp3",
+  "/sounds/card-take-3.mp3",
+  "/sounds/card-place.mp3",
+];
+
+const GLASS_SOUND =
+  "/sounds/glass-clink.mp3";
+
+const FINISH_SOUND =
+  "/sounds/finish-cheer.mp3";
+
 /*
  * =========================================================
- * AUDIO ENGINE
+ * REAL AUDIO ENGINE
  * =========================================================
  */
 
 class BusbaasAudioEngine {
-  private context:
-    AudioContext | null =
-      null;
+  private templates =
+    new Map<
+      string,
+      HTMLAudioElement
+    >();
 
-  private getContext() {
-    if (
-      !this.context
-    ) {
-      this.context =
-        new AudioContext();
-    }
+  private lastCardSoundTime =
+    0;
 
-    return this.context;
+  constructor() {
+    [
+      ...CARD_SOUNDS,
+      GLASS_SOUND,
+      FINISH_SOUND,
+    ].forEach(
+      (source) => {
+        const audio =
+          new Audio(
+            source
+          );
+
+        audio.preload =
+          "auto";
+
+        this.templates.set(
+          source,
+          audio
+        );
+      }
+    );
   }
+
+  /*
+   * Browser/mobile audio alvast activeren
+   * na de eerste gebruikersinteractie.
+   */
 
   async unlock() {
     try {
-      const context =
-        this.getContext();
-
-      if (
-        context.state ===
-        "suspended"
-      ) {
-        await context.resume();
-      }
-    } catch {
-      // Geluid mag gameplay nooit blokkeren.
-    }
-  }
-
-  /*
-   * =========================================================
-   * BASIC TONE
-   * =========================================================
-   */
-
-  private tone(
-    frequency: number,
-    duration: number,
-    volume: number,
-    type:
-      OscillatorType =
-      "sine",
-    delay = 0
-  ) {
-    try {
-      const context =
-        this.getContext();
-
-      const oscillator =
-        context.createOscillator();
-
-      const gain =
-        context.createGain();
-
-      const start =
-        context.currentTime +
-        delay;
-
-      const end =
-        start +
-        duration;
-
-      oscillator.type =
-        type;
-
-      oscillator.frequency.setValueAtTime(
-        frequency,
-        start
-      );
-
-      gain.gain.setValueAtTime(
-        0.0001,
-        start
-      );
-
-      gain.gain.exponentialRampToValueAtTime(
-        Math.max(
-          volume,
-          0.0001
-        ),
-        start +
-          0.008
-      );
-
-      gain.gain.exponentialRampToValueAtTime(
-        0.0001,
-        end
-      );
-
-      oscillator.connect(
-        gain
-      );
-
-      gain.connect(
-        context.destination
-      );
-
-      oscillator.start(
-        start
-      );
-
-      oscillator.stop(
-        end +
-          0.04
-      );
-    } catch {
-      // Stil falen.
-    }
-  }
-
-  /*
-   * =========================================================
-   * FREQUENCY SWEEP
-   * =========================================================
-   */
-
-  private sweep(
-    from: number,
-    to: number,
-    duration: number,
-    volume: number,
-    type:
-      OscillatorType =
-      "sine",
-    delay = 0
-  ) {
-    try {
-      const context =
-        this.getContext();
-
-      const oscillator =
-        context.createOscillator();
-
-      const gain =
-        context.createGain();
-
-      const start =
-        context.currentTime +
-        delay;
-
-      const end =
-        start +
-        duration;
-
-      oscillator.type =
-        type;
-
-      oscillator.frequency.setValueAtTime(
-        from,
-        start
-      );
-
-      oscillator.frequency.exponentialRampToValueAtTime(
-        Math.max(
-          1,
-          to
-        ),
-        end
-      );
-
-      gain.gain.setValueAtTime(
-        0.0001,
-        start
-      );
-
-      gain.gain.exponentialRampToValueAtTime(
-        volume,
-        start +
-          0.008
-      );
-
-      gain.gain.exponentialRampToValueAtTime(
-        0.0001,
-        end
-      );
-
-      oscillator.connect(
-        gain
-      );
-
-      gain.connect(
-        context.destination
-      );
-
-      oscillator.start(
-        start
-      );
-
-      oscillator.stop(
-        end +
-          0.04
-      );
-    } catch {
-      // Stil falen.
-    }
-  }
-
-  /*
-   * =========================================================
-   * FILTERED NOISE
-   * =========================================================
-   *
-   * Hiermee maken we:
-   * - kaartgeschuif
-   * - kaart over tafel
-   * - klappen/applaus
-   */
-
-  private filteredNoise(
-    duration: number,
-    volume: number,
-    filterType:
-      BiquadFilterType,
-    frequency: number,
-    delay = 0,
-    q = 0.7
-  ) {
-    try {
-      const context =
-        this.getContext();
-
-      const frameCount =
-        Math.max(
-          1,
-          Math.floor(
-            context.sampleRate *
-              duration
-          )
-        );
-
-      const buffer =
-        context.createBuffer(
-          1,
-          frameCount,
-          context.sampleRate
-        );
-
-      const data =
-        buffer.getChannelData(
-          0
-        );
-
-      for (
-        let index = 0;
-        index <
-        frameCount;
-        index += 1
-      ) {
-        data[index] =
-          (
-            Math.random() *
-            2
-          ) -
-          1;
-      }
-
       const source =
-        context.createBufferSource();
+        CARD_SOUNDS[0];
 
-      const filter =
-        context.createBiquadFilter();
+      const template =
+        this.templates.get(
+          source
+        );
 
-      const gain =
-        context.createGain();
+      if (!template) {
+        return;
+      }
 
-      const start =
-        context.currentTime +
-        delay;
+      const player =
+        template.cloneNode(
+          true
+        ) as HTMLAudioElement;
 
-      const end =
-        start +
-        duration;
+      player.volume =
+        0;
 
-      source.buffer =
-        buffer;
+      await player.play();
 
-      filter.type =
-        filterType;
+      player.pause();
 
-      filter.frequency.setValueAtTime(
-        frequency,
-        start
-      );
-
-      filter.Q.value =
-        q;
-
-      gain.gain.setValueAtTime(
-        0.0001,
-        start
-      );
-
-      gain.gain.exponentialRampToValueAtTime(
-        Math.max(
-          volume,
-          0.0001
-        ),
-        start +
-          Math.min(
-            0.012,
-            duration /
-              3
-          )
-      );
-
-      gain.gain.exponentialRampToValueAtTime(
-        0.0001,
-        end
-      );
-
-      source.connect(
-        filter
-      );
-
-      filter.connect(
-        gain
-      );
-
-      gain.connect(
-        context.destination
-      );
-
-      source.start(
-        start
-      );
-
-      source.stop(
-        end +
-          0.04
-      );
+      player.currentTime =
+        0;
     } catch {
-      // Stil falen.
+      /*
+       * Sommige browsers laten dit niet toe.
+       * Android/Capacitor kan daarna alsnog
+       * gewoon geluid afspelen.
+       */
     }
   }
 
-  /*
-   * =========================================================
-   * CARD SLIDE
-   * =========================================================
-   *
-   * Bewust GEEN klik.
-   *
-   * Twee lagen papier/frictie met een
-   * heel zacht laag tikje aan het einde.
-   */
-
-  private cardSlide() {
-    this.filteredNoise(
-      0.19,
-      0.065,
-      "bandpass",
-      2100,
-      0,
-      0.55
-    );
-
-    this.filteredNoise(
-      0.12,
-      0.038,
-      "highpass",
-      3300,
-      0.045,
-      0.7
-    );
-
-    this.filteredNoise(
-      0.08,
-      0.025,
-      "bandpass",
-      1100,
-      0.095,
-      0.8
-    );
-
-    this.sweep(
-      260,
-      185,
-      0.13,
-      0.014,
-      "triangle",
-      0.03
-    );
-
-    this.tone(
-      105,
-      0.045,
-      0.016,
-      "sine",
-      0.14
-    );
-  }
-
-  /*
-   * =========================================================
-   * GLASSES CLINK
-   * =========================================================
-   */
-
-  private glassesClink() {
-    /*
-     * Eerste glas.
-     */
-
-    this.tone(
-      1470,
-      0.15,
-      0.038,
-      "sine"
-    );
-
-    this.tone(
-      2350,
-      0.12,
-      0.021,
-      "sine",
-      0.008
-    );
-
-    /*
-     * Tweede glas net erachter.
-     */
-
-    this.tone(
-      1760,
-      0.18,
-      0.038,
-      "sine",
-      0.055
-    );
-
-    this.tone(
-      2840,
-      0.12,
-      0.018,
-      "sine",
-      0.064
-    );
-
-    /*
-     * Kleine contacttik.
-     */
-
-    this.filteredNoise(
-      0.035,
-      0.022,
-      "highpass",
-      3800,
-      0.045,
-      0.9
-    );
-  }
-
-  /*
-   * =========================================================
-   * APPLAUSE
-   * =========================================================
-   */
-
-  private applause() {
-    const clapTimes = [
-      0,
-      0.055,
-      0.11,
-      0.17,
-      0.23,
-      0.3,
-      0.37,
-      0.43,
-      0.5,
-      0.58,
-      0.66,
-      0.74,
-      0.83,
-      0.92,
-      1.02,
-      1.12,
-    ];
-
-    clapTimes.forEach(
-      (
-        delay,
-        index
-      ) => {
-        this.filteredNoise(
-          0.075 +
-            (
-              index %
-              3
-            ) *
-              0.012,
-          0.035 +
-            (
-              index %
-              4
-            ) *
-              0.006,
-          "bandpass",
-          1350 +
-            (
-              index %
-              5
-            ) *
-              180,
-          delay,
-          0.8
-        );
-      }
-    );
-
-    /*
-     * Zachte "wooo!"-achtige stijgende toon
-     * achter het applaus.
-     */
-
-    this.sweep(
-      260,
-      620,
-      0.65,
-      0.018,
-      "sine",
-      0.06
-    );
-
-    this.sweep(
-      320,
-      760,
-      0.72,
-      0.014,
-      "triangle",
-      0.28
-    );
-
-    /*
-     * Eindbelletje.
-     */
-
-    this.tone(
-      784,
-      0.25,
-      0.025,
-      "sine",
-      0.92
-    );
-
-    this.tone(
-      1046,
-      0.35,
-      0.027,
-      "sine",
-      1.02
-    );
-  }
-
-  /*
-   * =========================================================
-   * PLAY
-   * =========================================================
-   */
-
-  play(
-    type:
-      SoundType
+  private playFile(
+    source: string,
+    options?: {
+      volume?: number;
+      playbackRate?: number;
+    }
   ) {
     try {
-      const context =
-        this.getContext();
+      const template =
+        this.templates.get(
+          source
+        );
 
-      if (
-        context.state ===
-        "suspended"
-      ) {
-        void context.resume();
+      if (!template) {
+        return;
       }
 
-      switch (
-        type
+      const player =
+        template.cloneNode(
+          true
+        ) as HTMLAudioElement;
+
+      player.volume =
+        Math.max(
+          0,
+          Math.min(
+            1,
+            options?.volume ??
+              1
+          )
+        );
+
+      player.playbackRate =
+        options?.playbackRate ??
+        1;
+
+      player.currentTime =
+        0;
+
+      const promise =
+        player.play();
+
+      if (
+        promise
       ) {
-        case "tap": {
-          this.tone(
-            520,
-            0.055,
-            0.03
-          );
-
-          break;
-        }
-
-        case "card": {
-          this.cardSlide();
-
-          break;
-        }
-
-        case "correct": {
-          this.tone(
-            620,
-            0.1,
-            0.045,
-            "sine"
-          );
-
-          this.tone(
-            830,
-            0.14,
-            0.05,
-            "sine",
-            0.085
-          );
-
-          break;
-        }
-
-        case "wrong": {
-          this.sweep(
-            260,
-            145,
-            0.24,
-            0.065,
-            "triangle"
-          );
-
-          this.tone(
-            125,
-            0.16,
-            0.025,
-            "sine",
-            0.07
-          );
-
-          break;
-        }
-
-        case "disco": {
-          this.tone(
-            523,
-            0.14,
-            0.035,
-            "square"
-          );
-
-          this.tone(
-            659,
-            0.14,
-            0.035,
-            "square",
-            0.09
-          );
-
-          this.tone(
-            784,
-            0.16,
-            0.04,
-            "square",
-            0.18
-          );
-
-          this.tone(
-            1046,
-            0.3,
-            0.05,
-            "sine",
-            0.27
-          );
-
-          break;
-        }
-
-        case "tree": {
-          this.tone(
-            330,
-            0.13,
-            0.035,
-            "triangle"
-          );
-
-          this.tone(
-            440,
-            0.15,
-            0.04,
-            "triangle",
-            0.09
-          );
-
-          this.tone(
-            550,
-            0.23,
-            0.045,
-            "triangle",
-            0.18
-          );
-
-          break;
-        }
-
-        case "bus": {
-          this.tone(
-            165,
-            0.26,
-            0.045,
-            "sawtooth"
-          );
-
-          this.tone(
-            220,
-            0.26,
-            0.027,
-            "sawtooth"
-          );
-
-          this.tone(
-            165,
-            0.2,
-            0.04,
-            "sawtooth",
-            0.32
-          );
-
-          this.tone(
-            220,
-            0.2,
-            0.025,
-            "sawtooth",
-            0.32
-          );
-
-          break;
-        }
-
-        case "double": {
-          this.tone(
-            170,
-            0.09,
-            0.055,
-            "square"
-          );
-
-          this.tone(
-            170,
-            0.09,
-            0.055,
-            "square",
-            0.13
-          );
-
-          this.sweep(
-            500,
-            260,
-            0.18,
-            0.03,
-            "triangle",
-            0.24
-          );
-
-          break;
-        }
-
-        case "clink": {
-          this.glassesClink();
-
-          break;
-        }
-
-        case "finish": {
-          this.applause();
-
-          break;
-        }
+        void promise.catch(
+          () => {
+            // Audio mag gameplay nooit blokkeren.
+          }
+        );
       }
     } catch {
       // Audio mag nooit de app crashen.
     }
+  }
+
+  /*
+   * =========================================================
+   * CARD
+   * =========================================================
+   *
+   * We kiezen iedere keer willekeurig één echte
+   * kaartopname en variëren héél licht in snelheid.
+   *
+   * Daardoor klinkt niet iedere kaart exact hetzelfde.
+   */
+
+  playCard() {
+    const now =
+      performance.now();
+
+    /*
+     * Beschermt tegen meerdere DOM updates
+     * binnen enkele milliseconden die bij
+     * dezelfde kaart horen.
+     */
+
+    if (
+      now -
+        this.lastCardSoundTime <
+      65
+    ) {
+      return;
+    }
+
+    this.lastCardSoundTime =
+      now;
+
+    const index =
+      Math.floor(
+        Math.random() *
+          CARD_SOUNDS.length
+      );
+
+    const source =
+      CARD_SOUNDS[
+        index
+      ];
+
+    const playbackRate =
+      0.97 +
+      Math.random() *
+        0.06;
+
+    const volume =
+      0.7 +
+      Math.random() *
+        0.08;
+
+    this.playFile(
+      source,
+      {
+        volume,
+        playbackRate,
+      }
+    );
+  }
+
+  /*
+   * =========================================================
+   * GLASS
+   * =========================================================
+   */
+
+  playGlass() {
+    this.playFile(
+      GLASS_SOUND,
+      {
+        volume: 0.78,
+        playbackRate: 1,
+      }
+    );
+  }
+
+  /*
+   * =========================================================
+   * FINISH
+   * =========================================================
+   */
+
+  playFinish() {
+    this.playFile(
+      FINISH_SOUND,
+      {
+        volume: 0.72,
+        playbackRate: 1,
+      }
+    );
   }
 }
 
@@ -842,8 +292,7 @@ function readSoundEnabled() {
     return (
       localStorage.getItem(
         SOUND_STORAGE_KEY
-      ) !==
-      "false"
+      ) !== "false"
     );
   } catch {
     return true;
@@ -852,7 +301,7 @@ function readSoundEnabled() {
 
 /*
  * =========================================================
- * APP PHASE
+ * PHASE DETECTION
  * =========================================================
  */
 
@@ -898,29 +347,18 @@ function detectPhase():
  * CARD SIGNATURE
  * =========================================================
  *
- * Dit is de belangrijkste verandering.
+ * Alle plaatsen waar daadwerkelijk een kaart
+ * zichtbaar kan worden of veranderen.
  *
- * We kijken niet langer alleen naar één specifieke
- * kaart in de boom.
- *
- * We volgen ALLE zichtbare kaartvlakken.
- *
- * Zodra die lijst verandert:
- *
- * 🃏 kaart schuift
- *
- * Daardoor werkt het automatisch bij:
+ * Daardoor werkt hetzelfde kaartgeluid bij:
  *
  * - voorronde
- * - eigen kaarten
- * - onthulde kaart
+ * - handkaarten
  * - boom
  * - Adtje
  * - gelijkspel
- * - buslengte
- * - aantal open kaarten
+ * - bus bepalen
  * - bus
- * - hoger/lager
  */
 
 function getCardSignature() {
@@ -950,19 +388,19 @@ function getCardSignature() {
         card,
         index
       ) => {
-        const text =
+        const content =
           card.textContent
             ?.replace(
               /\s+/g,
               " "
             )
-            .trim() ||
+            .trim() ??
           "";
 
         return [
           index,
           card.className,
-          text,
+          content,
         ].join(
           ":"
         );
@@ -971,6 +409,50 @@ function getCardSignature() {
     .join(
       "|"
     );
+}
+
+/*
+ * =========================================================
+ * SPEAKER ICON
+ * =========================================================
+ *
+ * Geen emoji meer voor de sound-knop.
+ */
+
+function SpeakerIcon({
+  muted,
+}: {
+  muted: boolean;
+}) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="20"
+      height="20"
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M11 5 6.5 8.5H3.5v7h3L11 19V5Z" />
+
+      {!muted && (
+        <>
+          <path d="M15 9.2a4 4 0 0 1 0 5.6" />
+          <path d="M17.8 6.8a7.3 7.3 0 0 1 0 10.4" />
+        </>
+      )}
+
+      {muted && (
+        <>
+          <path d="m15.5 9 5 6" />
+          <path d="m20.5 9-5 6" />
+        </>
+      )}
+    </svg>
+  );
 }
 
 /*
@@ -1029,17 +511,17 @@ function ExperienceShell({
       null
     );
 
-  const seenElementsRef =
+  const previousCardSignatureRef =
+    useRef("");
+
+  const seenFinishedPanelsRef =
     useRef(
       new WeakSet<Element>()
     );
 
-  const previousCardSignatureRef =
-    useRef("");
-
   /*
    * =========================================================
-   * SOUND STORAGE
+   * SOUND SETTING
    * =========================================================
    */
 
@@ -1059,12 +541,12 @@ function ExperienceShell({
 
   /*
    * =========================================================
-   * UNLOCK AUDIO
+   * AUDIO UNLOCK
    * =========================================================
    */
 
   useEffect(() => {
-    function unlock() {
+    function unlockAudio() {
       if (
         soundEnabledRef.current
       ) {
@@ -1074,59 +556,53 @@ function ExperienceShell({
 
     window.addEventListener(
       "pointerdown",
-      unlock,
+      unlockAudio,
       {
         passive: true,
+        once: true,
       }
     );
 
     return () => {
       window.removeEventListener(
         "pointerdown",
-        unlock
+        unlockAudio
       );
     };
   }, []);
 
-  function play(
-    sound:
-      SoundType
-  ) {
+  function playCard() {
     if (
-      !soundEnabledRef.current
+      soundEnabledRef.current
     ) {
-      return;
+      audioEngine.playCard();
     }
-
-    audioEngine.play(
-      sound
-    );
   }
 
-  function playDelayed(
-    sound:
-      SoundType,
-    delay:
-      number
-  ) {
-    window.setTimeout(
-      () => {
-        play(
-          sound
-        );
-      },
-      delay
-    );
+  function playGlass() {
+    if (
+      soundEnabledRef.current
+    ) {
+      audioEngine.playGlass();
+    }
+  }
+
+  function playFinish() {
+    if (
+      soundEnabledRef.current
+    ) {
+      audioEngine.playFinish();
+    }
   }
 
   /*
    * =========================================================
-   * TRANSITION
+   * TRANSITIONS
    * =========================================================
    */
 
   function showTransition(
-    nextTransition:
+    next:
       TransitionState,
     duration:
       number
@@ -1141,7 +617,7 @@ function ExperienceShell({
     }
 
     setTransition(
-      nextTransition
+      next
     );
 
     transitionTimerRef.current =
@@ -1185,13 +661,13 @@ function ExperienceShell({
           toastTimerRef.current =
             null;
         },
-        1200
+        1100
       );
   }
 
   /*
    * =========================================================
-   * GAME OBSERVER
+   * CARD / PHASE OBSERVER
    * =========================================================
    */
 
@@ -1201,17 +677,9 @@ function ExperienceShell({
         "root"
       );
 
-    if (
-      !root
-    ) {
+    if (!root) {
       return;
     }
-
-    /*
-     * =========================
-     * PHASE
-     * =========================
-     */
 
     function handlePhase() {
       const phase =
@@ -1229,7 +697,7 @@ function ExperienceShell({
         previousCardSignatureRef.current =
           getCardSignature();
 
-        return false;
+        return;
       }
 
       const previous =
@@ -1239,11 +707,11 @@ function ExperienceShell({
         phase ===
         previous
       ) {
-        return false;
+        return;
       }
 
       /*
-       * VOORRONDE -> BOOM
+       * Voorronde -> boom
        */
 
       if (
@@ -1252,14 +720,9 @@ function ExperienceShell({
         phase ===
           "tree"
       ) {
-        play(
-          "tree"
-        );
-
         showTransition(
           {
-            type:
-              "tree",
+            type: "tree",
 
             eyebrow:
               "RONDE KLAAR",
@@ -1268,7 +731,7 @@ function ExperienceShell({
               "Tijd voor de boom",
 
             text:
-              "Kaarten op tafel. Speel je hand leeg en deel slokken uit.",
+              "Speel je hand leeg en deel slokken uit.",
 
             icon:
               "🌲",
@@ -1278,7 +741,7 @@ function ExperienceShell({
       }
 
       /*
-       * BOOM -> BUS
+       * Boom -> bus
        */
 
       if (
@@ -1287,14 +750,9 @@ function ExperienceShell({
         phase ===
           "bus"
       ) {
-        play(
-          "bus"
-        );
-
         showTransition(
           {
-            type:
-              "bus",
+            type: "bus",
 
             eyebrow:
               "DE BOOM IS KLAAR",
@@ -1303,7 +761,7 @@ function ExperienceShell({
               "Iedereen instappen",
 
             text:
-              "Tijd voor de laatste rit van het spel.",
+              "Tijd voor de laatste rit.",
 
             icon:
               "🚌",
@@ -1315,27 +773,25 @@ function ExperienceShell({
       previousPhaseRef.current =
         phase;
 
-      return true;
+      /*
+       * Nieuwe pagina heeft een compleet
+       * nieuwe verzameling kaart-elementen.
+       *
+       * Die slaan we eerst op zodat de overgang
+       * zelf niet klinkt alsof er ineens twintig
+       * kaarten worden neergelegd.
+       */
+
+      previousCardSignatureRef.current =
+        getCardSignature();
     }
 
-    /*
-     * =========================
-     * ALLE KAARTBEWEGINGEN
-     * =========================
-     */
-
-    function handleCardMovement(
-      phaseChanged:
-        boolean
-    ) {
+    function handleCards() {
       const signature =
         getCardSignature();
 
-      const previous =
-        previousCardSignatureRef.current;
-
       if (
-        previous ===
+        previousCardSignatureRef.current ===
         ""
       ) {
         previousCardSignatureRef.current =
@@ -1346,7 +802,7 @@ function ExperienceShell({
 
       if (
         signature ===
-        previous
+        previousCardSignatureRef.current
       ) {
         return;
       }
@@ -1354,261 +810,40 @@ function ExperienceShell({
       previousCardSignatureRef.current =
         signature;
 
-      /*
-       * Bij een volledige schermovergang
-       * spelen we geen extra kaartgeluid.
-       *
-       * De eerste echte kaart daarna
-       * krijgt hem uiteraard wel.
-       */
+      playCard();
+    }
+
+    function handleFinish() {
+      const finishedPanel =
+        document.querySelector(
+          ".bus-finished-panel"
+        );
 
       if (
-        phaseChanged
+        !finishedPanel
       ) {
         return;
       }
 
-      play(
-        "card"
+      if (
+        seenFinishedPanelsRef.current.has(
+          finishedPanel
+        )
+      ) {
+        return;
+      }
+
+      seenFinishedPanelsRef.current.add(
+        finishedPanel
       );
+
+      playFinish();
     }
-
-    /*
-     * =========================
-     * RESULTATEN / EFFECTEN
-     * =========================
-     */
-
-    function handleEffects() {
-      /*
-       * VOORRONDE
-       */
-
-      const resultAreas =
-        document.querySelectorAll(
-          ".result-area"
-        );
-
-      resultAreas.forEach(
-        (
-          result
-        ) => {
-          if (
-            seenElementsRef.current.has(
-              result
-            )
-          ) {
-            return;
-          }
-
-          seenElementsRef.current.add(
-            result
-          );
-
-          const text =
-            result.textContent
-              ?.toLowerCase() ||
-            "";
-
-          if (
-            text.includes(
-              "disco"
-            )
-          ) {
-            playDelayed(
-              "disco",
-              130
-            );
-
-            return;
-          }
-
-          if (
-            result.classList.contains(
-              "correct"
-            )
-          ) {
-            playDelayed(
-              "correct",
-              130
-            );
-          } else {
-            playDelayed(
-              "wrong",
-              130
-            );
-          }
-        }
-      );
-
-      /*
-       * BUS RESULTAAT
-       */
-
-      const busResults =
-        document.querySelectorAll(
-          ".bus-result"
-        );
-
-      busResults.forEach(
-        (
-          result
-        ) => {
-          if (
-            seenElementsRef.current.has(
-              result
-            )
-          ) {
-            return;
-          }
-
-          seenElementsRef.current.add(
-            result
-          );
-
-          if (
-            result.classList.contains(
-              "correct"
-            )
-          ) {
-            playDelayed(
-              "correct",
-              130
-            );
-          } else {
-            playDelayed(
-              "wrong",
-              130
-            );
-          }
-        }
-      );
-
-      /*
-       * DUBBEL IN DE BUS
-       */
-
-      const doublePanels =
-        document.querySelectorAll(
-          ".double-panel"
-        );
-
-      doublePanels.forEach(
-        (
-          panel
-        ) => {
-          if (
-            seenElementsRef.current.has(
-              panel
-            )
-          ) {
-            return;
-          }
-
-          seenElementsRef.current.add(
-            panel
-          );
-
-          playDelayed(
-            "double",
-            130
-          );
-        }
-      );
-
-      /*
-       * BOOM:
-       * SLOKKEN UITGEDEELD
-       */
-
-      const announcements =
-        document.querySelectorAll(
-          ".game-announcement"
-        );
-
-      announcements.forEach(
-        (
-          announcement
-        ) => {
-          if (
-            seenElementsRef.current.has(
-              announcement
-            )
-          ) {
-            return;
-          }
-
-          const text =
-            announcement.textContent
-              ?.toLowerCase() ||
-            "";
-
-          if (
-            text.includes(
-              "slokken uitgedeeld"
-            ) ||
-            text.includes(
-              "drinken maar"
-            )
-          ) {
-            seenElementsRef.current.add(
-              announcement
-            );
-
-            play(
-              "clink"
-            );
-          }
-        }
-      );
-
-      /*
-       * EINDE
-       */
-
-      const finishedPanels =
-        document.querySelectorAll(
-          ".bus-finished-panel"
-        );
-
-      finishedPanels.forEach(
-        (
-          panel
-        ) => {
-          if (
-            seenElementsRef.current.has(
-              panel
-            )
-          ) {
-            return;
-          }
-
-          seenElementsRef.current.add(
-            panel
-          );
-
-          play(
-            "finish"
-          );
-        }
-      );
-    }
-
-    /*
-     * =========================
-     * UPDATE
-     * =========================
-     */
 
     function update() {
-      const phaseChanged =
-        handlePhase();
-
-      handleCardMovement(
-        phaseChanged
-      );
-
-      handleEffects();
+      handlePhase();
+      handleCards();
+      handleFinish();
     }
 
     const observer =
@@ -1622,6 +857,10 @@ function ExperienceShell({
         childList: true,
         subtree: true,
         characterData: true,
+        attributes: true,
+        attributeFilter: [
+          "class",
+        ],
       }
     );
 
@@ -1652,6 +891,77 @@ function ExperienceShell({
 
   /*
    * =========================================================
+   * GLASS SOUND
+   * =========================================================
+   *
+   * We koppelen het geluid direct aan het moment
+   * waarop de verdeling wordt bevestigd.
+   */
+
+  useEffect(() => {
+    function handleClick(
+      event:
+        MouseEvent
+    ) {
+      const target =
+        event.target;
+
+      if (
+        !(
+          target instanceof
+          Element
+        )
+      ) {
+        return;
+      }
+
+      const button =
+        target.closest(
+          [
+            ".tree-confirm-button",
+            ".adtje-confirm-button",
+          ].join(
+            ","
+          )
+        );
+
+      if (
+        !button
+      ) {
+        return;
+      }
+
+      if (
+        button instanceof
+          HTMLButtonElement &&
+        button.disabled
+      ) {
+        return;
+      }
+
+      window.setTimeout(
+        () => {
+          playGlass();
+        },
+        90
+      );
+    }
+
+    document.addEventListener(
+      "click",
+      handleClick
+    );
+
+    return () => {
+      document.removeEventListener(
+        "click",
+        handleClick
+      );
+    };
+  }, []);
+
+  /*
+   * =========================================================
    * SOUND TOGGLE
    * =========================================================
    */
@@ -1660,11 +970,6 @@ function ExperienceShell({
     const next =
       !soundEnabled;
 
-    /*
-     * Ref direct aanpassen zodat geluid
-     * onmiddellijk reageert.
-     */
-
     soundEnabledRef.current =
       next;
 
@@ -1672,14 +977,8 @@ function ExperienceShell({
       next
     );
 
-    if (
-      next
-    ) {
+    if (next) {
       await audioEngine.unlock();
-
-      audioEngine.play(
-        "tap"
-      );
 
       showSoundToast(
         "Geluid aan"
@@ -1715,9 +1014,11 @@ function ExperienceShell({
             : "Geluid inschakelen"
         }
       >
-        {soundEnabled
-          ? "🔊"
-          : "🔇"}
+        <SpeakerIcon
+          muted={
+            !soundEnabled
+          }
+        />
       </button>
 
       {soundToast && (
