@@ -39,10 +39,17 @@ type SoundType =
   | "tree"
   | "bus"
   | "double"
+  | "clink"
   | "finish";
 
 const SOUND_STORAGE_KEY =
   "busbaas-sound-enabled";
+
+/*
+ * =========================================================
+ * AUDIO ENGINE
+ * =========================================================
+ */
 
 class BusbaasAudioEngine {
   private context:
@@ -50,7 +57,9 @@ class BusbaasAudioEngine {
       null;
 
   private getContext() {
-    if (!this.context) {
+    if (
+      !this.context
+    ) {
       this.context =
         new AudioContext();
     }
@@ -70,9 +79,15 @@ class BusbaasAudioEngine {
         await context.resume();
       }
     } catch {
-      // Audio mag de game nooit blokkeren.
+      // Geluid mag gameplay nooit blokkeren.
     }
   }
+
+  /*
+   * =========================================================
+   * BASIC TONE
+   * =========================================================
+   */
 
   private tone(
     frequency: number,
@@ -116,10 +131,11 @@ class BusbaasAudioEngine {
 
       gain.gain.exponentialRampToValueAtTime(
         Math.max(
-          0.0001,
-          volume
+          volume,
+          0.0001
         ),
-        start + 0.012
+        start +
+          0.008
       );
 
       gain.gain.exponentialRampToValueAtTime(
@@ -140,12 +156,19 @@ class BusbaasAudioEngine {
       );
 
       oscillator.stop(
-        end + 0.03
+        end +
+          0.04
       );
     } catch {
-      // Geen fout voor de speler.
+      // Stil falen.
     }
   }
+
+  /*
+   * =========================================================
+   * FREQUENCY SWEEP
+   * =========================================================
+   */
 
   private sweep(
     from: number,
@@ -198,7 +221,8 @@ class BusbaasAudioEngine {
 
       gain.gain.exponentialRampToValueAtTime(
         volume,
-        start + 0.01
+        start +
+          0.008
       );
 
       gain.gain.exponentialRampToValueAtTime(
@@ -219,17 +243,33 @@ class BusbaasAudioEngine {
       );
 
       oscillator.stop(
-        end + 0.03
+        end +
+          0.04
       );
     } catch {
       // Stil falen.
     }
   }
 
-  private noise(
+  /*
+   * =========================================================
+   * FILTERED NOISE
+   * =========================================================
+   *
+   * Hiermee maken we:
+   * - kaartgeschuif
+   * - kaart over tafel
+   * - klappen/applaus
+   */
+
+  private filteredNoise(
     duration: number,
     volume: number,
-    delay = 0
+    filterType:
+      BiquadFilterType,
+    frequency: number,
+    delay = 0,
+    q = 0.7
   ) {
     try {
       const context =
@@ -263,8 +303,10 @@ class BusbaasAudioEngine {
         index += 1
       ) {
         data[index] =
-          Math.random() *
-            2 -
+          (
+            Math.random() *
+            2
+          ) -
           1;
       }
 
@@ -281,24 +323,45 @@ class BusbaasAudioEngine {
         context.currentTime +
         delay;
 
+      const end =
+        start +
+        duration;
+
       source.buffer =
         buffer;
 
       filter.type =
-        "highpass";
+        filterType;
 
-      filter.frequency.value =
-        1300;
+      filter.frequency.setValueAtTime(
+        frequency,
+        start
+      );
+
+      filter.Q.value =
+        q;
 
       gain.gain.setValueAtTime(
-        volume,
+        0.0001,
         start
       );
 
       gain.gain.exponentialRampToValueAtTime(
-        0.0001,
+        Math.max(
+          volume,
+          0.0001
+        ),
         start +
-          duration
+          Math.min(
+            0.012,
+            duration /
+              3
+          )
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        end
       );
 
       source.connect(
@@ -318,14 +381,237 @@ class BusbaasAudioEngine {
       );
 
       source.stop(
-        start +
-          duration +
-          0.03
+        end +
+          0.04
       );
     } catch {
       // Stil falen.
     }
   }
+
+  /*
+   * =========================================================
+   * CARD SLIDE
+   * =========================================================
+   *
+   * Bewust GEEN klik.
+   *
+   * Twee lagen papier/frictie met een
+   * heel zacht laag tikje aan het einde.
+   */
+
+  private cardSlide() {
+    this.filteredNoise(
+      0.19,
+      0.065,
+      "bandpass",
+      2100,
+      0,
+      0.55
+    );
+
+    this.filteredNoise(
+      0.12,
+      0.038,
+      "highpass",
+      3300,
+      0.045,
+      0.7
+    );
+
+    this.filteredNoise(
+      0.08,
+      0.025,
+      "bandpass",
+      1100,
+      0.095,
+      0.8
+    );
+
+    this.sweep(
+      260,
+      185,
+      0.13,
+      0.014,
+      "triangle",
+      0.03
+    );
+
+    this.tone(
+      105,
+      0.045,
+      0.016,
+      "sine",
+      0.14
+    );
+  }
+
+  /*
+   * =========================================================
+   * GLASSES CLINK
+   * =========================================================
+   */
+
+  private glassesClink() {
+    /*
+     * Eerste glas.
+     */
+
+    this.tone(
+      1470,
+      0.15,
+      0.038,
+      "sine"
+    );
+
+    this.tone(
+      2350,
+      0.12,
+      0.021,
+      "sine",
+      0.008
+    );
+
+    /*
+     * Tweede glas net erachter.
+     */
+
+    this.tone(
+      1760,
+      0.18,
+      0.038,
+      "sine",
+      0.055
+    );
+
+    this.tone(
+      2840,
+      0.12,
+      0.018,
+      "sine",
+      0.064
+    );
+
+    /*
+     * Kleine contacttik.
+     */
+
+    this.filteredNoise(
+      0.035,
+      0.022,
+      "highpass",
+      3800,
+      0.045,
+      0.9
+    );
+  }
+
+  /*
+   * =========================================================
+   * APPLAUSE
+   * =========================================================
+   */
+
+  private applause() {
+    const clapTimes = [
+      0,
+      0.055,
+      0.11,
+      0.17,
+      0.23,
+      0.3,
+      0.37,
+      0.43,
+      0.5,
+      0.58,
+      0.66,
+      0.74,
+      0.83,
+      0.92,
+      1.02,
+      1.12,
+    ];
+
+    clapTimes.forEach(
+      (
+        delay,
+        index
+      ) => {
+        this.filteredNoise(
+          0.075 +
+            (
+              index %
+              3
+            ) *
+              0.012,
+          0.035 +
+            (
+              index %
+              4
+            ) *
+              0.006,
+          "bandpass",
+          1350 +
+            (
+              index %
+              5
+            ) *
+              180,
+          delay,
+          0.8
+        );
+      }
+    );
+
+    /*
+     * Zachte "wooo!"-achtige stijgende toon
+     * achter het applaus.
+     */
+
+    this.sweep(
+      260,
+      620,
+      0.65,
+      0.018,
+      "sine",
+      0.06
+    );
+
+    this.sweep(
+      320,
+      760,
+      0.72,
+      0.014,
+      "triangle",
+      0.28
+    );
+
+    /*
+     * Eindbelletje.
+     */
+
+    this.tone(
+      784,
+      0.25,
+      0.025,
+      "sine",
+      0.92
+    );
+
+    this.tone(
+      1046,
+      0.35,
+      0.027,
+      "sine",
+      1.02
+    );
+  }
+
+  /*
+   * =========================================================
+   * PLAY
+   * =========================================================
+   */
 
   play(
     type:
@@ -342,211 +628,199 @@ class BusbaasAudioEngine {
         void context.resume();
       }
 
-      switch (type) {
-        case "tap":
+      switch (
+        type
+      ) {
+        case "tap": {
           this.tone(
             520,
             0.055,
-            0.035
+            0.03
           );
+
           break;
+        }
 
-        case "card":
-          this.noise(
-            0.055,
-            0.055
-          );
+        case "card": {
+          this.cardSlide();
 
-          this.sweep(
-            330,
-            220,
-            0.07,
-            0.025,
-            "triangle"
-          );
           break;
+        }
 
-        case "correct":
+        case "correct": {
           this.tone(
             620,
-            0.11,
-            0.055
+            0.1,
+            0.045,
+            "sine"
           );
 
           this.tone(
             830,
-            0.15,
-            0.06,
+            0.14,
+            0.05,
             "sine",
             0.085
           );
-          break;
 
-        case "wrong":
+          break;
+        }
+
+        case "wrong": {
           this.sweep(
             260,
             145,
-            0.26,
-            0.075,
+            0.24,
+            0.065,
             "triangle"
           );
 
           this.tone(
             125,
-            0.18,
-            0.03,
+            0.16,
+            0.025,
             "sine",
-            0.08
+            0.07
           );
-          break;
 
-        case "disco":
+          break;
+        }
+
+        case "disco": {
           this.tone(
             523,
-            0.16,
-            0.04,
+            0.14,
+            0.035,
             "square"
           );
 
           this.tone(
             659,
-            0.16,
-            0.04,
+            0.14,
+            0.035,
             "square",
-            0.1
+            0.09
           );
 
           this.tone(
             784,
-            0.18,
-            0.045,
+            0.16,
+            0.04,
             "square",
-            0.2
+            0.18
           );
 
           this.tone(
             1046,
-            0.32,
-            0.055,
+            0.3,
+            0.05,
             "sine",
-            0.3
+            0.27
           );
-          break;
 
-        case "tree":
+          break;
+        }
+
+        case "tree": {
           this.tone(
             330,
             0.13,
-            0.04,
+            0.035,
             "triangle"
           );
 
           this.tone(
             440,
             0.15,
-            0.045,
+            0.04,
             "triangle",
             0.09
           );
 
           this.tone(
             550,
-            0.25,
-            0.05,
+            0.23,
+            0.045,
             "triangle",
             0.18
           );
-          break;
 
-        case "bus":
+          break;
+        }
+
+        case "bus": {
           this.tone(
             165,
-            0.28,
-            0.055,
+            0.26,
+            0.045,
             "sawtooth"
           );
 
           this.tone(
             220,
-            0.28,
-            0.035,
+            0.26,
+            0.027,
             "sawtooth"
           );
 
           this.tone(
             165,
-            0.22,
-            0.05,
+            0.2,
+            0.04,
             "sawtooth",
-            0.34
+            0.32
           );
 
           this.tone(
             220,
-            0.22,
-            0.03,
+            0.2,
+            0.025,
             "sawtooth",
-            0.34
+            0.32
           );
-          break;
 
-        case "double":
+          break;
+        }
+
+        case "double": {
           this.tone(
             170,
-            0.1,
-            0.07,
+            0.09,
+            0.055,
             "square"
           );
 
           this.tone(
             170,
-            0.1,
-            0.07,
+            0.09,
+            0.055,
             "square",
-            0.14
+            0.13
           );
 
           this.sweep(
             500,
             260,
-            0.2,
-            0.035,
+            0.18,
+            0.03,
             "triangle",
-            0.26
+            0.24
           );
+
           break;
+        }
 
-        case "finish":
-          this.tone(
-            392,
-            0.14,
-            0.045
-          );
+        case "clink": {
+          this.glassesClink();
 
-          this.tone(
-            523,
-            0.14,
-            0.05,
-            "sine",
-            0.1
-          );
-
-          this.tone(
-            659,
-            0.14,
-            0.055,
-            "sine",
-            0.2
-          );
-
-          this.tone(
-            784,
-            0.36,
-            0.065,
-            "sine",
-            0.3
-          );
           break;
+        }
+
+        case "finish": {
+          this.applause();
+
+          break;
+        }
       }
     } catch {
       // Audio mag nooit de app crashen.
@@ -557,17 +831,30 @@ class BusbaasAudioEngine {
 const audioEngine =
   new BusbaasAudioEngine();
 
+/*
+ * =========================================================
+ * STORAGE
+ * =========================================================
+ */
+
 function readSoundEnabled() {
   try {
     return (
       localStorage.getItem(
         SOUND_STORAGE_KEY
-      ) !== "false"
+      ) !==
+      "false"
     );
   } catch {
     return true;
   }
 }
+
+/*
+ * =========================================================
+ * APP PHASE
+ * =========================================================
+ */
 
 function detectPhase():
   AppPhase {
@@ -605,6 +892,92 @@ function detectPhase():
 
   return "other";
 }
+
+/*
+ * =========================================================
+ * CARD SIGNATURE
+ * =========================================================
+ *
+ * Dit is de belangrijkste verandering.
+ *
+ * We kijken niet langer alleen naar één specifieke
+ * kaart in de boom.
+ *
+ * We volgen ALLE zichtbare kaartvlakken.
+ *
+ * Zodra die lijst verandert:
+ *
+ * 🃏 kaart schuift
+ *
+ * Daardoor werkt het automatisch bij:
+ *
+ * - voorronde
+ * - eigen kaarten
+ * - onthulde kaart
+ * - boom
+ * - Adtje
+ * - gelijkspel
+ * - buslengte
+ * - aantal open kaarten
+ * - bus
+ * - hoger/lager
+ */
+
+function getCardSignature() {
+  const selector = [
+    ".playing-card",
+    ".revealed-card",
+    ".tree-card-face",
+    ".tree-active-card",
+    ".mini-playing-card",
+    ".setup-card:not(.placeholder)",
+    ".bus-card-face",
+    ".bus-reference-card",
+  ].join(
+    ","
+  );
+
+  const cards =
+    Array.from(
+      document.querySelectorAll(
+        selector
+      )
+    );
+
+  return cards
+    .map(
+      (
+        card,
+        index
+      ) => {
+        const text =
+          card.textContent
+            ?.replace(
+              /\s+/g,
+              " "
+            )
+            .trim() ||
+          "";
+
+        return [
+          index,
+          card.className,
+          text,
+        ].join(
+          ":"
+        );
+      }
+    )
+    .join(
+      "|"
+    );
+}
+
+/*
+ * =========================================================
+ * EXPERIENCE SHELL
+ * =========================================================
+ */
 
 function ExperienceShell({
   children,
@@ -661,8 +1034,14 @@ function ExperienceShell({
       new WeakSet<Element>()
     );
 
-  const previousTreeCardRef =
+  const previousCardSignatureRef =
     useRef("");
+
+  /*
+   * =========================================================
+   * SOUND STORAGE
+   * =========================================================
+   */
 
   useEffect(() => {
     soundEnabledRef.current =
@@ -677,6 +1056,12 @@ function ExperienceShell({
   }, [
     soundEnabled,
   ]);
+
+  /*
+   * =========================================================
+   * UNLOCK AUDIO
+   * =========================================================
+   */
 
   useEffect(() => {
     function unlock() {
@@ -717,6 +1102,28 @@ function ExperienceShell({
       sound
     );
   }
+
+  function playDelayed(
+    sound:
+      SoundType,
+    delay:
+      number
+  ) {
+    window.setTimeout(
+      () => {
+        play(
+          sound
+        );
+      },
+      delay
+    );
+  }
+
+  /*
+   * =========================================================
+   * TRANSITION
+   * =========================================================
+   */
 
   function showTransition(
     nextTransition:
@@ -782,15 +1189,29 @@ function ExperienceShell({
       );
   }
 
+  /*
+   * =========================================================
+   * GAME OBSERVER
+   * =========================================================
+   */
+
   useEffect(() => {
     const root =
       document.getElementById(
         "root"
       );
 
-    if (!root) {
+    if (
+      !root
+    ) {
       return;
     }
+
+    /*
+     * =========================
+     * PHASE
+     * =========================
+     */
 
     function handlePhase() {
       const phase =
@@ -805,17 +1226,25 @@ function ExperienceShell({
         previousPhaseRef.current =
           phase;
 
-        return;
+        previousCardSignatureRef.current =
+          getCardSignature();
+
+        return false;
       }
 
       const previous =
         previousPhaseRef.current;
 
       if (
-        phase === previous
+        phase ===
+        previous
       ) {
-        return;
+        return false;
       }
+
+      /*
+       * VOORRONDE -> BOOM
+       */
 
       if (
         previous ===
@@ -847,6 +1276,10 @@ function ExperienceShell({
           1450
         );
       }
+
+      /*
+       * BOOM -> BUS
+       */
 
       if (
         previous ===
@@ -881,158 +1314,301 @@ function ExperienceShell({
 
       previousPhaseRef.current =
         phase;
+
+      return true;
     }
 
-    function handleSounds() {
-      const cardResult =
-        document.querySelector(
+    /*
+     * =========================
+     * ALLE KAARTBEWEGINGEN
+     * =========================
+     */
+
+    function handleCardMovement(
+      phaseChanged:
+        boolean
+    ) {
+      const signature =
+        getCardSignature();
+
+      const previous =
+        previousCardSignatureRef.current;
+
+      if (
+        previous ===
+        ""
+      ) {
+        previousCardSignatureRef.current =
+          signature;
+
+        return;
+      }
+
+      if (
+        signature ===
+        previous
+      ) {
+        return;
+      }
+
+      previousCardSignatureRef.current =
+        signature;
+
+      /*
+       * Bij een volledige schermovergang
+       * spelen we geen extra kaartgeluid.
+       *
+       * De eerste echte kaart daarna
+       * krijgt hem uiteraard wel.
+       */
+
+      if (
+        phaseChanged
+      ) {
+        return;
+      }
+
+      play(
+        "card"
+      );
+    }
+
+    /*
+     * =========================
+     * RESULTATEN / EFFECTEN
+     * =========================
+     */
+
+    function handleEffects() {
+      /*
+       * VOORRONDE
+       */
+
+      const resultAreas =
+        document.querySelectorAll(
           ".result-area"
         );
 
-      if (
-        cardResult &&
-        !seenElementsRef.current.has(
-          cardResult
-        )
-      ) {
-        seenElementsRef.current.add(
-          cardResult
-        );
+      resultAreas.forEach(
+        (
+          result
+        ) => {
+          if (
+            seenElementsRef.current.has(
+              result
+            )
+          ) {
+            return;
+          }
 
-        const text =
-          cardResult
-            .textContent
-            ?.toLowerCase() ||
-          "";
+          seenElementsRef.current.add(
+            result
+          );
 
-        if (
-          text.includes(
-            "disco"
-          )
-        ) {
-          play(
-            "disco"
-          );
-        } else if (
-          cardResult.classList.contains(
-            "correct"
-          )
-        ) {
-          play(
-            "correct"
-          );
-        } else {
-          play(
-            "wrong"
-          );
+          const text =
+            result.textContent
+              ?.toLowerCase() ||
+            "";
+
+          if (
+            text.includes(
+              "disco"
+            )
+          ) {
+            playDelayed(
+              "disco",
+              130
+            );
+
+            return;
+          }
+
+          if (
+            result.classList.contains(
+              "correct"
+            )
+          ) {
+            playDelayed(
+              "correct",
+              130
+            );
+          } else {
+            playDelayed(
+              "wrong",
+              130
+            );
+          }
         }
-      }
+      );
 
-      const treeCard =
-        document.querySelector(
-          ".tree-active-card"
-        );
+      /*
+       * BUS RESULTAAT
+       */
 
-      const treeCardText =
-        treeCard
-          ?.textContent
-          ?.trim() ||
-        "";
-
-      if (
-        treeCardText &&
-        treeCardText !==
-          previousTreeCardRef.current
-      ) {
-        previousTreeCardRef.current =
-          treeCardText;
-
-        play(
-          "card"
-        );
-      }
-
-      if (
-        !treeCard
-      ) {
-        previousTreeCardRef.current =
-          "";
-      }
-
-      const busResult =
-        document.querySelector(
+      const busResults =
+        document.querySelectorAll(
           ".bus-result"
         );
 
-      if (
-        busResult &&
-        !seenElementsRef.current.has(
-          busResult
-        )
-      ) {
-        seenElementsRef.current.add(
-          busResult
-        );
+      busResults.forEach(
+        (
+          result
+        ) => {
+          if (
+            seenElementsRef.current.has(
+              result
+            )
+          ) {
+            return;
+          }
 
-        if (
-          busResult.classList.contains(
-            "correct"
-          )
-        ) {
-          play(
-            "correct"
+          seenElementsRef.current.add(
+            result
           );
-        } else {
-          play(
-            "wrong"
-          );
+
+          if (
+            result.classList.contains(
+              "correct"
+            )
+          ) {
+            playDelayed(
+              "correct",
+              130
+            );
+          } else {
+            playDelayed(
+              "wrong",
+              130
+            );
+          }
         }
-      }
+      );
 
-      const doublePanel =
-        document.querySelector(
+      /*
+       * DUBBEL IN DE BUS
+       */
+
+      const doublePanels =
+        document.querySelectorAll(
           ".double-panel"
         );
 
-      if (
-        doublePanel &&
-        !seenElementsRef.current.has(
-          doublePanel
-        )
-      ) {
-        seenElementsRef.current.add(
-          doublePanel
+      doublePanels.forEach(
+        (
+          panel
+        ) => {
+          if (
+            seenElementsRef.current.has(
+              panel
+            )
+          ) {
+            return;
+          }
+
+          seenElementsRef.current.add(
+            panel
+          );
+
+          playDelayed(
+            "double",
+            130
+          );
+        }
+      );
+
+      /*
+       * BOOM:
+       * SLOKKEN UITGEDEELD
+       */
+
+      const announcements =
+        document.querySelectorAll(
+          ".game-announcement"
         );
 
-        play(
-          "double"
-        );
-      }
+      announcements.forEach(
+        (
+          announcement
+        ) => {
+          if (
+            seenElementsRef.current.has(
+              announcement
+            )
+          ) {
+            return;
+          }
 
-      const finishedPanel =
-        document.querySelector(
+          const text =
+            announcement.textContent
+              ?.toLowerCase() ||
+            "";
+
+          if (
+            text.includes(
+              "slokken uitgedeeld"
+            ) ||
+            text.includes(
+              "drinken maar"
+            )
+          ) {
+            seenElementsRef.current.add(
+              announcement
+            );
+
+            play(
+              "clink"
+            );
+          }
+        }
+      );
+
+      /*
+       * EINDE
+       */
+
+      const finishedPanels =
+        document.querySelectorAll(
           ".bus-finished-panel"
         );
 
-      if (
-        finishedPanel &&
-        !seenElementsRef.current.has(
-          finishedPanel
-        )
-      ) {
-        seenElementsRef.current.add(
-          finishedPanel
-        );
+      finishedPanels.forEach(
+        (
+          panel
+        ) => {
+          if (
+            seenElementsRef.current.has(
+              panel
+            )
+          ) {
+            return;
+          }
 
-        play(
-          "finish"
-        );
-      }
+          seenElementsRef.current.add(
+            panel
+          );
+
+          play(
+            "finish"
+          );
+        }
+      );
     }
 
+    /*
+     * =========================
+     * UPDATE
+     * =========================
+     */
+
     function update() {
-      handlePhase();
-      handleSounds();
+      const phaseChanged =
+        handlePhase();
+
+      handleCardMovement(
+        phaseChanged
+      );
+
+      handleEffects();
     }
 
     const observer =
@@ -1074,15 +1650,31 @@ function ExperienceShell({
     };
   }, []);
 
+  /*
+   * =========================================================
+   * SOUND TOGGLE
+   * =========================================================
+   */
+
   async function toggleSound() {
     const next =
       !soundEnabled;
+
+    /*
+     * Ref direct aanpassen zodat geluid
+     * onmiddellijk reageert.
+     */
+
+    soundEnabledRef.current =
+      next;
 
     setSoundEnabled(
       next
     );
 
-    if (next) {
+    if (
+      next
+    ) {
       await audioEngine.unlock();
 
       audioEngine.play(
@@ -1130,7 +1722,9 @@ function ExperienceShell({
 
       {soundToast && (
         <div className="experience-sound-toast">
-          {soundToast}
+          {
+            soundToast
+          }
         </div>
       )}
 
@@ -1174,19 +1768,27 @@ function ExperienceShell({
 
           <div className="experience-transition-content">
             <span className="experience-transition-eyebrow">
-              {transition.eyebrow}
+              {
+                transition.eyebrow
+              }
             </span>
 
             <div className="experience-transition-icon">
-              {transition.icon}
+              {
+                transition.icon
+              }
             </div>
 
             <h2>
-              {transition.title}
+              {
+                transition.title
+              }
             </h2>
 
             <p>
-              {transition.text}
+              {
+                transition.text
+              }
             </p>
           </div>
         </div>

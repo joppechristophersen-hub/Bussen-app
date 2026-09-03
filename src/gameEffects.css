@@ -4,6 +4,12 @@
  * =========================================================
  */
 
+/*
+ * =========================================================
+ * SOUND BUTTON
+ * =========================================================
+ */
+
 .experience-sound-button {
   position: fixed;
 
@@ -122,6 +128,12 @@ body:has(
   pointer-events: none;
 }
 
+/*
+ * =========================================================
+ * SOUND TOAST
+ * =========================================================
+ */
+
 .experience-sound-toast {
   position: fixed;
 
@@ -219,6 +231,12 @@ body:has(
   }
 }
 
+/*
+ * =========================================================
+ * TRANSITION LAYER
+ * =========================================================
+ */
+
 .experience-transition-layer {
   position: fixed;
 
@@ -247,8 +265,7 @@ body:has(
       )
     );
 
-  background:
-    #07100c;
+  background: #07100c;
 
   color: #ffffff;
 
@@ -319,6 +336,12 @@ body:has(
     opacity: 1;
   }
 }
+
+/*
+ * =========================================================
+ * TRANSITION CONTENT
+ * =========================================================
+ */
 
 .experience-transition-content {
   position: relative;
@@ -470,6 +493,12 @@ body:has(
   line-height: 1.45;
 }
 
+/*
+ * =========================================================
+ * TREE TRANSITION
+ * =========================================================
+ */
+
 .experience-transition-tree
 .experience-transition-icon {
   animation:
@@ -534,6 +563,17 @@ body:has(
   font-size: 2rem;
 
   opacity: 0;
+
+  filter:
+    drop-shadow(
+      0 8px 15px
+      rgba(
+        0,
+        0,
+        0,
+        0.3
+      )
+    );
 
   animation:
     experienceTreeCardMove
@@ -625,6 +665,12 @@ body:has(
       );
   }
 }
+
+/*
+ * =========================================================
+ * BUS TRANSITION
+ * =========================================================
+ */
 
 .experience-transition-bus
 .experience-transition-icon {
@@ -745,6 +791,45 @@ body:has(
   }
 }
 
+/*
+ * =========================================================
+ * CONTINUOUS CONFETTI
+ * =========================================================
+ *
+ * App.tsx maakt de confetti al aan.
+ *
+ * We laten iedere confetti-piece nu opnieuw
+ * beginnen zolang het eindscherm bestaat.
+ */
+
+body:has(
+  .bus-finished-panel
+)
+.confetti-piece {
+  animation-iteration-count:
+    infinite !important;
+}
+
+/*
+ * De verschillende bestaande durations uit
+ * App.tsx blijven behouden.
+ *
+ * Daardoor valt niet alles tegelijk.
+ */
+
+body:has(
+  .bus-finished-panel
+)
+.confetti-layer {
+  display: block;
+}
+
+/*
+ * =========================================================
+ * MOBILE
+ * =========================================================
+ */
+
 @media (
   max-width:
     430px
@@ -778,6 +863,10 @@ body:has(
     font-size: 1.05rem;
   }
 
+  .experience-transition-content {
+    width: 100%;
+  }
+
   .experience-transition-icon {
     width: 94px;
     height: 94px;
@@ -809,6 +898,12 @@ body:has(
   }
 }
 
+/*
+ * =========================================================
+ * LANDSCAPE
+ * =========================================================
+ */
+
 @media (
   max-height:
     500px
@@ -831,7 +926,17 @@ and (
   .experience-transition-content h2 {
     font-size: 1.8rem;
   }
+
+  .experience-transition-content p {
+    font-size: 0.7rem;
+  }
 }
+
+/*
+ * =========================================================
+ * REDUCED MOTION
+ * =========================================================
+ */
 
 @media (
   prefers-reduced-motion:
@@ -845,6 +950,14 @@ and (
     animation-duration:
       0.01ms !important;
 
+    animation-iteration-count:
+      1 !important;
+  }
+
+  body:has(
+    .bus-finished-panel
+  )
+  .confetti-piece {
     animation-iteration-count:
       1 !important;
   }
