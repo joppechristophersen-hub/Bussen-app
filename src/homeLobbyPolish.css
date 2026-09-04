@@ -3434,3 +3434,349 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
     animation-duration: .35s !important;
   }
 }
+
+/* =========================================================
+   BUSBAAS V8 — FEEDBACK 0227 T/M 0231 + RUSTIGERE TIMING
+   =========================================================
+   - popup emoji's op neutrale contrastbadge
+   - huidige-kaart-label ruimer
+   - JIJ compact en gecentreerd
+   - resterend groen/aqua naar schoolbus-geel
+   - buskaarten licht speels gedraaid
+   - shop GRATIS / Classic accents geel
+   - toggle strak om de thumb
+   - hard/onnatuurlijk kaartschaduw verwijderd
+   - boomovergang rustiger afgestemd op langere timer
+   ========================================================= */
+
+/* Eén merkaccent: legacy aqua/groen mag nergens meer de actieve UI bepalen. */
+:root {
+  --bb-aqua: var(--bb-yellow) !important;
+  --bb-aqua-deep: var(--bb-yellow-deep) !important;
+}
+
+/* ---------------------------------------------------------
+   1. POPUPS — emoji niet meer in een los geel blok
+   --------------------------------------------------------- */
+.announcement-layer .game-announcement .announcement-icon,
+.game-announcement .announcement-icon {
+  width: 64px !important;
+  height: 64px !important;
+  min-width: 64px !important;
+  min-height: 64px !important;
+  margin: 0 auto 14px !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 2px solid color-mix(in srgb, var(--bb-yellow) 72%, var(--bb-line-strong)) !important;
+  border-radius: 50% !important;
+  background: color-mix(in srgb, var(--bb-card) 90%, var(--bb-yellow) 10%) !important;
+  color: var(--bb-ink) !important;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, .12) !important;
+  font-size: 2rem !important;
+  line-height: 1 !important;
+  overflow: visible !important;
+}
+
+.announcement-layer .game-announcement .announcement-icon::before,
+.announcement-layer .game-announcement .announcement-icon::after,
+.game-announcement .announcement-icon::before,
+.game-announcement .announcement-icon::after {
+  content: none !important;
+  display: none !important;
+}
+
+.game-announcement .announcement-label {
+  margin-top: 2px !important;
+}
+
+/* ---------------------------------------------------------
+   2. BOOM — labels en spelersinformatie ademruimte
+   --------------------------------------------------------- */
+.tree-active-label {
+  min-height: 36px !important;
+  padding: 8px 18px !important;
+  margin: 0 auto 14px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  border-radius: 999px !important;
+  line-height: 1.05 !important;
+}
+
+.tree-hands .player-info {
+  min-width: 0 !important;
+  align-items: center !important;
+  text-align: center !important;
+}
+
+.tree-hands .player-info > span {
+  width: 100% !important;
+  text-align: center !important;
+}
+
+.tree-hands .player-info small {
+  width: auto !important;
+  min-width: 52px !important;
+  max-width: max-content !important;
+  min-height: 26px !important;
+  margin: 6px auto 0 !important;
+  padding: 4px 12px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  align-self: center !important;
+  border: 1px solid color-mix(in srgb, var(--bb-yellow) 74%, var(--bb-line-strong)) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--bb-yellow) 14%, transparent) !important;
+  color: var(--bb-yellow) !important;
+  font-size: .68rem !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  letter-spacing: .10em !important;
+  text-align: center !important;
+}
+
+.tree-hands .section-title > span,
+.tree-hands .card-count,
+.game-players .card-count,
+.game-card .card-count {
+  min-height: 34px !important;
+  padding: 6px 15px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+  white-space: nowrap !important;
+}
+
+/* ---------------------------------------------------------
+   3. SPELERS — geen resterende groene actieve badges
+   --------------------------------------------------------- */
+.game-player.active .player-avatar,
+.game-player.current .player-avatar,
+.game-player.is-active .player-avatar,
+.player-avatar.active,
+.bus-choice-panel .player-avatar,
+.bus-pass-player .player-avatar,
+[class*="driver"] .player-avatar,
+[class*="passenger"] .player-avatar {
+  border-color: var(--bb-yellow) !important;
+  color: var(--bb-yellow) !important;
+  box-shadow: none !important;
+}
+
+.game-player.active .player-info small,
+.game-player.current .player-info small,
+.game-player.is-active .player-info small,
+.game-player .player-info small,
+[class*="turn"] small,
+[class*="active-player"] small {
+  border-color: color-mix(in srgb, var(--bb-yellow) 70%, transparent) !important;
+  color: var(--bb-yellow) !important;
+}
+
+/* Veel oudere componenten gebruiken success/accent classes als teal/groen. */
+:is(.game-card, .tree-screen, .bus-screen) :is(
+  [class*="accent"],
+  [class*="active-label"],
+  [class*="turn-label"],
+  [class*="you-label"]
+) {
+  --accent: var(--bb-yellow) !important;
+}
+
+/* ---------------------------------------------------------
+   4. KAARTSCHADUW — alleen zachte diepte, geen los voetstuk
+   --------------------------------------------------------- */
+.playing-card,
+.revealed-card,
+.tree-card-face,
+.tree-card-back,
+.tree-active-card,
+.bus-card-face,
+.bus-card-back,
+.bus-reference-card,
+.mini-playing-card,
+.setup-card:not(.placeholder) {
+  box-shadow: 0 4px 11px rgba(0, 0, 0, .13) !important;
+}
+
+.tree-playing-card,
+.tree-playing-card.double,
+.bus-card-slot {
+  box-shadow: none !important;
+}
+
+/* ---------------------------------------------------------
+   5. BUS — kaarten een klein beetje nonchalant op tafel
+   --------------------------------------------------------- */
+.bus-track .bus-card-slot:nth-child(4n + 1) :is(.bus-card-face, .bus-card-back) {
+  transform: rotate(-1.4deg) translateY(1px) !important;
+}
+
+.bus-track .bus-card-slot:nth-child(4n + 2) :is(.bus-card-face, .bus-card-back) {
+  transform: rotate(.9deg) translateY(-1px) !important;
+}
+
+.bus-track .bus-card-slot:nth-child(4n + 3) :is(.bus-card-face, .bus-card-back) {
+  transform: rotate(-.7deg) !important;
+}
+
+.bus-track .bus-card-slot:nth-child(4n) :is(.bus-card-face, .bus-card-back) {
+  transform: rotate(1.2deg) translateY(1px) !important;
+}
+
+/* Actieve kaart iets duidelijker, maar dezelfde speelse rotatie blijft behouden. */
+.bus-track .bus-card-slot.current :is(.bus-card-face, .bus-card-back),
+.bus-track .bus-card-slot.active :is(.bus-card-face, .bus-card-back) {
+  border-color: var(--bb-yellow) !important;
+}
+
+/* ---------------------------------------------------------
+   6. SHOP — alle restgroen eruit + strakke toggle
+   --------------------------------------------------------- */
+:is([class*="commerce"], [class*="shop"]) :is(
+  [class*="free"],
+  [class*="gratis"],
+  [class*="included"],
+  [class*="owned"],
+  [class*="status-badge"],
+  [class*="free-badge"],
+  [class*="badge-free"]
+) {
+  border-color: rgba(36, 37, 31, .20) !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: none !important;
+}
+
+/* Theme preview indicators — Busbaas Classic hoort geel te zijn. */
+:is([class*="commerce"], [class*="shop"]) :is(
+  [class*="classic"],
+  [class*="preview"],
+  [class*="theme"]
+) :is(
+  [class*="dot"],
+  [class*="indicator"],
+  [class*="accent"],
+  [class*="status"]
+) {
+  border-color: rgba(36, 37, 31, .20) !important;
+  background: var(--bb-yellow) !important;
+  box-shadow: none !important;
+}
+
+/* Als de Classic-preview zelf statuskleur via custom properties krijgt. */
+:is([class*="commerce"], [class*="shop"]) [class*="classic"] {
+  --accent: var(--bb-yellow) !important;
+  --theme-accent: var(--bb-yellow) !important;
+  --commerce-accent: var(--bb-yellow) !important;
+}
+
+/* Toggle: 24px thumb + 2px ruimte aan iedere kant = strak 52x30. */
+:is([class*="commerce"], [class*="shop"]) :is([class*="toggle"], [class*="switch"]) {
+  width: 52px !important;
+  height: 30px !important;
+  min-width: 52px !important;
+  min-height: 30px !important;
+  max-width: 52px !important;
+  max-height: 30px !important;
+  padding: 2px !important;
+  border: 1px solid rgba(36, 37, 31, .20) !important;
+  border-radius: 999px !important;
+  box-sizing: border-box !important;
+  background: var(--bb-yellow) !important;
+  box-shadow: none !important;
+}
+
+:is([class*="commerce"], [class*="shop"]) :is([class*="toggle"], [class*="switch"])::before,
+:is([class*="commerce"], [class*="shop"]) :is([class*="toggle"], [class*="switch"])::after,
+:is([class*="commerce"], [class*="shop"]) :is([class*="toggle"], [class*="switch"]) > :is(
+  span,
+  [class*="thumb"],
+  [class*="knob"],
+  [class*="handle"]
+) {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  max-width: 24px !important;
+  max-height: 24px !important;
+  border-radius: 50% !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .16) !important;
+}
+
+/* Shopbuttons rustig: geen onderplank. */
+:is([class*="commerce"], [class*="shop"]) button {
+  box-shadow: 0 3px 9px rgba(0, 0, 0, .10) !important;
+}
+
+/* ---------------------------------------------------------
+   7. BOOMOVERGANG — langer, rustiger en leesbaar
+   --------------------------------------------------------- */
+.experience-transition-tree .experience-tree-cards span {
+  animation-duration: 2.25s !important;
+  animation-timing-function: cubic-bezier(.18,.72,.18,1) !important;
+}
+
+.experience-transition-tree .experience-tree-cards span:nth-child(1) { animation-delay: .05s !important; }
+.experience-transition-tree .experience-tree-cards span:nth-child(2) { animation-delay: .18s !important; }
+.experience-transition-tree .experience-tree-cards span:nth-child(3) { animation-delay: .31s !important; }
+.experience-transition-tree .experience-tree-cards span:nth-child(4) { animation-delay: .44s !important; }
+
+.experience-transition-tree .experience-transition-content {
+  animation: bbTreeTextInV8 2.75s ease both !important;
+}
+
+@keyframes bbTreeTextInV8 {
+  0%, 43% {
+    opacity: 0;
+    transform: translateY(12px) scale(.98);
+  }
+  62%, 100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Busovergang krijgt rustiger in/uit; timer staat in ExperienceShell op 3 s. */
+.experience-transition-bus .experience-transition-content {
+  animation-duration: 1.05s !important;
+  animation-timing-function: ease-out !important;
+}
+
+.experience-transition-bus .experience-road-line {
+  animation-duration: 1.8s !important;
+}
+
+/* ---------------------------------------------------------
+   8. MOBIEL
+   --------------------------------------------------------- */
+@media (max-width: 520px) {
+  .announcement-layer .game-announcement .announcement-icon,
+  .game-announcement .announcement-icon {
+    width: 60px !important;
+    height: 60px !important;
+    min-width: 60px !important;
+    min-height: 60px !important;
+    font-size: 1.85rem !important;
+  }
+
+  .tree-active-label {
+    min-height: 35px !important;
+    padding: 8px 16px !important;
+    margin-bottom: 13px !important;
+  }
+
+  .tree-hands .player-info small {
+    min-width: 48px !important;
+    min-height: 25px !important;
+    padding: 4px 10px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bus-track .bus-card-slot :is(.bus-card-face, .bus-card-back) {
+    transform: none !important;
+  }
+}

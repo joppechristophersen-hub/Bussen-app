@@ -1053,7 +1053,7 @@ function ExperienceShell({
             icon:
               "🌲",
           },
-          1450
+          3300
         );
       }
 
@@ -1080,7 +1080,7 @@ function ExperienceShell({
             icon:
               "🚌",
           },
-          1200
+          3000
         );
       }
 

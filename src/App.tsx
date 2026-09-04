@@ -302,29 +302,6 @@ type StockShuffleNotice = {
   count: number;
 };
 
-type SoundEffectPayload = {
-  type:
-    | "card"
-    | "card-result"
-    | "bus-card-result"
-    | "glass"
-    | "bus-horn"
-    | "finish";
-
-  result?:
-    | "correct"
-    | "wrong"
-    | "disco";
-
-  eventId?: string;
-
-  variant?: number;
-
-  playAt?: number;
-
-  localPlayAt?: number;
-};
-
 const socket = io(
   "https://bussen-server.onrender.com",
   {
@@ -543,28 +520,6 @@ function App() {
         [],
     });
 
-  /*
-   * =========================
-   * AUDIO KLOK
-   * =========================
-   *
-   * We meten het verschil tussen de klok van
-   * dit apparaat en die van de server.
-   *
-   * Daardoor kan ieder toestel hetzelfde
-   * toekomstige afspeelmoment gebruiken.
-   */
-  const soundServerOffsetRef =
-    useRef(0);
-
-  const soundClockReadyRef =
-    useRef(false);
-
-  const soundSyncTimersRef =
-    useRef<number[]>(
-      []
-    );
-
   useEffect(() => {
     const params =
       new URLSearchParams(
@@ -605,7 +560,7 @@ function App() {
             null
           );
         },
-        2600
+        4000
       );
 
     return () => {
@@ -631,7 +586,7 @@ function App() {
             null
           );
         },
-        2400
+        5000
       );
 
     return () => {
@@ -1006,177 +961,6 @@ function App() {
       });
     }
 
-    /*
-     * =========================
-     * SERVERGESTUURDE SOUNDS
-     * =========================
-     *
-     * Voor echte gelijktijdigheid meten we
-     * eerst het klokverschil met de server.
-     */
-    function syncSoundClock() {
-      if (
-        !socket.connected
-      ) {
-        return;
-      }
-
-      const samples:
-        {
-          rtt: number;
-          offset: number;
-        }[] =
-        [];
-
-      let attempt =
-        0;
-
-      const runProbe =
-        () => {
-          if (
-            !socket.connected
-          ) {
-            return;
-          }
-
-          const startedAt =
-            Date.now();
-
-          socket.emit(
-            "sound-sync",
-
-            (
-              response: {
-                serverNow?:
-                  number;
-              }
-            ) => {
-              const endedAt =
-                Date.now();
-
-              const serverNow =
-                Number(
-                  response?.serverNow
-                );
-
-              if (
-                Number.isFinite(
-                  serverNow
-                )
-              ) {
-                const rtt =
-                  endedAt -
-                  startedAt;
-
-                const midpoint =
-                  (
-                    startedAt +
-                    endedAt
-                  ) /
-                  2;
-
-                samples.push({
-                  rtt,
-
-                  offset:
-                    serverNow -
-                    midpoint,
-                });
-              }
-
-              attempt += 1;
-
-              if (
-                attempt <
-                5
-              ) {
-                const timer =
-                  window.setTimeout(
-                    runProbe,
-                    70
-                  );
-
-                soundSyncTimersRef.current.push(
-                  timer
-                );
-
-                return;
-              }
-
-              if (
-                samples.length ===
-                0
-              ) {
-                return;
-              }
-
-              samples.sort(
-                (
-                  a,
-                  b
-                ) =>
-                  a.rtt -
-                  b.rtt
-              );
-
-              const best =
-                samples[0];
-
-              soundServerOffsetRef.current =
-                best.offset;
-
-              soundClockReadyRef.current =
-                true;
-            }
-          );
-        };
-
-      runProbe();
-    }
-
-    function handleSocketConnect() {
-      soundClockReadyRef.current =
-        false;
-
-      syncSoundClock();
-    }
-
-    function handleSoundEffect(
-      effect:
-        SoundEffectPayload
-    ) {
-      const serverPlayAt =
-        Number(
-          effect?.playAt
-        );
-
-      const localPlayAt =
-        Number.isFinite(
-          serverPlayAt
-        )
-          ? serverPlayAt -
-            (
-              soundClockReadyRef.current
-                ? soundServerOffsetRef.current
-                : 0
-            )
-          : Date.now() +
-            80;
-
-      window.dispatchEvent(
-        new CustomEvent(
-          "busbaas-sound-effect",
-          {
-            detail: {
-              ...effect,
-
-              localPlayAt,
-            },
-          }
-        )
-      );
-    }
-
     function handleRoomClosed() {
       alert(
         "De host heeft de kamer gesloten."
@@ -1196,11 +980,6 @@ function App() {
     function handleReturnHome() {
       resetToHome();
     }
-
-    socket.on(
-      "connect",
-      handleSocketConnect
-    );
 
     socket.on(
       "players-updated",
@@ -1233,11 +1012,6 @@ function App() {
     );
 
     socket.on(
-      "sound-effect",
-      handleSoundEffect
-    );
-
-    socket.on(
       "room-closed",
       handleRoomClosed
     );
@@ -1252,18 +1026,7 @@ function App() {
       handleReturnHome
     );
 
-    if (
-      socket.connected
-    ) {
-      syncSoundClock();
-    }
-
     return () => {
-      socket.off(
-        "connect",
-        handleSocketConnect
-      );
-
       socket.off(
         "players-updated",
         handlePlayersUpdated
@@ -1295,11 +1058,6 @@ function App() {
       );
 
       socket.off(
-        "sound-effect",
-        handleSoundEffect
-      );
-
-      socket.off(
         "room-closed",
         handleRoomClosed
       );
@@ -1313,17 +1071,6 @@ function App() {
         "return-home",
         handleReturnHome
       );
-
-      soundSyncTimersRef.current.forEach(
-        (timer) => {
-          window.clearTimeout(
-            timer
-          );
-        }
-      );
-
-      soundSyncTimersRef.current =
-        [];
     };
   }, []);
 
