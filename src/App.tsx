@@ -703,15 +703,30 @@ function App() {
         window.location.search
       );
 
-    const roomFromUrl =
+    const legacyRoom =
       params
         .get("room")
+        ?.trim()
+        .toUpperCase();
+
+    const pathMatch =
+      window.location.pathname.match(
+        /^\/join\/([A-Z0-9]{5})\/?$/i
+      );
+
+    const pathRoom =
+      pathMatch?.[1]
         ?.toUpperCase();
+
+    const roomFromUrl =
+      pathRoom ||
+      legacyRoom;
 
     if (
       roomFromUrl &&
-      roomFromUrl.length ===
-        5
+      /^[A-Z0-9]{5}$/.test(
+        roomFromUrl
+      )
     ) {
       setJoinCode(
         roomFromUrl
@@ -2580,7 +2595,12 @@ function App() {
   }
 
   function getJoinUrl() {
-    return `${window.location.origin}/?room=${roomCode}`;
+    const code =
+      roomCode
+        .trim()
+        .toUpperCase();
+
+    return `${window.location.origin}/join/${code}`;
   }
 
   const stepNames = [
