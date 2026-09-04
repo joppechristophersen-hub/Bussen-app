@@ -2421,3 +2421,406 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
   box-shadow: none !important;
   color: var(--bb-yellow) !important;
 }
+
+/* =========================================================
+   BUSBAAS V6 — SCREENSHOT POLISH PASS
+   =========================================================
+   Gebaseerd op mobiele screenshots 0212 t/m 0219.
+   Doel: geen losse gele balken, meer ruimte bij checkpoints,
+   busbaan rustiger, setup volledig geel, shop zonder teal/groen.
+   ========================================================= */
+
+/* 1) Geel alleen als doelgericht accent — geen losse zij-/bovenbalken */
+.turn-message,
+.tree-message,
+.tree-active-panel,
+.tree-distribute-panel,
+.bus-choice-panel,
+.checkpoint-panel,
+.bus-finished-panel {
+  border: 1px solid var(--bb-line-strong) !important;
+  border-left-width: 1px !important;
+  border-top-width: 1px !important;
+  border-left-color: var(--bb-line-strong) !important;
+  border-top-color: var(--bb-line-strong) !important;
+  box-shadow: none !important;
+}
+
+.tree-active-panel,
+.tree-distribute-panel,
+.tree-message,
+.bus-choice-panel,
+.checkpoint-panel,
+.bus-finished-panel,
+.turn-message {
+  background: var(--bb-soft) !important;
+}
+
+/* Actieve labels blijven geel, maar compact en bewust geplaatst. */
+.tree-active-label,
+.finish-label,
+.announcement-label {
+  width: fit-content !important;
+  max-width: calc(100% - 24px) !important;
+  margin-inline: auto !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: none !important;
+}
+
+/* 2) BOOM — dubbele kaart echt afwijkend en badge kleiner */
+.tree-playing-card.double {
+  width: clamp(66px, 19vw, 82px) !important;
+  height: clamp(48px, 13.5vw, 58px) !important;
+  min-width: clamp(66px, 19vw, 82px) !important;
+  min-height: clamp(48px, 13.5vw, 58px) !important;
+  align-self: center !important;
+}
+
+.tree-playing-card.double .tree-card-face,
+.tree-playing-card.double .tree-card-back {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.double-badge {
+  top: 5px !important;
+  right: 5px !important;
+  min-width: 30px !important;
+  height: 30px !important;
+  padding: 0 7px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  border: 1px solid rgba(36,37,31,.18) !important;
+  border-radius: 999px !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  font-size: .72rem !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  box-shadow: none !important;
+}
+
+/* 3) BUS SETUP — actieve stappen geel i.p.v. teal/groen */
+.bus-setup-steps {
+  display: grid !important;
+  gap: 10px !important;
+}
+
+.bus-setup-step {
+  box-sizing: border-box !important;
+  min-height: 82px !important;
+  padding: 13px 15px !important;
+  border: 1px solid var(--bb-line) !important;
+  border-radius: 17px !important;
+  background: var(--bb-card) !important;
+  color: var(--bb-ink) !important;
+  box-shadow: none !important;
+}
+
+.bus-setup-step > span {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 1px solid var(--bb-line-strong) !important;
+  border-radius: 999px !important;
+  background: #24251f !important;
+  color: var(--bb-yellow) !important;
+  font-weight: 950 !important;
+  box-shadow: none !important;
+}
+
+.bus-setup-step.active {
+  border-color: rgba(217,157,32,.38) !important;
+  background: color-mix(in srgb, var(--bb-yellow) 8%, var(--bb-card)) !important;
+}
+
+.bus-setup-step.active > span {
+  border-color: rgba(36,37,31,.20) !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+}
+
+.bus-setup-step.completed {
+  opacity: 1 !important;
+  background: var(--bb-soft) !important;
+}
+
+.bus-setup-step.completed > span {
+  background: #24251f !important;
+  color: var(--bb-yellow) !important;
+}
+
+.bus-setup-step strong,
+.bus-setup-step p {
+  color: var(--bb-ink) !important;
+}
+
+.bus-setup-step p {
+  color: var(--bb-ink-soft) !important;
+}
+
+/* 4) BUSBAAN — verticale gele strepen weg + ruimte voor checkpointlabels */
+.bus-track {
+  box-sizing: border-box !important;
+  background: #30312b !important;
+  border: 2px solid rgba(255,248,223,.10) !important;
+  border-radius: 20px !important;
+  padding-top: 12px !important;
+  padding-bottom: 38px !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.035) !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  scrollbar-width: none;
+}
+
+.bus-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Oude weg-/checkpointstrepen volledig uitschakelen. */
+.bus-track::before,
+.bus-track::after,
+.bus-card-slot::before,
+.bus-card-slot::after,
+.bus-card-slot.checkpoint::before,
+.bus-card-slot.checkpoint::after,
+.bus-card-slot.current::before,
+.bus-card-slot.current::after,
+.bus-card-slot.passed::before,
+.bus-card-slot.passed::after {
+  content: none !important;
+  display: none !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Checkpointvlaggen rustig op eigen regel onder de kaarten. */
+.bus-card-slot.checkpoint > small,
+.bus-card-slot.current > small {
+  top: calc(100% + 9px) !important;
+  min-height: 24px !important;
+  padding: 4px 8px !important;
+  border: 1px solid rgba(36,37,31,.20) !important;
+  border-radius: 999px !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: none !important;
+  z-index: 5 !important;
+}
+
+/* Track en volgende statuskaart niet meer tegen elkaar aan. */
+.bus-track + .bus-choice-panel,
+.bus-track + .waiting-message,
+.bus-track + .bus-finished-panel,
+.bus-track + .double-panel,
+.bus-track + .bus-ready-panel {
+  margin-top: 16px !important;
+}
+
+.bus-choice-panel,
+.bus-finished-panel {
+  margin-top: 16px !important;
+}
+
+/* Huidige kaart: alleen nette outline, geen extra stroken. */
+.bus-card-slot.current .bus-card-face,
+.bus-card-slot.current .bus-card-back {
+  outline: 3px solid var(--bb-yellow) !important;
+  outline-offset: 3px !important;
+}
+
+/* 5) EINDSCHERM — trophy als compacte badge; nooit een horizontale balk */
+.finish-trophy {
+  width: 68px !important;
+  height: 62px !important;
+  min-width: 68px !important;
+  min-height: 62px !important;
+  max-width: 68px !important;
+  margin: 0 auto 10px !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 2px solid #24251f !important;
+  border-radius: 18px !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: none !important;
+  font-size: 2rem !important;
+}
+
+.bus-finished-panel::before,
+.bus-finished-panel::after,
+.finish-trophy::before,
+.finish-trophy::after {
+  content: none !important;
+  display: none !important;
+}
+
+.bus-finished-panel {
+  padding-top: 18px !important;
+}
+
+/* 6) SHOP — resterend teal/groen naar Busbaas-geel en controls compacter */
+:is(
+  .commerce-shop-panel,
+  .commerce-shop-card,
+  .commerce-shop-sheet,
+  .commerce-store-panel,
+  [class*="commerce-shop"],
+  [class*="commerce-store"],
+  [class*="shop-panel"],
+  [class*="shop-sheet"]
+) {
+  --commerce-accent: var(--bb-yellow) !important;
+  --commerce-accent-strong: var(--bb-yellow-deep) !important;
+}
+
+/* Kleine eyebrow/brand labels boven de shoptitel. */
+:is(
+  [class*="commerce-shop"],
+  [class*="commerce-store"],
+  [class*="shop-panel"],
+  [class*="shop-sheet"]
+) :is([class*="eyebrow"], [class*="brand"], [class*="kicker"]) {
+  color: var(--bb-yellow) !important;
+}
+
+/* GRATIS / free badges niet meer groen. */
+:is(
+  [class*="commerce-shop"],
+  [class*="commerce-store"],
+  [class*="shop-panel"],
+  [class*="shop-sheet"]
+) :is([class*="free"], [class*="gratis"], [class*="badge"]) {
+  border-color: rgba(36,37,31,.18) !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: none !important;
+}
+
+/* Theme-toggle: minder groot/chunky, geel i.p.v. groen. */
+:is(
+  [class*="commerce-shop"],
+  [class*="commerce-store"],
+  [class*="shop-panel"],
+  [class*="shop-sheet"]
+) :is([class*="toggle"], [class*="switch"]) {
+  border-color: rgba(36,37,31,.18) !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: none !important;
+}
+
+:is(
+  [class*="commerce-shop"],
+  [class*="commerce-store"],
+  [class*="shop-panel"],
+  [class*="shop-sheet"]
+) :is([class*="toggle"], [class*="switch"])::before,
+:is(
+  [class*="commerce-shop"],
+  [class*="commerce-store"],
+  [class*="shop-panel"],
+  [class*="shop-sheet"]
+) :is([class*="toggle"], [class*="switch"])::after {
+  box-shadow: none !important;
+}
+
+/* Theme previews: teal statusdots naar geel. */
+:is(
+  [class*="commerce-shop"],
+  [class*="commerce-store"],
+  [class*="shop-panel"],
+  [class*="shop-sheet"]
+) :is([class*="preview"], [class*="swatch"], [class*="theme"])
+  :is([class*="dot"], [class*="indicator"], [class*="accent"]) {
+  background: var(--bb-yellow) !important;
+  border-color: rgba(36,37,31,.18) !important;
+  box-shadow: none !important;
+}
+
+/* Sluitknop: compact, echt vierkant en niet zwevend als grote cirkel. */
+:is(
+  .commerce-shop-close,
+  .commerce-close-button,
+  [class*="commerce-shop"][class*="close"],
+  [class*="commerce-store"][class*="close"],
+  [class*="shop-"][class*="close"]
+) {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 1px solid var(--bb-line-strong) !important;
+  border-radius: 14px !important;
+  background: var(--bb-soft) !important;
+  color: var(--bb-ink) !important;
+  box-shadow: none !important;
+}
+
+/* Shop tabs niet laten afkappen tegen de rechterrand. */
+:is(
+  [class*="commerce-shop"],
+  [class*="commerce-store"],
+  [class*="shop-panel"],
+  [class*="shop-sheet"]
+) :is([class*="tabs"], [class*="categories"], [class*="nav"]) {
+  padding-right: 8px !important;
+  gap: 8px !important;
+  overflow-x: auto !important;
+  scrollbar-width: none;
+}
+
+/* 7) MOBIEL — screenshots iPhone */
+@media (max-width: 520px) {
+  .bus-track {
+    padding-top: 10px !important;
+    padding-bottom: 40px !important;
+    border-radius: 17px !important;
+  }
+
+  .bus-card-slot.checkpoint > small,
+  .bus-card-slot.current > small {
+    top: calc(100% + 8px) !important;
+    font-size: .64rem !important;
+  }
+
+  .bus-choice-panel,
+  .bus-finished-panel {
+    margin-top: 15px !important;
+  }
+
+  .bus-setup-step {
+    min-height: 76px !important;
+    padding: 12px 13px !important;
+  }
+
+  .bus-setup-step > span {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+  }
+
+  .tree-playing-card.double {
+    width: clamp(62px, 18vw, 76px) !important;
+    height: clamp(46px, 13vw, 55px) !important;
+    min-width: clamp(62px, 18vw, 76px) !important;
+    min-height: clamp(46px, 13vw, 55px) !important;
+  }
+
+  .finish-trophy {
+    width: 62px !important;
+    height: 58px !important;
+    min-width: 62px !important;
+    min-height: 58px !important;
+  }
+}
