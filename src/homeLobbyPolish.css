@@ -1652,3 +1652,772 @@ html[data-theme="dark"] .tree-card-face,
 body[data-theme="dark"] .tree-card-face {
   background: #fffdf8 !important;
 }
+
+/* =========================================================
+   BUSBAAS V5 — FINAL VISUAL CONSISTENCY PASS
+   =========================================================
+   Doel:
+   - geel alleen voor merk / actieve acties
+   - neutrale informatiepanelen zonder willekeurige gele vlakken
+   - checkpoints volledig geel in plaats van groen
+   - spelregels volledig in dezelfde huisstijl
+   - announcement/eindscherm zonder gele "balk"-shadow
+   - boom/bus overgangsanimaties volledig Busbaas
+   - consistente maten, padding en radii op mobiel + desktop
+   ========================================================= */
+
+:root {
+  --bb-panel-radius: 18px;
+  --bb-control-radius: 14px;
+  --bb-panel-pad: 15px;
+  --bb-soft-shadow: 0 12px 30px rgba(46, 40, 18, 0.10);
+}
+
+/* ---------------------------------------------------------
+   1. CONSISTENTE BASISMATEN
+   --------------------------------------------------------- */
+
+.settings-card,
+.rules-guide-card,
+.game-card,
+.lobby-card,
+.app > .card:has(> .back-button):not(.settings-card):not(.rules-guide-card) {
+  box-sizing: border-box !important;
+}
+
+.settings-card,
+.rules-guide-card {
+  padding: clamp(18px, 4.5vw, 26px) !important;
+}
+
+.game-card {
+  padding: clamp(15px, 3.6vw, 22px) !important;
+}
+
+.setting,
+.game-info,
+.turn-message,
+.my-cards,
+.game-players,
+.guess-area,
+.waiting-message,
+.dealing-message,
+.tree-message,
+.tree-distribute-panel,
+.tree-active-panel,
+.tree-hands,
+.bus-draw-panel,
+.bus-ready-panel,
+.checkpoint-panel,
+.double-panel,
+.bus-choice-panel,
+.bus-finished-panel,
+.bus-riders {
+  box-sizing: border-box !important;
+  border-radius: var(--bb-panel-radius) !important;
+}
+
+.setting,
+.game-info,
+.turn-message,
+.my-cards,
+.game-players,
+.guess-area,
+.tree-message,
+.tree-distribute-panel,
+.tree-active-panel,
+.tree-hands,
+.bus-draw-panel,
+.bus-ready-panel,
+.checkpoint-panel,
+.double-panel,
+.bus-choice-panel,
+.bus-finished-panel {
+  padding: var(--bb-panel-pad) !important;
+}
+
+/* Informatieve badges: rustig/neutraal. Geel is niet meer overal. */
+.section-title > span,
+.tree-progress,
+.remaining-drinks,
+.card-count,
+.bus-position-label,
+.bus-drinks {
+  border: 1px solid var(--bb-line) !important;
+  background: var(--bb-card) !important;
+  color: var(--bb-ink-soft) !important;
+  box-shadow: none !important;
+}
+
+.turn-message {
+  border: 1px solid var(--bb-line) !important;
+  border-left: 4px solid var(--bb-yellow) !important;
+  background: var(--bb-soft) !important;
+  box-shadow: none !important;
+}
+
+.game-summary {
+  border: 1px solid var(--bb-line) !important;
+  background: var(--bb-soft) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ---------------------------------------------------------
+   2. SPELREGELS INSTELLEN — ALLE KEUZES IN DE HUISSTIJL
+   --------------------------------------------------------- */
+
+.settings-card .options {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(78px, 1fr)) !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.settings-card .options button {
+  min-width: 0 !important;
+  min-height: 45px !important;
+  padding: 9px 12px !important;
+  border: 2px solid var(--bb-line-strong) !important;
+  border-radius: var(--bb-control-radius) !important;
+  background: var(--bb-card) !important;
+  color: var(--bb-ink) !important;
+  font-weight: 900 !important;
+  box-shadow: 0 3px 0 var(--bb-line) !important;
+}
+
+.settings-card .options button.selected {
+  border-color: rgba(36, 37, 31, 0.22) !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: 0 3px 0 var(--bb-yellow-deep) !important;
+}
+
+.settings-card .double-rule-options {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 9px !important;
+  width: 100% !important;
+}
+
+.settings-card .double-rule-options button {
+  width: 100% !important;
+  min-height: 64px !important;
+  padding: 12px 14px !important;
+  display: grid !important;
+  gap: 4px !important;
+  text-align: left !important;
+  border: 2px solid var(--bb-line) !important;
+  border-radius: 15px !important;
+  background: var(--bb-card) !important;
+  color: var(--bb-ink) !important;
+  box-shadow: none !important;
+}
+
+.settings-card .double-rule-options button strong {
+  color: var(--bb-ink) !important;
+  font-weight: 950 !important;
+}
+
+.settings-card .double-rule-options button span {
+  color: var(--bb-ink-soft) !important;
+  line-height: 1.35 !important;
+}
+
+.settings-card .double-rule-options button.selected {
+  border-color: var(--bb-yellow-deep) !important;
+  background: var(--bb-yellow-soft) !important;
+  box-shadow: inset 4px 0 0 var(--bb-yellow) !important;
+}
+
+.setting > p {
+  color: var(--bb-ink-soft) !important;
+  line-height: 1.42 !important;
+}
+
+/* ---------------------------------------------------------
+   3. UITLEG-SPELREGELS — ÉÉN HELDERE BUSBAAS-STIJL
+   --------------------------------------------------------- */
+
+.rules-guide-card {
+  width: min(94vw, 560px) !important;
+}
+
+.rules-guide {
+  display: grid !important;
+  gap: 10px !important;
+  width: 100% !important;
+}
+
+.rule-guide-item,
+.rule-guide-item:nth-child(2),
+.rule-guide-item:nth-child(3),
+.rule-guide-item:nth-child(4),
+.rule-guide-item.final-rule {
+  display: grid !important;
+  grid-template-columns: 42px minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 13px !important;
+  padding: 14px !important;
+  border: 1px solid var(--bb-line) !important;
+  border-radius: 17px !important;
+  background: var(--bb-soft) !important;
+  color: var(--bb-ink) !important;
+  box-shadow: none !important;
+}
+
+.rule-guide-item.final-rule {
+  border: 2px dashed rgba(217, 157, 32, 0.32) !important;
+  background: var(--bb-card) !important;
+}
+
+.rule-number,
+.rule-guide-item:nth-child(2) .rule-number,
+.rule-guide-item:nth-child(3) .rule-number,
+.rule-guide-item:nth-child(4) .rule-number,
+.rule-guide-item.final-rule .rule-number {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  border: 2px solid rgba(36, 37, 31, 0.18) !important;
+  border-radius: 13px !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  font-size: 0.95rem !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  box-shadow: 0 3px 0 var(--bb-yellow-deep) !important;
+}
+
+.rule-guide-item h2 {
+  margin: 1px 0 6px !important;
+  color: var(--bb-ink) !important;
+  font-size: 1.02rem !important;
+  line-height: 1.2 !important;
+}
+
+.rule-guide-item p {
+  margin: 0 0 7px !important;
+  color: var(--bb-ink-soft) !important;
+  line-height: 1.42 !important;
+}
+
+.rule-guide-item p:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* ---------------------------------------------------------
+   4. KAARTFASE — MINDER WILLEKEURIGE HIGHLIGHTS
+   --------------------------------------------------------- */
+
+.step-progress .step.completed span {
+  border-color: #24251f !important;
+  background: #24251f !important;
+  color: var(--bb-yellow) !important;
+  box-shadow: 0 3px 0 rgba(36, 37, 31, 0.22) !important;
+}
+
+.result-area.correct .result-icon {
+  border-color: rgba(66, 159, 154, 0.30) !important;
+  background: var(--bb-aqua) !important;
+  color: #173e3b !important;
+  box-shadow: none !important;
+}
+
+.result-area.wrong .result-icon {
+  border-color: rgba(217, 83, 73, 0.30) !important;
+  background: var(--bb-coral) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+/* ---------------------------------------------------------
+   5. BOOM — GEEL MERKACCENT, GEEN GROENE HOOFDKLEUR
+   --------------------------------------------------------- */
+
+.tree-screen .game-top > .logo.small-logo {
+  border-color: #24251f !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: 0 4px 0 var(--bb-yellow-deep) !important;
+}
+
+.tree-board {
+  border: 1px dashed rgba(36, 37, 31, 0.18) !important;
+  background: color-mix(in srgb, var(--bb-yellow) 4%, var(--bb-card)) !important;
+  box-shadow: none !important;
+}
+
+.tree-active-panel {
+  border: 1px solid var(--bb-line) !important;
+  border-top: 4px solid var(--bb-yellow) !important;
+  background: var(--bb-card) !important;
+  box-shadow: none !important;
+}
+
+.tree-distribute-panel {
+  border: 1px solid var(--bb-line) !important;
+  border-top: 4px solid var(--bb-yellow) !important;
+  background: var(--bb-soft) !important;
+  box-shadow: none !important;
+}
+
+.tree-message {
+  border-left: 4px solid var(--bb-yellow) !important;
+  background: var(--bb-soft) !important;
+}
+
+/* ---------------------------------------------------------
+   6. BUS + CHECKPOINTS — GROEN ER VOLLEDIG UIT
+   --------------------------------------------------------- */
+
+.bus-card-slot.checkpoint,
+.bus-card-slot.current,
+.bus-card-slot.passed {
+  background: transparent !important;
+}
+
+.bus-card-slot.checkpoint .bus-card-back,
+.bus-card-slot.checkpoint .bus-card-face {
+  border-color: var(--bb-yellow-deep) !important;
+}
+
+.bus-card-slot.current .bus-card-back,
+.bus-card-slot.current .bus-card-face {
+  outline: 3px solid var(--bb-yellow) !important;
+  outline-offset: 3px !important;
+}
+
+/* De ⚑ is een tekstglyph; deze badge forceert hem zichtbaar geel. */
+.bus-card-slot.checkpoint > small,
+.bus-card-slot.current > small {
+  min-height: 22px !important;
+  padding: 3px 7px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid rgba(36, 37, 31, 0.22) !important;
+  border-radius: 999px !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  font-size: 0.67rem !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  box-shadow: 0 2px 0 var(--bb-yellow-deep) !important;
+}
+
+.bus-card-slot.checkpoint::before,
+.bus-card-slot.checkpoint::after,
+.bus-card-slot.current::before,
+.bus-card-slot.current::after {
+  border-color: var(--bb-yellow) !important;
+}
+
+.checkpoint-panel {
+  border-top: 4px solid var(--bb-yellow) !important;
+  background: var(--bb-soft) !important;
+}
+
+.checkpoint-grid {
+  gap: 8px !important;
+}
+
+.checkpoint-grid button {
+  min-width: 42px !important;
+  min-height: 42px !important;
+  padding: 8px !important;
+  border-radius: 12px !important;
+}
+
+.checkpoint-grid button.active,
+.checkpoint-grid button.selected {
+  border-color: var(--bb-yellow-deep) !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: 0 3px 0 var(--bb-yellow-deep) !important;
+}
+
+.bus-choice-panel {
+  border: 1px solid var(--bb-line) !important;
+  border-top: 4px solid var(--bb-yellow) !important;
+  background: var(--bb-soft) !important;
+  box-shadow: none !important;
+}
+
+.bus-draw-panel,
+.bus-ready-panel,
+.double-panel {
+  box-shadow: none !important;
+}
+
+/* ---------------------------------------------------------
+   7. POPUPS — GEEN GELE BALK MEER
+   --------------------------------------------------------- */
+
+.announcement-layer {
+  background: rgba(25, 25, 20, 0.54) !important;
+  backdrop-filter: blur(5px) !important;
+  -webkit-backdrop-filter: blur(5px) !important;
+}
+
+.announcement-layer .game-announcement {
+  width: min(88vw, 390px) !important;
+  box-sizing: border-box !important;
+  padding: 22px 20px !important;
+  border: 2px solid var(--bb-line-strong) !important;
+  border-radius: 24px !important;
+  background: var(--bb-card) !important;
+  color: var(--bb-ink) !important;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22) !important;
+}
+
+.announcement-icon {
+  width: 58px !important;
+  height: 54px !important;
+  margin-inline: auto !important;
+  border-radius: 17px !important;
+  background: var(--bb-yellow) !important;
+  box-shadow: none !important;
+}
+
+.announcement-label {
+  display: inline-flex !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  margin-inline: auto !important;
+  padding: 6px 10px !important;
+  background: #24251f !important;
+  color: var(--bb-yellow) !important;
+  box-shadow: none !important;
+}
+
+.game-announcement > h2 + div {
+  width: 100% !important;
+}
+
+/* Rijen in de popup "Slokken uitgedeeld" */
+.game-announcement > h2 + div > div {
+  border: 1px solid var(--bb-line) !important;
+  background: var(--bb-soft) !important;
+  color: var(--bb-ink) !important;
+  box-shadow: none !important;
+}
+
+/* ---------------------------------------------------------
+   8. EINDSCHERM — ZELFDE KAART, ZONDER GELE BALK/VLAK
+   --------------------------------------------------------- */
+
+.bus-finished-panel {
+  border: 2px solid var(--bb-line-strong) !important;
+  border-top: 4px solid var(--bb-yellow) !important;
+  background: var(--bb-card) !important;
+  box-shadow: var(--bb-soft-shadow) !important;
+}
+
+.finish-trophy {
+  box-shadow: none !important;
+}
+
+.finish-label {
+  box-shadow: none !important;
+}
+
+.bus-finished-panel .start-button {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* ---------------------------------------------------------
+   9. EXPERIENCE TRANSITIONS — GROEN -> BUSBAAS
+   --------------------------------------------------------- */
+
+.experience-transition-layer,
+.experience-transition-tree,
+.experience-transition-bus {
+  color: #24251f !important;
+  background: var(--bb-cream) !important;
+}
+
+.experience-transition-background,
+.experience-transition-tree .experience-transition-background,
+.experience-transition-bus .experience-transition-background {
+  background:
+    radial-gradient(circle at 18% 17%, rgba(246, 201, 69, 0.34) 0 13%, transparent 13.5%),
+    radial-gradient(circle at 86% 81%, rgba(246, 201, 69, 0.18) 0 12%, transparent 12.5%),
+    var(--bb-cream) !important;
+}
+
+.experience-transition-bus .experience-transition-background {
+  background:
+    radial-gradient(circle at 22% 18%, rgba(246, 201, 69, 0.22) 0 12%, transparent 12.5%),
+    #24251f !important;
+}
+
+.experience-transition-content {
+  width: min(86vw, 420px) !important;
+  box-sizing: border-box !important;
+  padding: 24px 20px !important;
+  border: 2px solid rgba(36, 37, 31, 0.16) !important;
+  border-radius: 26px !important;
+  background: rgba(255, 253, 245, 0.96) !important;
+  color: #24251f !important;
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.20) !important;
+}
+
+.experience-transition-content h2 {
+  color: #24251f !important;
+  font-family: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.experience-transition-content p {
+  color: #5b594e !important;
+}
+
+.experience-transition-eyebrow {
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: #24251f !important;
+  color: var(--bb-yellow) !important;
+  font-weight: 950 !important;
+  box-shadow: none !important;
+}
+
+.experience-transition-icon {
+  border: 2px solid #24251f !important;
+  border-radius: 20px !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: 0 4px 0 var(--bb-yellow-deep) !important;
+}
+
+/* Boom-overgang: vier Busbaas-kaarten i.p.v. oude groene kaartlook. */
+.experience-tree-cards span {
+  position: relative !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 2px solid #24251f !important;
+  border-radius: 13px !important;
+  background:
+    repeating-linear-gradient(135deg, rgba(36, 37, 31, 0.08) 0 6px, transparent 6px 12px),
+    var(--bb-yellow) !important;
+  color: transparent !important;
+  box-shadow: 0 4px 0 var(--bb-yellow-deep) !important;
+  font-size: 0 !important;
+}
+
+.experience-tree-cards span::after {
+  content: "🚌";
+  color: #24251f !important;
+  font-size: 1.35rem !important;
+  line-height: 1 !important;
+}
+
+/* Bus-overgang: donker wegdek + echte gele wegmarkering. */
+.experience-transition-bus {
+  background: #24251f !important;
+}
+
+.experience-road-line,
+.experience-transition-bus .experience-road-line {
+  background: var(--bb-yellow) !important;
+  box-shadow: none !important;
+}
+
+/* ---------------------------------------------------------
+   10. EXPERIENCE/SOUND CONTROL OOK IN HUISSTIJL
+   --------------------------------------------------------- */
+
+.experience-sound-button {
+  border: 2px solid #24251f !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: 0 4px 0 var(--bb-yellow-deep) !important;
+}
+
+.experience-sound-button.disabled {
+  background: var(--bb-card) !important;
+  color: var(--bb-ink-soft) !important;
+  box-shadow: 0 3px 0 var(--bb-line) !important;
+}
+
+.experience-sound-toast {
+  border: 1px solid var(--bb-line-strong) !important;
+  background: #24251f !important;
+  color: var(--bb-yellow) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.18) !important;
+}
+
+/* ---------------------------------------------------------
+   11. SHOP — MAATVOERING CONSISTENT MET DE REST
+   --------------------------------------------------------- */
+
+:is(
+  .commerce-shop-panel,
+  .commerce-shop-card,
+  .commerce-shop-sheet,
+  .commerce-store-panel,
+  [class*="commerce-shop"][class*="panel"],
+  [class*="commerce-shop"][class*="sheet"],
+  [class*="commerce-shop"][class*="card"],
+  [class*="shop-panel"],
+  [class*="shop-sheet"]
+) {
+  width: min(92vw, 560px) !important;
+  max-height: min(86vh, 760px) !important;
+  box-sizing: border-box !important;
+  overflow-y: auto !important;
+  border-radius: 24px !important;
+}
+
+:is(
+  .commerce-shop-launcher,
+  .commerce-shop-button,
+  .commerce-store-button,
+  .shop-launcher,
+  [class*="commerce-"][class*="shop"][class*="button"],
+  [class*="commerce-"][class*="shop"][class*="launcher"]
+) {
+  min-width: 52px !important;
+  min-height: 52px !important;
+  border-radius: 17px !important;
+}
+
+/* ---------------------------------------------------------
+   12. MOBIELE AFWERKING
+   --------------------------------------------------------- */
+
+@media (max-width: 520px) {
+  .settings-card,
+  .rules-guide-card,
+  .game-card,
+  .lobby-card,
+  .app > .card:has(> .back-button):not(.settings-card):not(.rules-guide-card) {
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+  }
+
+  .settings-card,
+  .rules-guide-card {
+    padding: 17px 14px 19px !important;
+  }
+
+  .game-card {
+    padding: 14px 12px 18px !important;
+  }
+
+  .setting,
+  .game-info,
+  .turn-message,
+  .my-cards,
+  .game-players,
+  .guess-area,
+  .tree-message,
+  .tree-distribute-panel,
+  .tree-active-panel,
+  .tree-hands,
+  .bus-draw-panel,
+  .bus-ready-panel,
+  .checkpoint-panel,
+  .double-panel,
+  .bus-choice-panel,
+  .bus-finished-panel {
+    padding: 13px !important;
+    border-radius: 15px !important;
+  }
+
+  .rule-guide-item,
+  .rule-guide-item:nth-child(2),
+  .rule-guide-item:nth-child(3),
+  .rule-guide-item:nth-child(4),
+  .rule-guide-item.final-rule {
+    grid-template-columns: 38px minmax(0, 1fr) !important;
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+
+  .rule-number,
+  .rule-guide-item:nth-child(2) .rule-number,
+  .rule-guide-item:nth-child(3) .rule-number,
+  .rule-guide-item:nth-child(4) .rule-number,
+  .rule-guide-item.final-rule .rule-number {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+  }
+
+  .settings-card .double-rule-options button {
+    min-height: 58px !important;
+    padding: 11px 12px !important;
+  }
+
+  .announcement-layer .game-announcement {
+    width: min(90vw, 370px) !important;
+    padding: 20px 16px !important;
+    border-radius: 21px !important;
+  }
+
+  .experience-transition-content {
+    width: calc(100vw - 34px) !important;
+    padding: 21px 17px !important;
+    border-radius: 22px !important;
+  }
+
+  .checkpoint-grid button {
+    min-width: 38px !important;
+    min-height: 38px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .settings-card .options {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .rule-guide-item,
+  .rule-guide-item:nth-child(2),
+  .rule-guide-item:nth-child(3),
+  .rule-guide-item:nth-child(4),
+  .rule-guide-item.final-rule {
+    grid-template-columns: 34px minmax(0, 1fr) !important;
+    gap: 9px !important;
+  }
+
+  .rule-number,
+  .rule-guide-item:nth-child(2) .rule-number,
+  .rule-guide-item:nth-child(3) .rule-number,
+  .rule-guide-item:nth-child(4) .rule-number,
+  .rule-guide-item.final-rule .rule-number {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    font-size: 0.82rem !important;
+  }
+}
+
+/* V5 laatste cleanup: geen aqua-gloed in de algemene achtergrond. */
+body:has(.settings-card),
+body:has(.rules-guide-card),
+body:has(.game-card),
+body:has(.lobby-card),
+body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-guide-card)) {
+  background-color: var(--bb-cream) !important;
+  background-image:
+    radial-gradient(circle at 8% 12%, rgba(246, 201, 69, 0.16) 0 7%, transparent 7.5%),
+    radial-gradient(circle at 93% 82%, rgba(246, 201, 69, 0.08) 0 7%, transparent 7.5%),
+    linear-gradient(125deg, transparent 0 48%, rgba(246, 201, 69, 0.035) 48% 50%, transparent 50% 100%) !important;
+}
+
+/* Eventuele oude groene checkpoint-pseudo-elementen volledig uitschakelen. */
+.bus-card-slot.checkpoint::before,
+.bus-card-slot.checkpoint::after,
+.bus-card-slot.current::before,
+.bus-card-slot.current::after {
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--bb-yellow) !important;
+}
