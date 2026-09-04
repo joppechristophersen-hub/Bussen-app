@@ -302,6 +302,24 @@ type StockShuffleNotice = {
   count: number;
 };
 
+
+type SoundEffectPayload = {
+  type:
+    | "card"
+    | "card-result"
+    | "bus-card-result"
+    | "glass"
+    | "bus-horn"
+    | "finish";
+  result?:
+    | "correct"
+    | "wrong"
+    | "disco";
+  eventId?: string;
+  variant?: number;
+  playAt?: number;
+};
+
 const socket = io(
   "https://bussen-server.onrender.com",
   {
@@ -519,6 +537,165 @@ function App() {
       riders:
         [],
     });
+
+  const soundClockOffsetRef =
+    useRef(0);
+
+  const soundClockReadyRef =
+    useRef(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function measureSoundClock() {
+      if (!socket.connected) {
+        return;
+      }
+
+      const samples: Array<{
+        rtt: number;
+        offset: number;
+      }> = [];
+
+      for (let index = 0; index < 5; index += 1) {
+        const sentAt = Date.now();
+
+        const sample =
+          await new Promise<{
+            rtt: number;
+            offset: number;
+          } | null>((resolve) => {
+            const timeout =
+              window.setTimeout(() => {
+                resolve(null);
+              }, 1200);
+
+            socket.emit(
+              "sound-sync",
+              (response: {
+                serverNow?: number;
+              }) => {
+                window.clearTimeout(timeout);
+
+                const receivedAt =
+                  Date.now();
+
+                const serverNow =
+                  Number(response?.serverNow);
+
+                if (
+                  !Number.isFinite(serverNow)
+                ) {
+                  resolve(null);
+                  return;
+                }
+
+                const rtt =
+                  receivedAt - sentAt;
+
+                const midpoint =
+                  sentAt + rtt / 2;
+
+                resolve({
+                  rtt,
+                  offset:
+                    serverNow - midpoint,
+                });
+              }
+            );
+          });
+
+        if (sample) {
+          samples.push(sample);
+        }
+
+        await new Promise<void>((resolve) => {
+          window.setTimeout(resolve, 45);
+        });
+      }
+
+      if (
+        cancelled ||
+        samples.length === 0
+      ) {
+        return;
+      }
+
+      samples.sort(
+        (a, b) => a.rtt - b.rtt
+      );
+
+      soundClockOffsetRef.current =
+        samples[0].offset;
+
+      soundClockReadyRef.current =
+        true;
+    }
+
+    function handleConnect() {
+      void measureSoundClock();
+    }
+
+    function handleSoundEffect(
+      effect: SoundEffectPayload
+    ) {
+      if (!effect) {
+        return;
+      }
+
+      const serverPlayAt =
+        Number(effect.playAt);
+
+      const localPlayAt =
+        Number.isFinite(serverPlayAt)
+          ? serverPlayAt -
+            soundClockOffsetRef.current
+          : Date.now() + 60;
+
+      window.dispatchEvent(
+        new CustomEvent(
+          "busbaas-sound-effect",
+          {
+            detail: {
+              ...effect,
+              localPlayAt:
+                soundClockReadyRef.current
+                  ? localPlayAt
+                  : Date.now() + 60,
+            },
+          }
+        )
+      );
+    }
+
+    socket.on(
+      "connect",
+      handleConnect
+    );
+
+    socket.on(
+      "sound-effect",
+      handleSoundEffect
+    );
+
+    if (socket.connected) {
+      void measureSoundClock();
+    }
+
+    return () => {
+      cancelled = true;
+
+      socket.off(
+        "connect",
+        handleConnect
+      );
+
+      socket.off(
+        "sound-effect",
+        handleSoundEffect
+      );
+    };
+  }, []);
 
   useEffect(() => {
     const params =
