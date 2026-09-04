@@ -2824,3 +2824,613 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
     min-height: 58px !important;
   }
 }
+
+/* =========================================================
+   BUSBAAS V7 — COMPLETE MOBILE POLISH
+   =========================================================
+   Gebaseerd op screenshots 0220 t/m 0226 + overgangsfeedback.
+   Alleen visueel: geen gameplay- of socketlogica.
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   1. SCHADUWEN — zacht en natuurlijk, geen 'voetstuk'
+   --------------------------------------------------------- */
+.playing-card,
+.revealed-card,
+.tree-card-face,
+.tree-active-card,
+.bus-card-face,
+.bus-reference-card,
+.mini-playing-card,
+.setup-card:not(.placeholder) {
+  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.13) !important;
+}
+
+.empty-card,
+.hidden-card,
+.tree-card-back,
+.bus-card-back,
+.setup-card.placeholder,
+.bus-hidden-reference {
+  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.14) !important;
+}
+
+.game-top > .logo.small-logo,
+.tree-screen .game-top > .logo.small-logo,
+.bus-screen .game-top > .logo.small-logo,
+.settings-card > .logo.small-logo,
+.rules-guide-card > .logo.small-logo {
+  box-shadow: 0 4px 11px rgba(0, 0, 0, 0.14) !important;
+}
+
+.bus-driver-banner,
+.game-card .start-button,
+.tree-confirm-button,
+.tree-skip-button,
+.guess-grid button,
+.disco-button,
+.settings-card .options button,
+.settings-card .double-rule-options button {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.10) !important;
+}
+
+/* Geen losse gele balk onder setupkaarten / placeholders. */
+.bus-setup-draws .setup-card,
+.bus-setup-draws .setup-card.placeholder {
+  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.13) !important;
+}
+
+.bus-setup-draws > div::before,
+.bus-setup-draws > div::after,
+.bus-setup-draws .setup-card::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* ---------------------------------------------------------
+   2. SPELERS — groen volledig vervangen + badges ruimer
+   --------------------------------------------------------- */
+.game-player .player-avatar,
+.drink-player .player-avatar,
+.game-player.active .player-avatar,
+.tree-hands .game-player .player-avatar {
+  border: 2px solid var(--bb-yellow) !important;
+  background: color-mix(in srgb, var(--bb-yellow) 13%, var(--bb-card)) !important;
+  color: var(--bb-ink) !important;
+  box-shadow: none !important;
+}
+
+.game-player.active {
+  border-color: rgba(246, 201, 69, 0.52) !important;
+  background: color-mix(in srgb, var(--bb-yellow) 7%, var(--bb-card)) !important;
+  box-shadow: none !important;
+}
+
+.game-player .player-info small,
+.tree-hands .game-player .player-info small,
+.game-player.active .player-info small {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 24px !important;
+  margin-top: 3px !important;
+  padding: 3px 9px !important;
+  border: 1px solid rgba(246, 201, 69, 0.42) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--bb-yellow) 12%, transparent) !important;
+  color: var(--bb-yellow) !important;
+  font-size: .67rem !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  letter-spacing: .065em !important;
+}
+
+.section-title > span,
+.tree-progress,
+.card-count {
+  min-width: 42px !important;
+  min-height: 30px !important;
+  padding: 5px 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  border-radius: 999px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.tree-hands .section-title > span {
+  min-width: 64px !important;
+  padding-inline: 16px !important;
+}
+
+.game-info > span,
+.game-info > strong {
+  line-height: 1.25 !important;
+}
+
+/* ---------------------------------------------------------
+   3. BOOM — kleinere 2x en rustige panels
+   --------------------------------------------------------- */
+.double-badge {
+  min-width: 26px !important;
+  height: 26px !important;
+  padding: 0 6px !important;
+  font-size: .64rem !important;
+  line-height: 1 !important;
+}
+
+.tree-playing-card.double .tree-card-face,
+.tree-playing-card.double .tree-card-back {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12) !important;
+}
+
+.tree-active-panel,
+.tree-message,
+.tree-distribute-panel {
+  box-shadow: none !important;
+}
+
+/* ---------------------------------------------------------
+   4. BUS SETUP — nummers geel, kaarten zonder gele onderbalk
+   --------------------------------------------------------- */
+.bus-setup-step > span,
+.bus-setup-step.active > span,
+.bus-setup-step.completed > span {
+  background: var(--bb-yellow) !important;
+  border-color: rgba(36, 37, 31, .20) !important;
+  color: #24251f !important;
+  box-shadow: none !important;
+}
+
+.bus-setup-step:not(.active):not(.completed) > span {
+  opacity: .42 !important;
+}
+
+.bus-setup-draws > div {
+  border: 1px solid var(--bb-line) !important;
+  border-radius: 18px !important;
+  background: color-mix(in srgb, var(--bb-card) 94%, transparent) !important;
+  box-shadow: none !important;
+}
+
+/* ---------------------------------------------------------
+   5. BUSBAAN — ruimte, gecentreerde nummers, geen gele stroken
+   --------------------------------------------------------- */
+.bus-track {
+  padding-top: 16px !important;
+  padding-bottom: 44px !important;
+  background: #30312b !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.035) !important;
+}
+
+.bus-track::before,
+.bus-track::after,
+.bus-card-slot::before,
+.bus-card-slot::after,
+.bus-card-slot.checkpoint::before,
+.bus-card-slot.checkpoint::after,
+.bus-card-slot.current::before,
+.bus-card-slot.current::after,
+.bus-card-slot.passed::before,
+.bus-card-slot.passed::after {
+  content: none !important;
+  display: none !important;
+}
+
+.bus-card-number {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  min-height: 30px !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 50% !important;
+  line-height: 30px !important;
+  text-align: center !important;
+  font-variant-numeric: tabular-nums;
+  box-sizing: border-box !important;
+}
+
+.bus-card-slot > small {
+  top: calc(100% + 10px) !important;
+  min-height: 25px !important;
+  padding: 4px 9px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid rgba(36,37,31,.18) !important;
+  border-radius: 999px !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  font-size: .64rem !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  box-shadow: none !important;
+}
+
+.bus-card-slot.current .bus-card-face,
+.bus-card-slot.current .bus-card-back {
+  outline: 2px solid var(--bb-yellow) !important;
+  outline-offset: 3px !important;
+}
+
+/* Status onder de baan niet tegen vlaggen aan. */
+.bus-track + .bus-choice-panel,
+.bus-track + .waiting-message,
+.bus-track + .bus-finished-panel,
+.bus-track + .double-panel,
+.bus-track + .bus-ready-panel {
+  margin-top: 22px !important;
+}
+
+/* ---------------------------------------------------------
+   6. BUS HEADER + EINDSCHERM — uitlijning en ademruimte
+   --------------------------------------------------------- */
+.bus-screen .game-top {
+  display: grid !important;
+  grid-template-columns: 62px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 14px !important;
+  min-height: 90px !important;
+  padding: 8px 0 17px !important;
+}
+
+.bus-screen .game-top > .logo.small-logo {
+  width: 58px !important;
+  height: 58px !important;
+  min-width: 58px !important;
+  margin: 0 !important;
+  align-self: center !important;
+}
+
+.bus-screen .game-top > div:last-child {
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  text-align: left !important;
+}
+
+.bus-screen .game-top h1,
+.bus-screen .game-top .subtitle {
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  text-align: left !important;
+}
+
+.bus-screen .game-top h1 {
+  margin-bottom: 4px !important;
+}
+
+.bus-screen .game-top .subtitle {
+  margin-top: 0 !important;
+}
+
+.finish-label {
+  min-height: 32px !important;
+  padding: 7px 16px !important;
+  line-height: 1.1 !important;
+  letter-spacing: .12em !important;
+}
+
+.bus-finished-panel {
+  padding: 22px 18px 20px !important;
+  gap: 12px !important;
+}
+
+.bus-finished-panel h2 {
+  margin-top: 4px !important;
+  margin-bottom: 5px !important;
+}
+
+/* ---------------------------------------------------------
+   7. SHOP — ronde X, echte toggle, gratis geel, zachtere buttons
+   --------------------------------------------------------- */
+:is(
+  .commerce-shop-close,
+  .commerce-close-button,
+  [class*="commerce-shop"][class*="close"],
+  [class*="commerce-store"][class*="close"],
+  [class*="shop-"][class*="close"]
+) {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  min-height: 42px !important;
+  aspect-ratio: 1 / 1 !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  display: grid !important;
+  place-items: center !important;
+  line-height: 1 !important;
+  box-shadow: none !important;
+}
+
+/* Normale toggle: compact pill-balkje met ronde knop. */
+:is(
+  [class*="commerce-shop"],
+  [class*="commerce-store"],
+  [class*="shop-panel"],
+  [class*="shop-sheet"]
+) :is([class*="toggle"], [class*="switch"]) {
+  position: relative !important;
+  width: 62px !important;
+  height: 34px !important;
+  min-width: 62px !important;
+  min-height: 34px !important;
+  max-width: 62px !important;
+  padding: 3px !important;
+  border: 1px solid rgba(36,37,31,.20) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--bb-yellow) 72%, #24251f) !important;
+  box-sizing: border-box !important;
+  box-shadow: none !important;
+}
+
+:is(
+  [class*="commerce-shop"],
+  [class*="commerce-store"],
+  [class*="shop-panel"],
+  [class*="shop-sheet"]
+) :is([class*="toggle"], [class*="switch"])::before,
+:is(
+  [class*="commerce-shop"],
+  [class*="commerce-store"],
+  [class*="shop-panel"],
+  [class*="shop-sheet"]
+) :is([class*="toggle"], [class*="switch"])::after {
+  width: 26px !important;
+  height: 26px !important;
+  min-width: 26px !important;
+  min-height: 26px !important;
+  border-radius: 50% !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,.18) !important;
+}
+
+/* Alle mogelijke free/status-pill varianten uit CommerceShell. */
+:is(
+  [class*="commerce-shop"],
+  [class*="commerce-store"],
+  [class*="shop-panel"],
+  [class*="shop-sheet"]
+) :is(
+  [class*="free"],
+  [class*="gratis"],
+  [class*="status"],
+  [class*="included"],
+  [class*="owned"],
+  [class*="active-badge"],
+  [class*="price-badge"]
+) {
+  border-color: rgba(36,37,31,.18) !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: none !important;
+}
+
+/* Shopknoppen: geen dikke '3D-plank' meer. */
+:is(
+  [class*="commerce-shop"],
+  [class*="commerce-store"],
+  [class*="shop-panel"],
+  [class*="shop-sheet"]
+) button {
+  box-shadow: 0 3px 8px rgba(0,0,0,.10) !important;
+}
+
+:is(
+  [class*="commerce-shop"],
+  [class*="commerce-store"],
+  [class*="shop-panel"],
+  [class*="shop-sheet"]
+) button:active {
+  transform: translateY(1px) !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,.10) !important;
+}
+
+/* ---------------------------------------------------------
+   8. OVERGANG NAAR BOOM — kaarten van rondom naar het midden
+   --------------------------------------------------------- */
+.experience-transition-tree .experience-transition-background,
+.experience-transition-tree .experience-transition-background::before,
+.experience-transition-tree .experience-transition-background::after {
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.experience-transition-tree .experience-tree-cards {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+}
+
+.experience-transition-tree .experience-tree-cards span {
+  --from-x: 0vw;
+  --from-y: 0vh;
+  --from-rot: 0deg;
+  --end-rot: 0deg;
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  width: 58px !important;
+  height: 82px !important;
+  margin: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  border: 2px solid #24251f !important;
+  border-radius: 10px !important;
+  background:
+    repeating-linear-gradient(135deg, rgba(36,37,31,.07) 0 6px, transparent 6px 12px),
+    var(--bb-yellow) !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  box-shadow: 0 8px 22px rgba(0,0,0,.20) !important;
+  transform-origin: center !important;
+  animation: bbGatherCards 1.12s cubic-bezier(.2,.78,.18,1) both !important;
+}
+
+.experience-transition-tree .experience-tree-cards span::after {
+  content: "🚌" !important;
+  position: relative !important;
+  width: auto !important;
+  height: auto !important;
+  display: block !important;
+  background: none !important;
+  color: #24251f !important;
+  font-size: 1.55rem !important;
+  line-height: 1 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.experience-transition-tree .experience-tree-cards span::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 6px !important;
+  border: 1px solid rgba(36,37,31,.18) !important;
+  border-radius: 7px !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.experience-transition-tree .experience-tree-cards span:nth-child(1) {
+  --from-x: -58vw;
+  --from-y: -46vh;
+  --from-rot: -24deg;
+  --end-rot: -8deg;
+  animation-delay: 0s !important;
+}
+
+.experience-transition-tree .experience-tree-cards span:nth-child(2) {
+  --from-x: 58vw;
+  --from-y: -38vh;
+  --from-rot: 22deg;
+  --end-rot: 5deg;
+  animation-delay: .07s !important;
+}
+
+.experience-transition-tree .experience-tree-cards span:nth-child(3) {
+  --from-x: -62vw;
+  --from-y: 43vh;
+  --from-rot: 28deg;
+  --end-rot: 10deg;
+  animation-delay: .13s !important;
+}
+
+.experience-transition-tree .experience-tree-cards span:nth-child(4) {
+  --from-x: 62vw;
+  --from-y: 48vh;
+  --from-rot: -28deg;
+  --end-rot: -3deg;
+  animation-delay: .19s !important;
+}
+
+@keyframes bbGatherCards {
+  0% {
+    opacity: 0;
+    transform:
+      translate(calc(-50% + var(--from-x)), calc(-50% + var(--from-y)))
+      rotate(var(--from-rot))
+      scale(.84);
+  }
+  16% {
+    opacity: 1;
+  }
+  76% {
+    opacity: 1;
+    transform:
+      translate(-50%, -50%)
+      rotate(var(--end-rot))
+      scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform:
+      translate(-50%, -50%)
+      rotate(var(--end-rot))
+      scale(.88);
+  }
+}
+
+/* Tekst pas zichtbaar als de kaarten bijna samenkomen. */
+.experience-transition-tree .experience-transition-content {
+  animation: bbTreeTextIn 1.15s ease both !important;
+  z-index: 3 !important;
+}
+
+@keyframes bbTreeTextIn {
+  0%, 52% {
+    opacity: 0;
+    transform: translateY(14px) scale(.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ---------------------------------------------------------
+   9. MOBIEL FINETUNING
+   --------------------------------------------------------- */
+@media (max-width: 520px) {
+  .game-card {
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+  }
+
+  .section-title > span,
+  .card-count {
+    min-height: 32px !important;
+    padding-inline: 13px !important;
+  }
+
+  .tree-hands .section-title > span {
+    padding-inline: 17px !important;
+  }
+
+  .bus-screen .game-top {
+    grid-template-columns: 58px minmax(0, 1fr) !important;
+    gap: 12px !important;
+    min-height: 82px !important;
+    padding-top: 4px !important;
+  }
+
+  .bus-screen .game-top > .logo.small-logo {
+    width: 54px !important;
+    height: 54px !important;
+    min-width: 54px !important;
+  }
+
+  .bus-card-number {
+    width: 29px !important;
+    height: 29px !important;
+    min-width: 29px !important;
+    min-height: 29px !important;
+    line-height: 29px !important;
+  }
+
+  .finish-label {
+    padding: 7px 15px !important;
+    font-size: .72rem !important;
+  }
+
+  .experience-transition-tree .experience-tree-cards span {
+    width: 54px !important;
+    height: 76px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .experience-transition-tree .experience-tree-cards span,
+  .experience-transition-tree .experience-transition-content {
+    animation-duration: .35s !important;
+  }
+}
