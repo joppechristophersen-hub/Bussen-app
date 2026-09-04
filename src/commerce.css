@@ -1,2451 +1,589 @@
+/* =========================================================
+   BUSBAAS — SHOP REBUILD
+   Nieuwe shoplaag met eigen bb-market-* classes.
+   Oude commerce/shop overrides uit homeLobbyPolish.css
+   raken deze interface bewust niet meer.
+   ========================================================= */
+
 :root {
-  --bb-background: #e3e9e5;
-  --bb-surface: #ffffff;
-  --bb-surface-soft: #eef3f0;
-  --bb-accent: #08745b;
-  --bb-accent-strong: #055744;
-  --bb-text: #07150f;
-  --bb-muted: #4f5f58;
-  --bb-border: #bfcac4;
-}
-
-/*
- * =========================
- * THEMA ENGINE
- * =========================
- */
-
-body[data-bb-theme] {
-  background:
-    var(--bb-background);
-}
-
-body[data-bb-theme] .app {
-  background:
-    var(--bb-background) !important;
-
-  color:
-    var(--bb-text) !important;
-}
-
-body[data-bb-theme] .card {
-  background:
-    var(--bb-surface) !important;
-
-  color:
-    var(--bb-text) !important;
-
-  border-color:
-    var(--bb-border) !important;
-}
-
-body[data-bb-theme] h1,
-body[data-bb-theme] h2,
-body[data-bb-theme] h3,
-body[data-bb-theme] label {
-  color:
-    var(--bb-text);
-}
-
-body[data-bb-theme] .subtitle,
-body[data-bb-theme] .setting p,
-body[data-bb-theme] .game-summary p,
-body[data-bb-theme] .tree-message p,
-body[data-bb-theme] .waiting-message p,
-body[data-bb-theme] .bus-choice-panel p,
-body[data-bb-theme] .bus-draw-panel p,
-body[data-bb-theme] .bus-ready-panel p,
-body[data-bb-theme] .checkpoint-panel p,
-body[data-bb-theme] .double-panel p,
-body[data-bb-theme] .bus-result p {
-  color:
-    var(--bb-muted) !important;
-}
-
-/*
- * =========================
- * SPEELKAARTEN ALTIJD LEESBAAR
- * =========================
- *
- * Een speelkaart blijft een speelkaart:
- * wit vlak, rood of zwart kaartdrukwerk.
- *
- * Hierdoor beïnvloedt donker/licht/automatisch
- * nooit meer de leesbaarheid van kaartwaarden.
- */
-
-body[data-bb-theme] .playing-card,
-body[data-bb-theme] .revealed-card,
-body[data-bb-theme] .tree-card-face,
-body[data-bb-theme] .tree-active-card,
-body[data-bb-theme] .bus-card-face,
-body[data-bb-theme] .bus-reference-card,
-body[data-bb-theme] .mini-playing-card,
-body[data-bb-theme] .setup-card:not(.placeholder) {
-  background:
-    #ffffff !important;
-
-  border-color:
-    #c8d0cc !important;
-
-  box-shadow:
-    0 5px 16px
-      rgba(
-        0,
-        0,
-        0,
-        0.16
-      );
-
-  color:
-    #111111 !important;
-}
+  --market-yellow: #f6c945;
+  --market-yellow-deep: #d99d20;
+  --market-ink: #24251f;
+  --market-cream: #fff8e7;
+  --market-line: rgba(36, 37, 31, .16);
+  --market-line-strong: rgba(36, 37, 31, .24);
+  --market-radius: 22px;
+}
+
+.bb-market-layer,
+.bb-market-purchase-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: grid;
+  place-items: center;
+  padding: max(18px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom));
+  background: rgba(7, 11, 9, .72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  overflow: auto;
+}
+
+.bb-market {
+  width: min(760px, 100%);
+  max-height: calc(100dvh - 36px);
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 26px;
+  border: 1.5px solid var(--bb-border, #30372f);
+  border-radius: 28px;
+  background: var(--bb-surface, #111815);
+  color: var(--bb-text, #fff8df);
+  box-shadow: 0 24px 65px rgba(0, 0, 0, .30);
+}
+
+.bb-market-header {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  gap: 14px;
+  align-items: start;
+  margin-bottom: 22px;
+}
+
+.bb-market-eyebrow {
+  display: inline-block;
+  margin-bottom: 7px;
+  color: var(--market-yellow);
+  font-size: .76rem;
+  font-weight: 950;
+  letter-spacing: .19em;
+  text-transform: uppercase;
+}
+
+.bb-market-header h1 {
+  margin: 0;
+  color: var(--bb-text, #fff8df);
+  font-family: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  font-size: clamp(1.8rem, 6vw, 2.6rem);
+  line-height: 1;
+  letter-spacing: -.04em;
+}
+
+.bb-market-header p {
+  margin: 11px 0 0;
+  color: var(--bb-muted, #bdb6a1);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.bb-market-close {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--bb-border, #30372f);
+  border-radius: 50%;
+  background: var(--bb-surface-soft, #1b201b);
+  color: var(--bb-text, #fff8df);
+  font-size: 1.65rem;
+  line-height: 1;
+  box-shadow: none;
+}
+
+.bb-market-appearance {
+  margin-bottom: 18px;
+  padding: 18px;
+  border: 1.5px solid var(--bb-border, #30372f);
+  border-radius: 20px;
+  background: var(--bb-surface-soft, #1b201b);
+}
+
+.bb-market-appearance-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
 
-/*
- * Rode kaarten
- */
-
-body[data-bb-theme] .playing-card.rood,
-body[data-bb-theme] .revealed-card.rood,
-body[data-bb-theme] .tree-card-face.rood,
-body[data-bb-theme] .tree-active-card.rood,
-body[data-bb-theme] .bus-card-face.rood,
-body[data-bb-theme] .bus-reference-card.rood,
-body[data-bb-theme] .mini-playing-card.rood,
-body[data-bb-theme] .setup-card.rood {
-  color:
-    #c9182b !important;
-}
-
-/*
- * Zwarte kaarten
- */
-
-body[data-bb-theme] .playing-card.zwart,
-body[data-bb-theme] .revealed-card.zwart,
-body[data-bb-theme] .tree-card-face.zwart,
-body[data-bb-theme] .tree-active-card.zwart,
-body[data-bb-theme] .bus-card-face.zwart,
-body[data-bb-theme] .bus-reference-card.zwart,
-body[data-bb-theme] .mini-playing-card.zwart,
-body[data-bb-theme] .setup-card.zwart {
-  color:
-    #111111 !important;
-}
-
-/*
- * Alle onderdelen binnen een kaart
- * nemen de kaartkleur over.
- */
-
-body[data-bb-theme] .playing-card strong,
-body[data-bb-theme] .playing-card span,
-body[data-bb-theme] .revealed-card strong,
-body[data-bb-theme] .revealed-card span,
-body[data-bb-theme] .tree-card-face strong,
-body[data-bb-theme] .tree-card-face span,
-body[data-bb-theme] .tree-active-card strong,
-body[data-bb-theme] .tree-active-card span,
-body[data-bb-theme] .bus-card-face strong,
-body[data-bb-theme] .bus-card-face span,
-body[data-bb-theme] .bus-reference-card strong,
-body[data-bb-theme] .bus-reference-card span,
-body[data-bb-theme] .mini-playing-card strong,
-body[data-bb-theme] .mini-playing-card span,
-body[data-bb-theme] .setup-card:not(.placeholder) strong,
-body[data-bb-theme] .setup-card:not(.placeholder) span {
-  color:
-    inherit !important;
-}
-
-/*
- * Middenfiguur en kaarthoeken expliciet leesbaar houden
- */
-
-body[data-bb-theme] .card-center-symbol,
-body[data-bb-theme] .card-corner,
-body[data-bb-theme] .card-corner strong,
-body[data-bb-theme] .card-corner span {
-  color:
-    inherit !important;
-}
-
-/*
- * Placeholderkaart mag wel thema-kleuren gebruiken
- */
-
-body[data-bb-theme] .setup-card.placeholder {
-  background:
-    var(--bb-surface-soft) !important;
-
-  border-color:
-    var(--bb-border) !important;
-
-  color:
-    var(--bb-muted) !important;
-}
-
-/*
- * =========================
- * LICHT THEMA CONTRAST
- * =========================
- */
-
-body[data-bb-color-mode="light"] input {
-  background:
-    #ffffff !important;
-
-  color:
-    var(--bb-text) !important;
-
-  border:
-    1px solid
-      var(--bb-border) !important;
-
-  box-shadow:
-    inset 0 0 0 1px
-      rgba(
-        7,
-        21,
-        15,
-        0.025
-      );
-}
-
-body[data-bb-color-mode="light"] input::placeholder {
-  color:
-    #66736d !important;
-
-  opacity:
-    1;
-}
-
-body[data-bb-color-mode="light"] .setting,
-body[data-bb-color-mode="light"] .game-summary,
-body[data-bb-color-mode="light"] .turn-message,
-body[data-bb-color-mode="light"] .waiting-message,
-body[data-bb-color-mode="light"] .tree-message,
-body[data-bb-color-mode="light"] .tree-distribute-panel,
-body[data-bb-color-mode="light"] .tree-active-panel,
-body[data-bb-color-mode="light"] .bus-choice-panel,
-body[data-bb-color-mode="light"] .bus-draw-panel,
-body[data-bb-color-mode="light"] .bus-ready-panel,
-body[data-bb-color-mode="light"] .checkpoint-panel,
-body[data-bb-color-mode="light"] .double-panel,
-body[data-bb-color-mode="light"] .bus-status-row,
-body[data-bb-color-mode="light"] .bus-riders {
-  border-color:
-    var(--bb-border) !important;
-}
-
-body[data-bb-color-mode="light"] .game-summary,
-body[data-bb-color-mode="light"] .waiting-message,
-body[data-bb-color-mode="light"] .tree-message,
-body[data-bb-color-mode="light"] .bus-riders {
-  background:
-    var(--bb-surface-soft) !important;
-}
-
-body[data-bb-color-mode="light"] .game-player,
-body[data-bb-color-mode="light"] .player {
-  border-color:
-    var(--bb-border) !important;
-
-  color:
-    var(--bb-text) !important;
-}
-
-body[data-bb-color-mode="light"] .game-player.active {
-  border-color:
-    var(--bb-accent) !important;
-}
-
-body[data-bb-color-mode="light"] .room-code {
-  background:
-    var(--bb-surface-soft) !important;
-
-  border:
-    1px solid
-      var(--bb-border) !important;
-
-  color:
-    var(--bb-text) !important;
-}
-
-/*
- * =========================
- * BASIS THEMA ELEMENTEN
- * =========================
- */
-
-body[data-bb-theme] .start-button,
-body[data-bb-theme] .tree-confirm-button,
-body[data-bb-theme] .disco-button,
-body[data-bb-theme] .guess-grid button {
-  background:
-    var(--bb-accent);
-
-  border-color:
-    var(--bb-accent);
-
-  color:
-    #ffffff;
-}
-
-body[data-bb-theme] .start-button:hover,
-body[data-bb-theme] .tree-confirm-button:hover,
-body[data-bb-theme] .guess-grid button:hover {
-  background:
-    var(--bb-accent-strong);
-}
-
-body[data-bb-theme] .secondary {
-  background:
-    var(--bb-surface-soft) !important;
-
-  color:
-    var(--bb-text) !important;
-
-  border-color:
-    var(--bb-border) !important;
-}
-
-body[data-bb-theme] .player-avatar,
-body[data-bb-theme] .room-code,
-body[data-bb-theme] .bus-driver-banner {
-  border-color:
-    var(--bb-accent);
-}
-
-body[data-bb-theme] .step.active span,
-body[data-bb-theme] .options button.selected,
-body[data-bb-theme] .checkpoint-grid button.selected {
-  background:
-    var(--bb-accent);
-
-  border-color:
-    var(--bb-accent);
-
-  color:
-    #ffffff;
-}
-
-/*
- * =========================
- * CARD BACKS
- * =========================
- */
-
-body[data-bb-card-back="gold"]
-  .tree-card-back,
-body[data-bb-card-back="gold"]
-  .bus-card-back,
-body[data-bb-card-back="gold"]
-  .empty-card {
-  background:
-    linear-gradient(
-      145deg,
-      #4d3a0b,
-      #d7aa32,
-      #fff1a8,
-      #9b7015
-    ) !important;
-
-  border-color:
-    #f1cb64 !important;
-
-  color:
-    #2c2108 !important;
-}
-
-body[data-bb-card-back="neon"]
-  .tree-card-back,
-body[data-bb-card-back="neon"]
-  .bus-card-back,
-body[data-bb-card-back="neon"]
-  .empty-card {
-  background:
-    radial-gradient(
-      circle at top,
-      #203967,
-      #090d1d 70%
-    ) !important;
-
-  border:
-    2px solid
-      #4fffd5 !important;
-
-  box-shadow:
-    0 0 18px
-      rgba(
-        79,
-        255,
-        213,
-        0.55
-      );
-
-  color:
-    #4fffd5 !important;
-}
-
-/*
- * =========================
- * ANIMATIES
- * =========================
- */
-
-body[data-bb-animation="party"]
-  .confetti-piece {
-  animation-duration:
-    1.8s !important;
-}
-
-body[data-bb-animation="party"]
-  .finish-trophy {
-  animation:
-    commerceTrophyBounce
-    0.7s
-    ease-in-out
-    infinite
-    alternate;
-}
-
-@keyframes commerceTrophyBounce {
-  from {
-    transform:
-      translateY(0)
-      rotate(-4deg);
-  }
-
-  to {
-    transform:
-      translateY(-8px)
-      rotate(4deg);
-  }
-}
-
-/*
- * =========================
- * SHOP KNOP
- * =========================
- */
-
-.commerce-shop-launcher {
-  position:
-    fixed;
-
-  right:
-    max(
-      16px,
-      env(
-        safe-area-inset-right
-      )
-    );
-
-  bottom:
-    max(
-      18px,
-      calc(
-        env(
-            safe-area-inset-bottom
-          ) +
-          12px
-      )
-    );
-
-  z-index:
-    700;
-
-  display:
-    flex;
-
-  align-items:
-    center;
-
-  justify-content:
-    center;
-
-  gap:
-    7px;
-
-  width:
-    auto;
-
-  min-width:
-    96px;
-
-  min-height:
-    48px;
-
-  padding:
-    0 17px;
-
-  margin:
-    0;
-
-  border:
-    1px solid
-      rgba(
-        255,
-        255,
-        255,
-        0.18
-      );
-
-  border-radius:
-    999px;
-
-  background:
-    var(--bb-accent);
-
-  color:
-    #ffffff;
-
-  box-shadow:
-    0 12px 35px
-      rgba(
-        0,
-        0,
-        0,
-        0.22
-      );
-
-  font:
-    inherit;
-
-  cursor:
-    pointer;
-}
-
-.commerce-shop-launcher span {
-  font-size:
-    1.15rem;
-}
-
-.commerce-shop-launcher strong {
-  color:
-    #ffffff;
-
-  font-size:
-    0.88rem;
-}
-
-body:has(.game-card)
-  .commerce-shop-launcher,
-body:has(.lobby-card)
-  .commerce-shop-launcher {
-  display:
-    none;
-}
-
-/*
- * =========================
- * SHOP OVERLAY
- * =========================
- */
-
-.commerce-shop-layer {
-  position:
-    fixed;
-
-  inset:
-    0;
-
-  z-index:
-    1200;
-
-  display:
-    flex;
-
-  justify-content:
-    center;
-
-  overflow-y:
-    auto;
-
-  padding:
-    max(
-      16px,
-      env(
-        safe-area-inset-top
-      )
-    )
-    12px
-    max(
-      22px,
-      env(
-        safe-area-inset-bottom
-      )
-    );
-
-  background:
-    rgba(
-      5,
-      10,
-      8,
-      0.76
-    );
-
-  backdrop-filter:
-    blur(12px);
-}
-
-.commerce-shop {
-  width:
-    min(
-      100%,
-      500px
-    );
-
-  margin:
-    auto;
-
-  padding:
-    20px;
-
-  border:
-    1px solid
-      var(--bb-border);
-
-  border-radius:
-    25px;
-
-  background:
-    var(--bb-surface);
-
-  color:
-    var(--bb-text);
-
-  box-shadow:
-    0 28px 90px
-      rgba(
-        0,
-        0,
-        0,
-        0.34
-      );
-}
-
-/*
- * =========================
- * SHOP HEADER
- * =========================
- */
-
-.commerce-shop-header {
-  display:
-    grid;
-
-  grid-template-columns:
-    minmax(
-      0,
-      1fr
-    )
-    42px;
-
-  align-items:
-    start;
-
-  gap:
-    14px;
-}
-
-.commerce-shop-header > div {
-  min-width:
-    0;
-}
-
-.commerce-shop-header h1 {
-  margin:
-    4px 0 6px;
-
-  max-width:
-    100%;
-
-  color:
-    var(--bb-text);
-
-  font-size:
-    clamp(
-      1.55rem,
-      6vw,
-      1.95rem
-    );
-
-  font-weight:
-    850;
-
-  line-height:
-    1.05;
-
-  letter-spacing:
-    -0.035em;
-}
-
-.commerce-shop-header p {
-  max-width:
-    330px;
-
-  margin:
-    0;
-
-  color:
-    var(--bb-muted);
-
-  font-size:
-    0.84rem;
-
-  line-height:
-    1.4;
-}
-
-.commerce-eyebrow {
-  display:
-    inline-block;
-
-  color:
-    var(--bb-accent);
-
-  font-size:
-    0.63rem;
-
-  font-weight:
-    900;
-
-  letter-spacing:
-    0.14em;
-}
-
-.commerce-close {
-  display:
-    grid;
-
-  width:
-    40px;
-
-  height:
-    40px;
-
-  place-items:
-    center;
-
-  padding:
-    0;
-
-  margin:
-    0;
-
-  border:
-    1px solid
-      var(--bb-border);
-
-  border-radius:
-    50%;
-
-  background:
-    var(--bb-surface-soft);
-
-  color:
-    var(--bb-text);
-
-  font-size:
-    1.35rem;
-
-  font-weight:
-    500;
-
-  line-height:
-    1;
-
-  cursor:
-    pointer;
-}
-
-/*
- * =========================
- * WEERGAVE
- * =========================
- */
-
-.commerce-appearance {
-  margin-top:
-    18px;
-
-  padding:
-    14px;
-
-  border:
-    1px solid
-      var(--bb-border);
-
-  border-radius:
-    17px;
-
-  background:
-    var(--bb-surface-soft);
-}
-
-.commerce-appearance-heading {
-  display:
-    flex;
-
-  align-items:
-    center;
-
-  justify-content:
-    space-between;
-
-  gap:
-    18px;
-}
-
-.commerce-appearance-heading > div {
-  display:
-    flex;
-
-  min-width:
-    0;
-
-  flex-direction:
-    column;
-
-  gap:
-    1px;
-}
-
-.commerce-appearance-heading > div > span {
-  color:
-    var(--bb-muted);
-
-  font-size:
-    0.58rem;
-
-  font-weight:
-    900;
-
-  letter-spacing:
-    0.11em;
-}
-
-.commerce-appearance-heading > div > strong {
-  color:
-    var(--bb-text);
-
-  font-size:
-    0.98rem;
-
-  font-weight:
-    850;
-
-  line-height:
-    1.2;
-}
-
-.commerce-appearance p {
-  margin:
-    8px 0 0;
-
-  color:
-    var(--bb-muted);
-
-  font-size:
-    0.74rem;
-
-  line-height:
-    1.42;
-}
-
-/*
- * =========================
- * AUTOMATISCH SWITCH
- * =========================
- */
-
-.commerce-switch {
-  position:
-    relative;
-
-  flex:
-    0 0 auto;
-
-  width:
-    52px;
-
-  height:
-    30px;
-
-  padding:
-    0;
-
-  margin:
-    0;
-
-  border:
-    1px solid
-      var(--bb-border);
-
-  border-radius:
-    999px;
-
-  background:
-    #87938d;
-
-  cursor:
-    pointer;
-
-  transition:
-    0.18s ease;
-}
-
-.commerce-switch span {
-  position:
-    absolute;
-
-  top:
-    3px;
-
-  left:
-    3px;
-
-  width:
-    22px;
-
-  height:
-    22px;
-
-  border-radius:
-    50%;
-
-  background:
-    #ffffff;
-
-  box-shadow:
-    0 2px 7px
-      rgba(
-        0,
-        0,
-        0,
-        0.28
-      );
-
-  transition:
-    0.18s ease;
-}
-
-.commerce-switch.active {
-  border-color:
-    var(--bb-accent);
-
-  background:
-    var(--bb-accent);
-}
-
-.commerce-switch.active span {
-  transform:
-    translateX(
-      22px
-    );
-}
-
-.commerce-mode-selector {
-  display:
-    grid;
-
-  grid-template-columns:
-    1fr 1fr;
-
-  gap:
-    7px;
-
-  margin-top:
-    12px;
-
-  padding:
-    4px;
-
-  border:
-    1px solid
-      var(--bb-border);
-
-  border-radius:
-    13px;
-
-  background:
-    var(--bb-surface);
-}
-
-.commerce-mode-selector button {
-  min-height:
-    40px;
-
-  margin:
-    0;
-
-  border:
-    0;
-
-  border-radius:
-    9px;
-
-  background:
-    transparent;
-
-  color:
-    var(--bb-text);
-
-  font:
-    inherit;
-
-  font-size:
-    0.78rem;
-
-  font-weight:
-    800;
-
-  cursor:
-    pointer;
-}
-
-.commerce-mode-selector button.active {
-  background:
-    var(--bb-accent);
-
-  color:
-    #ffffff;
-}
-
-/*
- * =========================
- * CATEGORIEËN
- * =========================
- */
-
-.commerce-categories {
-  display:
-    flex;
-
-  gap:
-    7px;
-
-  margin:
-    16px -2px 17px;
-
-  padding:
-    2px;
-
-  overflow-x:
-    auto;
-
-  scrollbar-width:
-    none;
-}
-
-.commerce-categories::-webkit-scrollbar {
-  display:
-    none;
-}
-
-.commerce-categories button {
-  flex:
-    0 0 auto;
-
-  width:
-    auto;
-
-  min-height:
-    38px;
-
-  margin:
-    0;
-
-  padding:
-    0 12px;
-
-  border:
-    1px solid
-      var(--bb-border);
-
-  border-radius:
-    999px;
-
-  background:
-    var(--bb-surface-soft);
-
-  color:
-    var(--bb-text);
-
-  font:
-    inherit;
-
-  font-size:
-    0.75rem;
-
-  font-weight:
-    780;
-
-  white-space:
-    nowrap;
-
-  cursor:
-    pointer;
-}
-
-.commerce-categories button.active {
-  border-color:
-    var(--bb-accent);
-
-  background:
-    var(--bb-accent);
-
-  color:
-    #ffffff;
-}
-
-/*
- * =========================
- * PRODUCTEN
- * =========================
- */
-
-.commerce-products {
-  display:
-    grid;
-
-  gap:
-    11px;
-}
-
-.commerce-product {
-  position:
-    relative;
-
-  display:
-    grid;
-
-  grid-template-columns:
-    88px
-    minmax(
-      0,
-      1fr
-    );
-
-  gap:
-    13px;
-
-  padding:
-    13px;
-
-  overflow:
-    hidden;
-
-  border:
-    1px solid
-      var(--bb-border);
-
-  border-radius:
-    18px;
-
-  background:
-    var(--bb-surface-soft);
-}
-
-.commerce-product.featured {
-  border-color:
-    var(--bb-accent);
-}
-
-.commerce-product.equipped {
-  box-shadow:
-    inset 0 0 0
-      2px
-      var(--bb-accent);
-}
-
-.commerce-featured {
-  position:
-    absolute;
-
-  top:
-    8px;
-
-  right:
-    8px;
-
-  padding:
-    4px 7px;
-
-  border-radius:
-    999px;
-
-  background:
-    var(--bb-accent);
-
-  color:
-    #ffffff;
-
-  font-size:
-    0.53rem;
-
-  font-weight:
-    900;
-
-  letter-spacing:
-    0.08em;
-}
-
-.commerce-product-preview {
-  display:
-    flex;
-
-  align-items:
-    center;
-
-  justify-content:
-    center;
-
-  min-height:
-    102px;
+.bb-market-appearance-heading > div {
+  min-width: 0;
 }
 
-.commerce-product-content {
-  display:
-    flex;
-
-  min-width:
-    0;
-
-  flex-direction:
-    column;
-
-  justify-content:
-    space-between;
-
-  gap:
-    10px;
-}
-
-.commerce-product-title {
-  display:
-    flex;
-
-  min-width:
-    0;
-
-  align-items:
-    flex-start;
-
-  justify-content:
-    space-between;
-
-  gap:
-    8px;
-}
-
-.commerce-product-title > div {
-  min-width:
-    0;
-}
-
-.commerce-product-title h2 {
-  margin:
-    2px 0 4px;
-
-  padding-right:
-    4px;
-
-  color:
-    var(--bb-text);
-
-  font-size:
-    0.93rem;
-
-  font-weight:
-    850;
-
-  line-height:
-    1.18;
-
-  letter-spacing:
-    -0.015em;
-}
-
-.commerce-product-title p {
-  margin:
-    0;
-
-  color:
-    var(--bb-muted);
-
-  font-size:
-    0.73rem;
-
-  line-height:
-    1.38;
-}
-
-.commerce-owned {
-  display:
-    grid;
-
-  flex:
-    0 0 auto;
-
-  width:
-    22px;
-
-  height:
-    22px;
-
-  place-items:
-    center;
-
-  border-radius:
-    50%;
-
-  background:
-    var(--bb-accent);
-
-  color:
-    #ffffff;
-
-  font-size:
-    0.66rem;
-
-  font-weight:
-    900;
-}
-
-.commerce-product-button {
-  width:
-    100%;
-
-  min-height:
-    38px;
-
-  margin:
-    0;
-
-  padding:
-    0 11px;
-
-  border:
-    0;
-
-  border-radius:
-    11px;
-
-  background:
-    var(--bb-accent);
-
-  color:
-    #ffffff;
-
-  font:
-    inherit;
-
-  font-size:
-    0.77rem;
-
-  font-weight:
-    850;
-
-  cursor:
-    pointer;
-}
-
-.commerce-product-button.active {
-  background:
-    var(--bb-accent-strong);
-}
-
-.commerce-product-button.locked {
-  background:
-    var(--bb-text);
-
-  color:
-    var(--bb-surface);
-}
-
-/*
- * =========================
- * THEME PREVIEW
- * =========================
- */
-
-.commerce-theme-preview {
-  width:
-    74px;
-
-  height:
-    90px;
-
-  overflow:
-    hidden;
-
-  border:
-    3px solid
-      rgba(
-        255,
-        255,
-        255,
-        0.75
-      );
-
-  border-radius:
-    14px;
-
-  box-shadow:
-    0 8px 20px
-      rgba(
-        0,
-        0,
-        0,
-        0.18
-      );
-}
-
-.commerce-theme-preview-dual {
-  display:
-    grid;
-
-  grid-template-columns:
-    1fr 1fr;
-}
-
-.commerce-theme-half {
-  position:
-    relative;
-
-  display:
-    flex;
-
-  align-items:
-    center;
-
-  justify-content:
-    center;
-}
-
-.commerce-theme-half span {
-  width:
-    24px;
-
-  height:
-    52px;
-
-  border-radius:
-    7px;
-
-  box-shadow:
-    0 3px 8px
-      rgba(
-        0,
-        0,
-        0,
-        0.12
-      );
-}
-
-.commerce-theme-half strong {
-  position:
-    absolute;
-
-  right:
-    4px;
-
-  bottom:
-    7px;
-
-  width:
-    15px;
-
-  height:
-    15px;
-
-  border:
-    2px solid
-      rgba(
-        255,
-        255,
-        255,
-        0.65
-      );
-
-  border-radius:
-    50%;
-}
-
-/*
- * =========================
- * CARD PREVIEW
- * =========================
- */
-
-.commerce-card-preview {
-  display:
-    grid;
-
-  width:
-    62px;
-
-  height:
-    87px;
-
-  place-items:
-    center;
-
-  border:
-    3px solid
-      #dfe6e2;
-
-  border-radius:
-    10px;
-
-  background:
-    linear-gradient(
-      145deg,
-      #0f765e,
-      #104d41
-    );
-
-  color:
-    #ffffff;
-
-  box-shadow:
-    0 8px 20px
-      rgba(
-        0,
-        0,
-        0,
-        0.18
-      );
-
-  font-size:
-    1.5rem;
-}
-
-.commerce-card-gold {
-  border-color:
-    #f4d578;
-
-  background:
-    linear-gradient(
-      145deg,
-      #4d3a0b,
-      #d7aa32,
-      #fff1a8,
-      #9b7015
-    );
-
-  color:
-    #33250a;
+.bb-market-appearance-heading > div > span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--bb-muted, #bdb6a1);
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .16em;
 }
-
-.commerce-card-neon {
-  border-color:
-    #4fffd5;
-
-  background:
-    radial-gradient(
-      circle at top,
-      #203967,
-      #090d1d 70%
-    );
 
-  color:
-    #4fffd5;
-
-  box-shadow:
-    0 0 22px
-      rgba(
-        79,
-        255,
-        213,
-        0.45
-      );
+.bb-market-appearance-heading > div > strong {
+  display: block;
+  color: var(--bb-text, #fff8df);
+  font-size: 1.15rem;
 }
-
-/*
- * =========================
- * ANIMATION PREVIEW
- * =========================
- */
-
-.commerce-animation-preview {
-  position:
-    relative;
 
-  display:
-    grid;
-
-  width:
-    74px;
-
-  height:
-    74px;
-
-  place-items:
-    center;
-
-  border-radius:
-    50%;
-
-  background:
-    linear-gradient(
-      145deg,
-      var(--bb-accent),
-      var(--bb-accent-strong)
-    );
-
-  color:
-    #ffffff;
-
-  font-size:
-    2rem;
-
-  animation:
-    commercePreviewPulse
-    1.1s
-    ease-in-out
-    infinite
-    alternate;
+.bb-market-appearance > p {
+  margin: 12px 0 0;
+  color: var(--bb-muted, #bdb6a1);
+  line-height: 1.45;
 }
-
-.commerce-animation-preview span {
-  position:
-    absolute;
 
-  top:
-    6px;
-
-  right:
-    8px;
+/* 48x28: 22px thumb + 3px binnenruimte aan beide kanten. */
+.bb-market-switch {
+  position: relative;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 28px;
+  min-width: 48px;
+  min-height: 28px;
+  padding: 0;
+  border: 1.5px solid var(--bb-border, #30372f);
+  border-radius: 999px;
+  background: #4a4d45;
+  box-shadow: none;
+  overflow: hidden;
 }
-
-.commerce-animation-preview small {
-  position:
-    absolute;
-
-  bottom:
-    6px;
 
-  left:
-    8px;
+.bb-market-switch > span {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fffdf7;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .22);
+  transform: translateX(0);
+  transition: transform .2s ease;
 }
 
-@keyframes commercePreviewPulse {
-  from {
-    transform:
-      scale(0.95);
-  }
-
-  to {
-    transform:
-      scale(1.05);
-  }
+.bb-market-switch.active {
+  background: var(--market-yellow);
+  border-color: var(--market-yellow-deep);
 }
-
-.commerce-extra-preview {
-  display:
-    grid;
-
-  width:
-    72px;
-
-  height:
-    72px;
-
-  place-items:
-    center;
-
-  border-radius:
-    18px;
 
-  background:
-    var(--bb-surface);
-
-  font-size:
-    1.9rem;
-
-  box-shadow:
-    0 7px 18px
-      rgba(
-        0,
-        0,
-        0,
-        0.1
-      );
+.bb-market-switch.active > span {
+  transform: translateX(20px);
 }
-
-/*
- * =========================
- * SHOP STATUS
- * =========================
- */
-
-.commerce-shop-loading,
-.commerce-empty {
-  display:
-    grid;
-
-  min-height:
-    210px;
-
-  place-items:
-    center;
 
-  align-content:
-    center;
-
-  gap:
-    9px;
-
-  text-align:
-    center;
+.bb-market-mode-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-top: 14px;
 }
 
-.commerce-empty span {
-  font-size:
-    2.3rem;
+.bb-market-mode-selector button,
+.bb-market-categories button,
+.bb-market-product-button,
+.bb-market-purchase-box > button {
+  border: 1.5px solid var(--market-line);
+  color: var(--market-ink);
+  font-weight: 900;
+  box-shadow: none;
 }
 
-.commerce-empty h2,
-.commerce-empty p {
-  margin:
-    0;
+.bb-market-mode-selector button {
+  min-height: 44px;
+  border-radius: 14px;
+  background: var(--market-cream);
 }
 
-.commerce-empty h2 {
-  font-size:
-    1rem;
+.bb-market-mode-selector button.active {
+  background: var(--market-yellow);
+  border-color: var(--market-yellow-deep);
 }
-
-.commerce-empty p {
-  color:
-    var(--bb-muted);
 
-  font-size:
-    0.8rem;
+.bb-market-categories {
+  display: flex;
+  gap: 9px;
+  margin: 4px 0 20px;
+  padding: 2px 1px 5px;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
-
-.commerce-loader {
-  width:
-    30px;
-
-  height:
-    30px;
-
-  border:
-    4px solid
-      var(--bb-border);
 
-  border-top-color:
-    var(--bb-accent);
-
-  border-radius:
-    50%;
-
-  animation:
-    commerceSpin
-    0.8s
-    linear
-    infinite;
+.bb-market-categories::-webkit-scrollbar {
+  display: none;
 }
 
-@keyframes commerceSpin {
-  to {
-    transform:
-      rotate(360deg);
-  }
+.bb-market-categories button {
+  flex: 0 0 auto;
+  min-height: 43px;
+  padding: 0 16px;
+  border-radius: 14px;
+  background: var(--market-cream);
+  white-space: nowrap;
 }
-
-.commerce-info-message {
-  margin:
-    0 0 13px;
-
-  padding:
-    11px 13px;
-
-  border:
-    1px solid
-      #c89f2f;
-
-  border-radius:
-    13px;
 
-  background:
-    #fff4c7;
-
-  color:
-    #4c3905;
-
-  font-size:
-    0.74rem;
-
-  line-height:
-    1.4;
+.bb-market-categories button.active {
+  background: var(--market-yellow);
+  border-color: var(--market-yellow-deep);
 }
-
-body[data-bb-color-mode="dark"]
-  .commerce-info-message {
-  border-color:
-    #675f35;
-
-  background:
-    #302d1d;
 
-  color:
-    #f4df92;
+.bb-market-info-message,
+.bb-market-empty,
+.bb-market-loading {
+  padding: 22px;
+  border: 1.5px solid var(--bb-border, #30372f);
+  border-radius: 18px;
+  background: var(--bb-surface-soft, #1b201b);
+  color: var(--bb-muted, #bdb6a1);
+  text-align: center;
 }
-
-.commerce-shop-footer {
-  display:
-    flex;
-
-  align-items:
-    center;
-
-  gap:
-    9px;
-
-  margin-top:
-    16px;
-
-  padding:
-    12px;
-
-  border:
-    1px solid
-      var(--bb-border);
 
-  border-radius:
-    14px;
+.bb-market-loader {
+  width: 28px;
+  height: 28px;
+  margin: 0 auto 10px;
+  border: 3px solid var(--bb-border, #30372f);
+  border-top-color: var(--market-yellow);
+  border-radius: 50%;
+  animation: market-spin .75s linear infinite;
+}
 
-  background:
-    var(--bb-surface-soft);
-
-  color:
-    var(--bb-muted);
-
-  font-size:
-    0.71rem;
-
-  line-height:
-    1.4;
+@keyframes market-spin {
+  to { transform: rotate(360deg); }
 }
 
-.commerce-shop-footer span {
-  flex:
-    0 0 auto;
-
-  font-size:
-    1.1rem;
+.bb-market-products {
+  display: grid;
+  gap: 14px;
 }
-
-.commerce-shop-footer p {
-  margin:
-    0;
+
+.bb-market-product {
+  position: relative;
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  padding: 15px;
+  border: 1.5px solid var(--bb-border, #30372f);
+  border-radius: 21px;
+  background: var(--bb-surface-soft, #1b201b);
+  box-shadow: none;
 }
-
-/*
- * =========================
- * PURCHASE POPUP
- * =========================
- */
-
-.commerce-purchase-layer {
-  position:
-    fixed;
-
-  inset:
-    0;
-
-  z-index:
-    1400;
-
-  display:
-    grid;
-
-  place-items:
-    center;
-
-  padding:
-    18px;
 
-  background:
-    rgba(
-      6,
-      11,
-      9,
-      0.8
-    );
-
-  backdrop-filter:
-    blur(10px);
+.bb-market-product.featured,
+.bb-market-product.equipped {
+  border-color: color-mix(in srgb, var(--market-yellow) 60%, var(--bb-border, #30372f));
 }
-
-.commerce-purchase-box {
-  width:
-    min(
-      100%,
-      370px
-    );
-
-  padding:
-    25px;
-
-  border:
-    1px solid
-      var(--bb-border);
-
-  border-radius:
-    23px;
-
-  background:
-    var(--bb-surface);
 
-  color:
-    var(--bb-text);
-
-  text-align:
-    center;
-
-  box-shadow:
-    0 25px 80px
-      rgba(
-        0,
-        0,
-        0,
-        0.4
-      );
+.bb-market-featured {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  padding: 7px 11px;
+  border: 1.5px solid var(--market-yellow-deep);
+  border-radius: 999px;
+  background: var(--market-yellow);
+  color: var(--market-ink);
+  font-size: .7rem;
+  font-weight: 950;
+  letter-spacing: .10em;
+}
+
+.bb-market-product-preview {
+  min-width: 0;
+  display: grid;
+  place-items: center;
 }
-
-.commerce-purchase-icon {
-  margin-bottom:
-    8px;
 
-  font-size:
-    2.3rem;
+.bb-market-theme-preview {
+  width: 112px;
+  height: 112px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+  border: 3px solid rgba(255,255,255,.72);
+  border-radius: 20px;
+  box-shadow: 0 7px 18px rgba(0,0,0,.14);
 }
 
-.commerce-purchase-box h2 {
-  margin:
-    5px 0;
-
-  font-size:
-    1.3rem;
+.bb-market-theme-half {
+  position: relative;
+  min-width: 0;
 }
-
-.commerce-price {
-  display:
-    block;
-
-  margin:
-    10px 0;
 
-  color:
-    var(--bb-accent) !important;
-
-  font-size:
-    1.4rem;
+.bb-market-theme-half > span {
+  position: absolute;
+  left: 12px;
+  top: 20px;
+  width: 27px;
+  height: 57px;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0,0,0,.12);
 }
-
-.commerce-purchase-box p {
-  color:
-    var(--bb-muted);
-
-  font-size:
-    0.83rem;
 
-  line-height:
-    1.5;
+.bb-market-theme-half > strong {
+  position: absolute;
+  left: 50%;
+  bottom: 9px;
+  width: 18px;
+  height: 18px;
+  translate: -50% 0;
+  border: 3px solid rgba(255,255,255,.72);
+  border-radius: 50%;
+  box-shadow: none;
 }
-
-.commerce-purchase-box button {
-  width:
-    100%;
-
-  min-height:
-    46px;
-
-  margin:
-    10px 0 0;
 
-  border:
-    0;
-
-  border-radius:
-    13px;
-
-  background:
-    var(--bb-accent);
-
-  color:
-    #ffffff;
-
-  font:
-    inherit;
-
-  font-weight:
-    850;
-}
+.bb-market-card-preview,
+.bb-market-animation-preview,
+.bb-market-extra-preview {
+  width: 96px;
+  height: 112px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: var(--market-yellow);
+  color: var(--market-ink);
+  font-size: 2.1rem;
+}
+
+.bb-market-product-content {
+  min-width: 0;
+}
 
-/*
- * =========================
- * ADVERTENTIE
- * =========================
- */
+.bb-market-product-title {
+  display: flex;
+  gap: 10px;
+  align-items: start;
+  justify-content: space-between;
+}
+
+.bb-market-product-title h2 {
+  margin: 0;
+  color: var(--bb-text, #fff8df);
+  font-family: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  font-size: 1.2rem;
+  line-height: 1.1;
+}
 
+.bb-market-product-title p {
+  margin: 6px 0 0;
+  color: var(--bb-muted, #bdb6a1);
+  line-height: 1.4;
+}
+
+.bb-market-owned {
+  flex: 0 0 auto;
+  width: 27px;
+  height: 27px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--market-yellow);
+  color: var(--market-ink);
+  font-weight: 950;
+}
+
+.bb-market-product-button {
+  width: 100%;
+  min-height: 45px;
+  margin-top: 12px;
+  border-radius: 14px;
+  background: var(--market-yellow);
+}
+
+.bb-market-product-button.active {
+  background: var(--market-yellow);
+}
+
+.bb-market-product-button.locked {
+  background: var(--market-yellow);
+  opacity: .95;
+}
+
+.bb-market-footer {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-top: 18px;
+  padding: 15px;
+  border: 1.5px solid var(--bb-border, #30372f);
+  border-radius: 17px;
+  background: var(--bb-surface-soft, #1b201b);
+}
+
+.bb-market-footer p {
+  margin: 0;
+  color: var(--bb-muted, #bdb6a1);
+  line-height: 1.4;
+}
+
+.bb-market-purchase-box {
+  width: min(420px, 100%);
+  padding: 25px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--bb-border, #30372f);
+  border-radius: 24px;
+  background: var(--bb-surface, #111815);
+  color: var(--bb-text, #fff8df);
+  text-align: center;
+  box-shadow: 0 24px 65px rgba(0,0,0,.30);
+}
+
+.bb-market-purchase-icon {
+  width: 62px;
+  height: 62px;
+  margin: 0 auto 12px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--market-yellow);
+  font-size: 1.7rem;
+}
+
+.bb-market-price {
+  display: inline-block;
+  margin: 6px 0 10px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: var(--market-yellow);
+  color: var(--market-ink);
+}
+
+.bb-market-purchase-box > button {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 10px;
+  border-radius: 14px;
+  background: var(--market-yellow);
+}
+
+/* Shop niet tijdens lobby/gameplay tonen. */
+body:has(.lobby-card) .bb-market-launcher,
+body:has(.game-card) .bb-market-launcher,
+body:has(.rules-guide-card) .bb-market-launcher {
+  display: none;
+}
+
+.bb-market-launcher {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 900;
+  min-height: 48px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1.5px solid var(--market-yellow-deep);
+  border-radius: 999px;
+  background: var(--market-yellow);
+  color: var(--market-ink);
+  font-weight: 950;
+  box-shadow: 0 8px 20px rgba(0,0,0,.16);
+}
+
+/* Fake ad: technische class commerce-ad-layer blijft bewust intact. */
 .commerce-ad-layer {
-  position:
-    fixed;
-
-  inset:
-    0;
-
-  z-index:
-    2000;
-
-  display:
-    grid;
-
-  place-items:
-    center;
-
-  padding:
-    18px;
-
-  background:
-    rgba(
-      5,
-      9,
-      8,
-      0.94
-    );
-
-  backdrop-filter:
-    blur(8px);
+  position: fixed;
+  inset: 0;
+  z-index: 1600;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(7, 11, 9, .90);
 }
 
 .commerce-ad {
-  display:
-    flex;
-
-  flex-direction:
-    column;
-
-  width:
-    min(
-      100%,
-      420px
-    );
-
-  min-height:
-    min(
-      580px,
-      80vh
-    );
-
-  padding:
-    13px;
-
-  border:
-    1px solid
-      rgba(
-        255,
-        255,
-        255,
-        0.12
-      );
-
-  border-radius:
-    24px;
-
-  background:
-    #f5f5f5;
-
-  color:
-    #151515;
-
-  box-shadow:
-    0 30px 100px
-      rgba(
-        0,
-        0,
-        0,
-        0.5
-      );
+  width: min(420px, 100%);
+  padding: 22px;
+  border-radius: 22px;
+  background: var(--bb-surface, #111815);
+  color: var(--bb-text, #fff8df);
+  text-align: center;
 }
 
 .commerce-ad-label {
-  align-self:
-    flex-start;
-
-  padding:
-    5px 8px;
-
-  border-radius:
-    999px;
-
-  background:
-    #e7e7e7;
-
-  color:
-    #5f5f5f;
-
-  font-size:
-    0.62rem;
-
-  font-weight:
-    850;
-
-  letter-spacing:
-    0.09em;
-}
-
-.commerce-ad-placeholder {
-  display:
-    grid;
-
-  flex:
-    1;
-
-  place-items:
-    center;
-
-  align-content:
-    center;
-
-  padding:
-    25px;
-
-  text-align:
-    center;
+  color: var(--market-yellow);
+  font-size: .72rem;
+  font-weight: 950;
+  letter-spacing: .15em;
 }
 
 .commerce-ad-logo {
-  display:
-    grid;
-
-  width:
-    90px;
-
-  height:
-    90px;
-
-  margin-bottom:
-    16px;
-
-  place-items:
-    center;
-
-  border-radius:
-    24px;
-
-  background:
-    #e4e9e7;
-
-  font-size:
-    2.7rem;
+  font-size: 2.4rem;
 }
 
-.commerce-ad-placeholder h2 {
-  margin:
-    0 0 8px;
-
-  color:
-    #151515 !important;
-
-  font-size:
-    1.5rem;
-}
-
+.commerce-ad-placeholder h2,
 .commerce-ad-placeholder p {
-  max-width:
-    280px;
-
-  margin:
-    0;
-
-  color:
-    #666666;
-
-  font-size:
-    0.88rem;
-
-  line-height:
-    1.5;
+  margin-bottom: 8px;
 }
 
+.commerce-ad-placeholder p,
 .commerce-ad-timer {
-  padding:
-    12px;
-
-  border-radius:
-    13px;
-
-  background:
-    #e1e1e1;
-
-  color:
-    #555555;
-
-  text-align:
-    center;
-
-  font-size:
-    0.82rem;
+  color: var(--bb-muted, #bdb6a1);
 }
 
-/*
- * =========================
- * MOBIEL
- * =========================
- */
-
-@media (
-  max-width:
-    430px
-) {
-  .commerce-shop-layer {
-    padding-left:
-      9px;
-
-    padding-right:
-      9px;
+@media (max-width: 560px) {
+  .bb-market-layer {
+    padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
+    place-items: start center;
   }
 
-  .commerce-shop {
-    padding:
-      16px;
-
-    border-radius:
-      22px;
+  .bb-market {
+    max-height: calc(100dvh - 20px);
+    padding: 18px 14px 22px;
+    border-radius: 24px;
   }
 
-  .commerce-shop-header {
-    grid-template-columns:
-      minmax(
-        0,
-        1fr
-      )
-      38px;
-
-    gap:
-      10px;
+  .bb-market-header {
+    grid-template-columns: minmax(0, 1fr) 42px;
   }
 
-  .commerce-shop-header h1 {
-    margin-top:
-      3px;
-
-    font-size:
-      1.48rem;
-
-    line-height:
-      1.03;
+  .bb-market-close {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
   }
 
-  .commerce-shop-header p {
-    max-width:
-      270px;
-
-    font-size:
-      0.76rem;
-
-    line-height:
-      1.35;
+  .bb-market-appearance {
+    padding: 15px;
   }
 
-  .commerce-close {
-    width:
-      37px;
-
-    height:
-      37px;
-
-    font-size:
-      1.25rem;
+  .bb-market-product {
+    grid-template-columns: 105px minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px;
   }
 
-  .commerce-appearance {
-    margin-top:
-      15px;
-
-    padding:
-      12px;
+  .bb-market-theme-preview {
+    width: 92px;
+    height: 104px;
+    border-radius: 17px;
   }
 
-  .commerce-appearance-heading > div > strong {
-    font-size:
-      0.91rem;
+  .bb-market-theme-half > span {
+    left: 9px;
+    width: 24px;
+    height: 53px;
   }
 
-  .commerce-appearance p {
-    font-size:
-      0.69rem;
+  .bb-market-theme-half > strong {
+    width: 16px;
+    height: 16px;
   }
 
-  .commerce-categories {
-    margin-top:
-      14px;
-
-    margin-bottom:
-      15px;
+  .bb-market-featured {
+    top: 9px;
+    right: 9px;
+    padding: 6px 9px;
   }
 
-  .commerce-categories button {
-    min-height:
-      36px;
-
-    padding:
-      0 10px;
-
-    font-size:
-      0.7rem;
+  .bb-market-product-title h2 {
+    padding-right: 6px;
+    font-size: 1.08rem;
   }
 
-  .commerce-product {
-    grid-template-columns:
-      72px
-      minmax(
-        0,
-        1fr
-      );
-
-    gap:
-      10px;
-
-    padding:
-      11px;
-
-    border-radius:
-      16px;
-  }
-
-  .commerce-product-preview {
-    min-height:
-      88px;
-  }
-
-  .commerce-product-title h2 {
-    padding-right:
-      0;
-
-    font-size:
-      0.86rem;
-  }
-
-  .commerce-product-title p {
-    font-size:
-      0.68rem;
-
-    line-height:
-      1.34;
-  }
-
-  .commerce-product-button {
-    min-height:
-      36px;
-
-    font-size:
-      0.72rem;
-  }
-
-  .commerce-theme-preview {
-    width:
-      62px;
-
-    height:
-      78px;
-  }
-
-  .commerce-theme-half span {
-    width:
-      19px;
-
-    height:
-      44px;
-  }
-
-  .commerce-theme-half strong {
-    width:
-      13px;
-
-    height:
-      13px;
-  }
-
-  .commerce-card-preview {
-    width:
-      52px;
-
-    height:
-      74px;
-  }
-
-  .commerce-animation-preview {
-    width:
-      62px;
-
-    height:
-      62px;
-
-    font-size:
-      1.7rem;
-  }
-
-  .commerce-extra-preview {
-    width:
-      62px;
-
-    height:
-      62px;
-
-    font-size:
-      1.7rem;
-  }
-}
-
-/*
- * =========================
- * EXTRA KLEINE TELEFOONS
- * =========================
- */
-
-@media (
-  max-width:
-    350px
-) {
-  .commerce-shop {
-    padding:
-      13px;
-  }
-
-  .commerce-shop-header h1 {
-    font-size:
-      1.35rem;
-  }
-
-  .commerce-product {
-    grid-template-columns:
-      64px
-      minmax(
-        0,
-        1fr
-      );
-  }
-
-  .commerce-theme-preview {
-    width:
-      56px;
-
-    height:
-      72px;
-  }
-
-  .commerce-categories button {
-    font-size:
-      0.66rem;
+  .bb-market-product-title p {
+    font-size: .89rem;
   }
 }

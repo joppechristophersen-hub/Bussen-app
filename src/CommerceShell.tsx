@@ -93,30 +93,43 @@ const APPEARANCE_STORAGE_KEY =
 const MANUAL_APPEARANCE_STORAGE_KEY =
   "busbaas-manual-appearance-mode";
 
+/*
+ * =========================
+ * CLASSIC PALETTEN
+ * =========================
+ *
+ * Licht heeft bewust sterker contrast:
+ * - donkerdere tekst
+ * - duidelijkere borders
+ * - donkerder groen
+ * - duidelijk verschil tussen achtergrond
+ *   en witte kaarten/panelen
+ */
+
 const CLASSIC_LIGHT: ThemePalette = {
   background:
-    "#e3e9e5",
+    "#f6f0df",
 
   surface:
-    "#ffffff",
+    "#fffaf0",
 
   surfaceSoft:
-    "#eef3f0",
+    "#efe6c9",
 
   accent:
-    "#08745b",
+    "#f6c945",
 
   accentStrong:
-    "#055744",
+    "#d99d20",
 
   text:
-    "#07150f",
+    "#24251f",
 
   muted:
-    "#4f5f58",
+    "#6c6656",
 
   border:
-    "#bfcac4",
+    "#d6c99f",
 };
 
 const CLASSIC_DARK: ThemePalette = {
@@ -127,22 +140,22 @@ const CLASSIC_DARK: ThemePalette = {
     "#111815",
 
   surfaceSoft:
-    "#19221e",
+    "#1b201b",
 
   accent:
-    "#2ad1a0",
+    "#f6c945",
 
   accentStrong:
-    "#159b76",
+    "#d99d20",
 
   text:
-    "#f3f8f6",
+    "#fff8df",
 
   muted:
-    "#9baba4",
+    "#bdb6a1",
 
   border:
-    "#2d3934",
+    "#30372f",
 };
 
 const FALLBACK_CLASSIC_THEME: ShopItem = {
@@ -162,7 +175,7 @@ const FALLBACK_CLASSIC_THEME: ShopItem = {
     "theme",
 
   description:
-    "De originele Busbaas-look. Werkt automatisch in licht en donker.",
+    "De originele gele Busbaas-look. Inclusief lichte en donkere variant.",
 
   priceLabel:
     "Gratis",
@@ -208,6 +221,12 @@ const CATEGORY_ORDER: ShopCategory[] = [
   "extras",
 ];
 
+/*
+ * =========================
+ * LOCAL STORAGE
+ * =========================
+ */
+
 function readOwnedItems() {
   try {
     const stored =
@@ -245,6 +264,10 @@ function readOwnedItems() {
           "string"
       );
 
+    /*
+     * Oude gratis licht/donker-items
+     * verwijderen we uit eigendom.
+     */
     const migrated =
       cleaned.filter(
         (item) =>
@@ -305,6 +328,11 @@ function readEquippedItems() {
         ? parsed.theme
         : "theme-classic";
 
+    /*
+     * Migratie van de vorige versie:
+     * auto / light / dark waren toen
+     * aparte shopproducten.
+     */
     if (
       selectedTheme ===
         "theme-auto" ||
@@ -375,6 +403,12 @@ function readManualAppearanceMode():
   }
 }
 
+/*
+ * =========================
+ * COMPONENT
+ * =========================
+ */
+
 function CommerceShell({
   children,
 }: CommerceShellProps) {
@@ -443,6 +477,12 @@ function CommerceShell({
       null
     );
 
+  /*
+   * =========================
+   * LICHT / DONKER
+   * =========================
+   */
+
   const [
     appearanceMode,
     setAppearanceMode,
@@ -474,7 +514,7 @@ function CommerceShell({
 
   /*
    * =========================
-   * ADVERTENTIE
+   * ADVERTENTIE NA POTJE
    * =========================
    */
 
@@ -492,11 +532,6 @@ function CommerceShell({
 
   const gameWasFinishedRef =
     useRef(false);
-
-  const adStartTimerRef =
-    useRef<number | null>(
-      null
-    );
 
   /*
    * =========================
@@ -589,6 +624,11 @@ function CommerceShell({
           return;
         }
 
+        /*
+         * Oude licht/donker-producten worden
+         * niet meer getoond als een oude
+         * catalogus nog even in cache staat.
+         */
         const cleanedItems =
           data.items.filter(
             (item) =>
@@ -600,8 +640,43 @@ function CommerceShell({
                 "theme-dark"
           );
 
+        /*
+         * Busbaas Classic wordt lokaal genormaliseerd.
+         * Zo kan een oudere online catalogus nooit meer
+         * de oude groene Classic-kleuren terugbrengen.
+         */
+        const normalizedItems =
+          cleanedItems.map(
+            (item) =>
+              item.id ===
+              "theme-classic"
+                ? {
+                    ...item,
+                    name:
+                      "Busbaas Classic",
+                    description:
+                      "De originele gele Busbaas-look. Inclusief lichte en donkere variant.",
+                    priceLabel:
+                      "Gratis",
+                    free:
+                      true,
+                    featured:
+                      true,
+                    effect: {
+                      ...item.effect,
+                      palettes: {
+                        light:
+                          CLASSIC_LIGHT,
+                        dark:
+                          CLASSIC_DARK,
+                      },
+                    },
+                  }
+                : item
+          );
+
         const hasClassic =
-          cleanedItems.some(
+          normalizedItems.some(
             (item) =>
               item.id ===
               "theme-classic"
@@ -609,16 +684,20 @@ function CommerceShell({
 
         const loadedItems =
           hasClassic
-            ? cleanedItems
+            ? normalizedItems
             : [
                 FALLBACK_CLASSIC_THEME,
-                ...cleanedItems,
+                ...normalizedItems,
               ];
 
         setShopItems(
           loadedItems
         );
 
+        /*
+         * Alle gratis items automatisch
+         * als eigendom registreren.
+         */
         setOwnedItems(
           (
             current
@@ -894,8 +973,11 @@ function CommerceShell({
 
   /*
    * =========================
-   * VOORBEELDNAMEN
+   * UI COPY
    * =========================
+   *
+   * Zo hoeven we de grote App.tsx hiervoor
+   * niet aan te raken.
    */
 
   useEffect(() => {
@@ -966,9 +1048,6 @@ function CommerceShell({
    * =========================
    * EINDE SPEL DETECTEREN
    * =========================
-   *
-   * Eerst 2,2 seconden alleen confetti.
-   * Daarna verschijnt pas de advertentie.
    */
 
   useEffect(() => {
@@ -979,20 +1058,6 @@ function CommerceShell({
 
     if (!root) {
       return;
-    }
-
-    function clearAdStartTimer() {
-      if (
-        adStartTimerRef.current !==
-        null
-      ) {
-        window.clearTimeout(
-          adStartTimerRef.current
-        );
-
-        adStartTimerRef.current =
-          null;
-      }
     }
 
     function checkFinishedGame() {
@@ -1007,53 +1072,12 @@ function CommerceShell({
         gameFinished &&
         !gameWasFinishedRef.current
       ) {
-        clearAdStartTimer();
-
-        setAdVisible(
-          false
-        );
-
         setAdCountdown(
           3
         );
 
-        adStartTimerRef.current =
-          window.setTimeout(
-            () => {
-              const stillFinished =
-                Boolean(
-                  document.querySelector(
-                    ".bus-finished-panel"
-                  )
-                );
-
-              if (
-                stillFinished
-              ) {
-                setAdVisible(
-                  true
-                );
-              }
-
-              adStartTimerRef.current =
-                null;
-            },
-            2200
-          );
-      }
-
-      if (
-        !gameFinished &&
-        gameWasFinishedRef.current
-      ) {
-        clearAdStartTimer();
-
         setAdVisible(
-          false
-        );
-
-        setAdCountdown(
-          3
+          true
         );
       }
 
@@ -1081,8 +1105,6 @@ function CommerceShell({
 
     return () => {
       observer.disconnect();
-
-      clearAdStartTimer();
     };
   }, []);
 
@@ -1148,7 +1170,7 @@ function CommerceShell({
 
   /*
    * =========================
-   * APPEARANCE
+   * APPEARANCE CONTROLS
    * =========================
    */
 
@@ -1187,7 +1209,7 @@ function CommerceShell({
 
   /*
    * =========================
-   * SHOP
+   * SHOP HELPERS
    * =========================
    */
 
@@ -1274,9 +1296,9 @@ function CommerceShell({
         ?.palettes!;
 
     return (
-      <div className="commerce-theme-preview commerce-theme-preview-dual">
+      <div className="bb-market-theme-preview bb-market-theme-preview-dual">
         <div
-          className="commerce-theme-half"
+          className="bb-market-theme-half"
           style={{
             background:
               palettes.light
@@ -1301,7 +1323,7 @@ function CommerceShell({
         </div>
 
         <div
-          className="commerce-theme-half"
+          className="bb-market-theme-half"
           style={{
             background:
               palettes.dark
@@ -1347,7 +1369,7 @@ function CommerceShell({
     ) {
       return (
         <div
-          className={`commerce-card-preview commerce-card-${item.effect?.cardBack || "classic"}`}
+          className={`bb-market-card-preview bb-market-card-${item.effect?.cardBack || "classic"}`}
         >
           <span>
             🚌
@@ -1361,7 +1383,7 @@ function CommerceShell({
       "animations"
     ) {
       return (
-        <div className="commerce-animation-preview">
+        <div className="bb-market-animation-preview">
           ✨
 
           <span>
@@ -1376,7 +1398,7 @@ function CommerceShell({
     }
 
     return (
-      <div className="commerce-extra-preview">
+      <div className="bb-market-extra-preview">
         🎁
       </div>
     );
@@ -1389,7 +1411,7 @@ function CommerceShell({
       {!shopOpen && (
         <button
           type="button"
-          className="commerce-shop-launcher"
+          className="bb-market-launcher"
           onClick={() =>
             setShopOpen(
               true
@@ -1408,11 +1430,11 @@ function CommerceShell({
       )}
 
       {shopOpen && (
-        <div className="commerce-shop-layer">
-          <div className="commerce-shop">
-            <header className="commerce-shop-header">
+        <div className="bb-market-layer">
+          <div className="bb-market">
+            <header className="bb-market-header">
               <div>
-                <span className="commerce-eyebrow">
+                <span className="bb-market-eyebrow">
                   BUSBAAS
                 </span>
 
@@ -1427,7 +1449,7 @@ function CommerceShell({
 
               <button
                 type="button"
-                className="commerce-close"
+                className="bb-market-close"
                 onClick={() =>
                   setShopOpen(
                     false
@@ -1438,8 +1460,14 @@ function CommerceShell({
               </button>
             </header>
 
-            <section className="commerce-appearance">
-              <div className="commerce-appearance-heading">
+            {/*
+             * =========================
+             * WEERGAVE
+             * =========================
+             */}
+
+            <section className="bb-market-appearance">
+              <div className="bb-market-appearance-heading">
                 <div>
                   <span>
                     WEERGAVE
@@ -1457,7 +1485,7 @@ function CommerceShell({
 
                 <button
                   type="button"
-                  className={`commerce-switch ${
+                  className={`bb-market-switch ${
                     automaticAppearance
                       ? "active"
                       : ""
@@ -1478,7 +1506,7 @@ function CommerceShell({
               </p>
 
               {!automaticAppearance && (
-                <div className="commerce-mode-selector">
+                <div className="bb-market-mode-selector">
                   <button
                     type="button"
                     className={
@@ -1516,7 +1544,7 @@ function CommerceShell({
               )}
             </section>
 
-            <div className="commerce-categories">
+            <div className="bb-market-categories">
               {CATEGORY_ORDER.map(
                 (
                   category
@@ -1549,7 +1577,7 @@ function CommerceShell({
             </div>
 
             {shopError && (
-              <div className="commerce-info-message">
+              <div className="bb-market-info-message">
                 {
                   shopError
                 }
@@ -1557,8 +1585,8 @@ function CommerceShell({
             )}
 
             {shopLoading ? (
-              <div className="commerce-shop-loading">
-                <div className="commerce-loader" />
+              <div className="bb-market-loading">
+                <div className="bb-market-loader" />
 
                 <strong>
                   Shop laden...
@@ -1566,7 +1594,7 @@ function CommerceShell({
               </div>
             ) : visibleItems.length ===
               0 ? (
-              <div className="commerce-empty">
+              <div className="bb-market-empty">
                 <span>
                   🚌
                 </span>
@@ -1580,7 +1608,7 @@ function CommerceShell({
                 </p>
               </div>
             ) : (
-              <div className="commerce-products">
+              <div className="bb-market-products">
                 {visibleItems.map(
                   (
                     item
@@ -1598,7 +1626,7 @@ function CommerceShell({
                     return (
                       <article
                         className={[
-                          "commerce-product",
+                          "bb-market-product",
 
                           item.featured
                             ? "featured"
@@ -1619,19 +1647,19 @@ function CommerceShell({
                         }
                       >
                         {item.featured && (
-                          <span className="commerce-featured">
+                          <span className="bb-market-featured">
                             GRATIS
                           </span>
                         )}
 
-                        <div className="commerce-product-preview">
+                        <div className="bb-market-product-preview">
                           {renderPreview(
                             item
                           )}
                         </div>
 
-                        <div className="commerce-product-content">
-                          <div className="commerce-product-title">
+                        <div className="bb-market-product-content">
+                          <div className="bb-market-product-title">
                             <div>
                               <h2>
                                 {
@@ -1647,7 +1675,7 @@ function CommerceShell({
                             </div>
 
                             {owned && (
-                              <span className="commerce-owned">
+                              <span className="bb-market-owned">
                                 ✓
                               </span>
                             )}
@@ -1656,7 +1684,7 @@ function CommerceShell({
                           <button
                             type="button"
                             className={[
-                              "commerce-product-button",
+                              "bb-market-product-button",
 
                               equipped
                                 ? "active"
@@ -1692,7 +1720,7 @@ function CommerceShell({
               </div>
             )}
 
-            <footer className="commerce-shop-footer">
+            <footer className="bb-market-footer">
               <span>
                 🎨
               </span>
@@ -1706,13 +1734,13 @@ function CommerceShell({
       )}
 
       {purchaseNotice && (
-        <div className="commerce-purchase-layer">
-          <div className="commerce-purchase-box">
-            <div className="commerce-purchase-icon">
+        <div className="bb-market-purchase-layer">
+          <div className="bb-market-purchase-box">
+            <div className="bb-market-purchase-icon">
               🔒
             </div>
 
-            <span className="commerce-eyebrow">
+            <span className="bb-market-eyebrow">
               PREMIUM
             </span>
 
@@ -1722,7 +1750,7 @@ function CommerceShell({
               }
             </h2>
 
-            <strong className="commerce-price">
+            <strong className="bb-market-price">
               {
                 purchaseNotice.priceLabel
               }
