@@ -533,6 +533,11 @@ function CommerceShell({
   const gameWasFinishedRef =
     useRef(false);
 
+  const finishAdDelayTimerRef =
+    useRef<number | null>(
+      null
+    );
+
   /*
    * =========================
    * DEVICE THEME
@@ -1076,9 +1081,46 @@ function CommerceShell({
           3
         );
 
-        setAdVisible(
-          true
+        if (
+          finishAdDelayTimerRef.current !==
+          null
+        ) {
+          window.clearTimeout(
+            finishAdDelayTimerRef.current
+          );
+        }
+
+        /*
+         * Eerst drie seconden alleen het
+         * eindscherm tonen. De endgame-lock
+         * in ExperienceShell houdt de knoppen
+         * in deze periode verborgen.
+         */
+        finishAdDelayTimerRef.current =
+          window.setTimeout(
+            () => {
+              setAdVisible(
+                true
+              );
+
+              finishAdDelayTimerRef.current =
+                null;
+            },
+            3000
+          );
+      }
+
+      if (
+        !gameFinished &&
+        finishAdDelayTimerRef.current !==
+          null
+      ) {
+        window.clearTimeout(
+          finishAdDelayTimerRef.current
         );
+
+        finishAdDelayTimerRef.current =
+          null;
       }
 
       gameWasFinishedRef.current =
@@ -1105,6 +1147,15 @@ function CommerceShell({
 
     return () => {
       observer.disconnect();
+
+      if (
+        finishAdDelayTimerRef.current !==
+        null
+      ) {
+        window.clearTimeout(
+          finishAdDelayTimerRef.current
+        );
+      }
     };
   }, []);
 

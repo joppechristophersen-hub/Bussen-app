@@ -1,6 +1,6 @@
-/*
+﻿/*
  * =========================================================
- * BUSBAAS — SCHOOLBUS YELLOW UI V4 / FULL APP
+ * BUSBAAS â€” SCHOOLBUS YELLOW UI V4 / FULL APP
  * =========================================================
  *
  * Visuele merklaag voor de volledige kern-app:
@@ -62,7 +62,7 @@ body.dark {
 }
 
 /* =========================================================
-   GEDEELDE ACHTERGROND — speels, maar geen confetti-chaos
+   GEDEELDE ACHTERGROND â€” speels, maar geen confetti-chaos
    ========================================================= */
 
 body:has(.app > .card > .logo:not(.small-logo)),
@@ -84,7 +84,7 @@ body:has(.lobby-card) .app {
 
 body:has(.app > .card > .logo:not(.small-logo)) .app::before,
 body:has(.lobby-card) .app::before {
-  content: "♥   ♣";
+  content: "â™¥   â™£";
   position: fixed;
   left: max(16px, env(safe-area-inset-left));
   top: calc(18px + env(safe-area-inset-top));
@@ -99,7 +99,7 @@ body:has(.lobby-card) .app::before {
 
 body:has(.app > .card > .logo:not(.small-logo)) .app::after,
 body:has(.lobby-card) .app::after {
-  content: "♦   ♠";
+  content: "â™¦   â™ ";
   position: fixed;
   right: max(8px, env(safe-area-inset-right));
   bottom: calc(24px + env(safe-area-inset-bottom));
@@ -147,7 +147,7 @@ body:has(.lobby-card) .app::after {
 
 /* rode speelkaart-chip */
 .app > .card:has(> .logo:not(.small-logo))::after {
-  content: "♥";
+  content: "â™¥";
   position: absolute;
   left: -14px;
   bottom: 79px;
@@ -300,7 +300,7 @@ body:has(.lobby-card) .app::after {
 }
 
 .lobby-card::after {
-  content: "♥";
+  content: "â™¥";
   position: absolute;
   right: -13px;
   top: 49px;
@@ -592,7 +592,7 @@ body:has(.lobby-card) .app::after {
 
 
 /* =========================================================
-   BUSBAAS V4 — GEDEELDE APP-STIJL
+   BUSBAAS V4 â€” GEDEELDE APP-STIJL
    ========================================================= */
 
 body:has(.settings-card),
@@ -1257,7 +1257,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* =========================================================
-   DONKERE MODUS — kaarten blijven bewust licht
+   DONKERE MODUS â€” kaarten blijven bewust licht
    ========================================================= */
 
 @media (prefers-color-scheme: dark) {
@@ -1344,11 +1344,11 @@ body[data-theme="dark"] .setup-card:not(.placeholder) {
 
 
 /* =========================================================
-   V4 FIX — KAARTACHTERKANTEN
+   V4 FIX â€” KAARTACHTERKANTEN
    ========================================================= */
 
 /*
- * In ronde 1 staat in App.tsx nog het generieke 🂠-teken.
+ * In ronde 1 staat in App.tsx nog het generieke ðŸ‚ -teken.
  * We verbergen alleen dat teken visueel en tonen de Busbaas-bus.
  * De markup/gameplay blijft volledig intact.
  */
@@ -1358,7 +1358,7 @@ body[data-theme="dark"] .setup-card:not(.placeholder) {
 }
 
 .cards-row .empty-card > span::after {
-  content: "🚌";
+  content: "ðŸšŒ";
   display: inline-block;
   font-size: clamp(1.45rem, 6vw, 2rem) !important;
   line-height: 1 !important;
@@ -1393,7 +1393,7 @@ body[data-theme="dark"] .setup-card:not(.placeholder) {
 }
 
 /* =========================================================
-   V4 FIX — BOOMKAARTEN ZONDER WITTE BUITENRAND
+   V4 FIX â€” BOOMKAARTEN ZONDER WITTE BUITENRAND
    ========================================================= */
 
 /*
@@ -1429,7 +1429,7 @@ body[data-theme="dark"] .setup-card:not(.placeholder) {
 }
 
 /* =========================================================
-   V4 — SHOP / COMMERCE IN BUSBAAS-KLEUREN
+   V4 â€” SHOP / COMMERCE IN BUSBAAS-KLEUREN
    ========================================================= */
 
 /*
@@ -1654,7 +1654,7 @@ body[data-theme="dark"] .tree-card-face {
 }
 
 /* =========================================================
-   BUSBAAS V5 — FINAL VISUAL CONSISTENCY PASS
+   BUSBAAS V5 â€” FINAL VISUAL CONSISTENCY PASS
    =========================================================
    Doel:
    - geel alleen voor merk / actieve acties
@@ -1764,7 +1764,7 @@ body[data-theme="dark"] .tree-card-face {
 }
 
 /* ---------------------------------------------------------
-   2. SPELREGELS INSTELLEN — ALLE KEUZES IN DE HUISSTIJL
+   2. SPELREGELS INSTELLEN â€” ALLE KEUZES IN DE HUISSTIJL
    --------------------------------------------------------- */
 
 .settings-card .options {
@@ -1836,7 +1836,7 @@ body[data-theme="dark"] .tree-card-face {
 }
 
 /* ---------------------------------------------------------
-   3. UITLEG-SPELREGELS — ÉÉN HELDERE BUSBAAS-STIJL
+   3. UITLEG-SPELREGELS â€” Ã‰Ã‰N HELDERE BUSBAAS-STIJL
    --------------------------------------------------------- */
 
 .rules-guide-card {
@@ -1910,7 +1910,7 @@ body[data-theme="dark"] .tree-card-face {
 }
 
 /* ---------------------------------------------------------
-   4. KAARTFASE — MINDER WILLEKEURIGE HIGHLIGHTS
+   4. KAARTFASE â€” MINDER WILLEKEURIGE HIGHLIGHTS
    --------------------------------------------------------- */
 
 .step-progress .step.completed span {
@@ -1935,7 +1935,7 @@ body[data-theme="dark"] .tree-card-face {
 }
 
 /* ---------------------------------------------------------
-   5. BOOM — GEEL MERKACCENT, GEEN GROENE HOOFDKLEUR
+   5. BOOM â€” GEEL MERKACCENT, GEEN GROENE HOOFDKLEUR
    --------------------------------------------------------- */
 
 .tree-screen .game-top > .logo.small-logo {
@@ -1971,7 +1971,7 @@ body[data-theme="dark"] .tree-card-face {
 }
 
 /* ---------------------------------------------------------
-   6. BUS + CHECKPOINTS — GROEN ER VOLLEDIG UIT
+   6. BUS + CHECKPOINTS â€” GROEN ER VOLLEDIG UIT
    --------------------------------------------------------- */
 
 .bus-card-slot.checkpoint,
@@ -1991,7 +1991,7 @@ body[data-theme="dark"] .tree-card-face {
   outline-offset: 3px !important;
 }
 
-/* De ⚑ is een tekstglyph; deze badge forceert hem zichtbaar geel. */
+/* De âš‘ is een tekstglyph; deze badge forceert hem zichtbaar geel. */
 .bus-card-slot.checkpoint > small,
 .bus-card-slot.current > small {
   min-height: 22px !important;
@@ -2054,7 +2054,7 @@ body[data-theme="dark"] .tree-card-face {
 }
 
 /* ---------------------------------------------------------
-   7. POPUPS — GEEN GELE BALK MEER
+   7. POPUPS â€” GEEN GELE BALK MEER
    --------------------------------------------------------- */
 
 .announcement-layer {
@@ -2107,7 +2107,7 @@ body[data-theme="dark"] .tree-card-face {
 }
 
 /* ---------------------------------------------------------
-   8. EINDSCHERM — ZELFDE KAART, ZONDER GELE BALK/VLAK
+   8. EINDSCHERM â€” ZELFDE KAART, ZONDER GELE BALK/VLAK
    --------------------------------------------------------- */
 
 .bus-finished-panel {
@@ -2131,7 +2131,7 @@ body[data-theme="dark"] .tree-card-face {
 }
 
 /* ---------------------------------------------------------
-   9. EXPERIENCE TRANSITIONS — GROEN -> BUSBAAS
+   9. EXPERIENCE TRANSITIONS â€” GROEN -> BUSBAAS
    --------------------------------------------------------- */
 
 .experience-transition-layer,
@@ -2211,7 +2211,7 @@ body[data-theme="dark"] .tree-card-face {
 }
 
 .experience-tree-cards span::after {
-  content: "🚌";
+  content: "ðŸšŒ";
   color: #24251f !important;
   font-size: 1.35rem !important;
   line-height: 1 !important;
@@ -2253,7 +2253,7 @@ body[data-theme="dark"] .tree-card-face {
 }
 
 /* ---------------------------------------------------------
-   11. SHOP — MAATVOERING CONSISTENT MET DE REST
+   11. SHOP â€” MAATVOERING CONSISTENT MET DE REST
    --------------------------------------------------------- */
 
 :is(
@@ -2423,14 +2423,14 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* =========================================================
-   BUSBAAS V6 — SCREENSHOT POLISH PASS
+   BUSBAAS V6 â€” SCREENSHOT POLISH PASS
    =========================================================
    Gebaseerd op mobiele screenshots 0212 t/m 0219.
    Doel: geen losse gele balken, meer ruimte bij checkpoints,
    busbaan rustiger, setup volledig geel, shop zonder teal/groen.
    ========================================================= */
 
-/* 1) Geel alleen als doelgericht accent — geen losse zij-/bovenbalken */
+/* 1) Geel alleen als doelgericht accent â€” geen losse zij-/bovenbalken */
 .turn-message,
 .tree-message,
 .tree-active-panel,
@@ -2470,7 +2470,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
   box-shadow: none !important;
 }
 
-/* 2) BOOM — dubbele kaart echt afwijkend en badge kleiner */
+/* 2) BOOM â€” dubbele kaart echt afwijkend en badge kleiner */
 .tree-playing-card.double {
   width: clamp(66px, 19vw, 82px) !important;
   height: clamp(48px, 13.5vw, 58px) !important;
@@ -2503,7 +2503,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
   box-shadow: none !important;
 }
 
-/* 3) BUS SETUP — actieve stappen geel i.p.v. teal/groen */
+/* 3) BUS SETUP â€” actieve stappen geel i.p.v. teal/groen */
 .bus-setup-steps {
   display: grid !important;
   gap: 10px !important;
@@ -2564,7 +2564,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
   color: var(--bb-ink-soft) !important;
 }
 
-/* 4) BUSBAAN — verticale gele strepen weg + ruimte voor checkpointlabels */
+/* 4) BUSBAAN â€” verticale gele strepen weg + ruimte voor checkpointlabels */
 .bus-track {
   box-sizing: border-box !important;
   background: #30312b !important;
@@ -2635,7 +2635,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
   outline-offset: 3px !important;
 }
 
-/* 5) EINDSCHERM — trophy als compacte badge; nooit een horizontale balk */
+/* 5) EINDSCHERM â€” trophy als compacte badge; nooit een horizontale balk */
 .finish-trophy {
   width: 68px !important;
   height: 62px !important;
@@ -2666,7 +2666,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
   padding-top: 18px !important;
 }
 
-/* 6) SHOP — resterend teal/groen naar Busbaas-geel en controls compacter */
+/* 6) SHOP â€” resterend teal/groen naar Busbaas-geel en controls compacter */
 :is(
   .commerce-shop-panel,
   .commerce-shop-card,
@@ -2780,7 +2780,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
   scrollbar-width: none;
 }
 
-/* 7) MOBIEL — screenshots iPhone */
+/* 7) MOBIEL â€” screenshots iPhone */
 @media (max-width: 520px) {
   .bus-track {
     padding-top: 10px !important;
@@ -2826,14 +2826,14 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* =========================================================
-   BUSBAAS V7 — COMPLETE MOBILE POLISH
+   BUSBAAS V7 â€” COMPLETE MOBILE POLISH
    =========================================================
    Gebaseerd op screenshots 0220 t/m 0226 + overgangsfeedback.
    Alleen visueel: geen gameplay- of socketlogica.
    ========================================================= */
 
 /* ---------------------------------------------------------
-   1. SCHADUWEN — zacht en natuurlijk, geen 'voetstuk'
+   1. SCHADUWEN â€” zacht en natuurlijk, geen 'voetstuk'
    --------------------------------------------------------- */
 .playing-card,
 .revealed-card,
@@ -2888,7 +2888,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* ---------------------------------------------------------
-   2. SPELERS — groen volledig vervangen + badges ruimer
+   2. SPELERS â€” groen volledig vervangen + badges ruimer
    --------------------------------------------------------- */
 .game-player .player-avatar,
 .drink-player .player-avatar,
@@ -2950,7 +2950,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* ---------------------------------------------------------
-   3. BOOM — kleinere 2x en rustige panels
+   3. BOOM â€” kleinere 2x en rustige panels
    --------------------------------------------------------- */
 .double-badge {
   min-width: 26px !important;
@@ -2972,7 +2972,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* ---------------------------------------------------------
-   4. BUS SETUP — nummers geel, kaarten zonder gele onderbalk
+   4. BUS SETUP â€” nummers geel, kaarten zonder gele onderbalk
    --------------------------------------------------------- */
 .bus-setup-step > span,
 .bus-setup-step.active > span,
@@ -2995,7 +2995,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* ---------------------------------------------------------
-   5. BUSBAAN — ruimte, gecentreerde nummers, geen gele stroken
+   5. BUSBAAN â€” ruimte, gecentreerde nummers, geen gele stroken
    --------------------------------------------------------- */
 .bus-track {
   padding-top: 16px !important;
@@ -3066,7 +3066,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* ---------------------------------------------------------
-   6. BUS HEADER + EINDSCHERM — uitlijning en ademruimte
+   6. BUS HEADER + EINDSCHERM â€” uitlijning en ademruimte
    --------------------------------------------------------- */
 .bus-screen .game-top {
   display: grid !important;
@@ -3128,7 +3128,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* ---------------------------------------------------------
-   7. SHOP — ronde X, echte toggle, gratis geel, zachtere buttons
+   7. SHOP â€” ronde X, echte toggle, gratis geel, zachtere buttons
    --------------------------------------------------------- */
 :is(
   .commerce-shop-close,
@@ -3233,7 +3233,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* ---------------------------------------------------------
-   8. OVERGANG NAAR BOOM — kaarten van rondom naar het midden
+   8. OVERGANG NAAR BOOM â€” kaarten van rondom naar het midden
    --------------------------------------------------------- */
 .experience-transition-tree .experience-transition-background,
 .experience-transition-tree .experience-transition-background::before,
@@ -3278,7 +3278,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 .experience-transition-tree .experience-tree-cards span::after {
-  content: "🚌" !important;
+  content: "ðŸšŒ" !important;
   position: relative !important;
   width: auto !important;
   height: auto !important;
@@ -3436,7 +3436,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* =========================================================
-   BUSBAAS V8 — FEEDBACK 0227 T/M 0231 + RUSTIGERE TIMING
+   BUSBAAS V8 â€” FEEDBACK 0227 T/M 0231 + RUSTIGERE TIMING
    =========================================================
    - popup emoji's op neutrale contrastbadge
    - huidige-kaart-label ruimer
@@ -3449,14 +3449,14 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
    - boomovergang rustiger afgestemd op langere timer
    ========================================================= */
 
-/* Eén merkaccent: legacy aqua/groen mag nergens meer de actieve UI bepalen. */
+/* EÃ©n merkaccent: legacy aqua/groen mag nergens meer de actieve UI bepalen. */
 :root {
   --bb-aqua: var(--bb-yellow) !important;
   --bb-aqua-deep: var(--bb-yellow-deep) !important;
 }
 
 /* ---------------------------------------------------------
-   1. POPUPS — emoji niet meer in een los geel blok
+   1. POPUPS â€” emoji niet meer in een los geel blok
    --------------------------------------------------------- */
 .announcement-layer .game-announcement .announcement-icon,
 .game-announcement .announcement-icon {
@@ -3491,7 +3491,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* ---------------------------------------------------------
-   2. BOOM — labels en spelersinformatie ademruimte
+   2. BOOM â€” labels en spelersinformatie ademruimte
    --------------------------------------------------------- */
 .tree-active-label {
   min-height: 36px !important;
@@ -3549,7 +3549,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* ---------------------------------------------------------
-   3. SPELERS — geen resterende groene actieve badges
+   3. SPELERS â€” geen resterende groene actieve badges
    --------------------------------------------------------- */
 .game-player.active .player-avatar,
 .game-player.current .player-avatar,
@@ -3585,7 +3585,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* ---------------------------------------------------------
-   4. KAARTSCHADUW — alleen zachte diepte, geen los voetstuk
+   4. KAARTSCHADUW â€” alleen zachte diepte, geen los voetstuk
    --------------------------------------------------------- */
 .playing-card,
 .revealed-card,
@@ -3607,7 +3607,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* ---------------------------------------------------------
-   5. BUS — kaarten een klein beetje nonchalant op tafel
+   5. BUS â€” kaarten een klein beetje nonchalant op tafel
    --------------------------------------------------------- */
 .bus-track .bus-card-slot:nth-child(4n + 1) :is(.bus-card-face, .bus-card-back) {
   transform: rotate(-1.4deg) translateY(1px) !important;
@@ -3632,7 +3632,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* ---------------------------------------------------------
-   6. SHOP — alle restgroen eruit + strakke toggle
+   6. SHOP â€” alle restgroen eruit + strakke toggle
    --------------------------------------------------------- */
 :is([class*="commerce"], [class*="shop"]) :is(
   [class*="free"],
@@ -3649,7 +3649,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
   box-shadow: none !important;
 }
 
-/* Theme preview indicators — Busbaas Classic hoort geel te zijn. */
+/* Theme preview indicators â€” Busbaas Classic hoort geel te zijn. */
 :is([class*="commerce"], [class*="shop"]) :is(
   [class*="classic"],
   [class*="preview"],
@@ -3712,7 +3712,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* ---------------------------------------------------------
-   7. BOOMOVERGANG — langer, rustiger en leesbaar
+   7. BOOMOVERGANG â€” langer, rustiger en leesbaar
    --------------------------------------------------------- */
 .experience-transition-tree .experience-tree-cards span {
   animation-duration: 2.25s !important;
@@ -3782,7 +3782,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* =========================================================
-   BUSBAAS V9 — LAATSTE VISUELE CORRECTIES
+   BUSBAAS V9 â€” LAATSTE VISUELE CORRECTIES
    =========================================================
    - JIJ en AAN DE BEURT exact centreren
    - bus-door-geef avatar geel
@@ -3799,7 +3799,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* ---------------------------------------------------------
-   1. SPELERSRIJ — labels echt midden onder de naam
+   1. SPELERSRIJ â€” labels echt midden onder de naam
    --------------------------------------------------------- */
 .game-player .player-info,
 .tree-hands .game-player .player-info,
@@ -3851,7 +3851,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* ---------------------------------------------------------
-   2. BUS DOORGEVEN — kandidaat-avatar geel
+   2. BUS DOORGEVEN â€” kandidaat-avatar geel
    --------------------------------------------------------- */
 .double-player-list button .player-avatar,
 .double-player-list .player-avatar,
@@ -3900,7 +3900,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* ---------------------------------------------------------
-   4. SHOP — gratis / Classic consequent Busbaas-geel
+   4. SHOP â€” gratis / Classic consequent Busbaas-geel
    --------------------------------------------------------- */
 /* Breder dan eerdere selectors: badges mogen niet meer door een
    lokale groene commerce-variabele winnen. */
@@ -3948,7 +3948,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
   --success: var(--bb-yellow) !important;
 }
 
-/* Toggle nóg strakker: 23px bol + 2px rondom. */
+/* Toggle nÃ³g strakker: 23px bol + 2px rondom. */
 :is([class*="commerce"], [class*="shop"], [class*="store"]) :is([class*="toggle"], [class*="switch"]) {
   width: 51px !important;
   height: 29px !important;
@@ -3986,3 +3986,48 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
     margin-top: 4px !important;
   }
 }
+
+
+/* =========================================================
+   BUSBAAS FLOW POLISH â€” RUIMERE POPUP BADGES
+   ========================================================= */
+
+/* Tekstpills in meldingen: meer ademruimte rondom de tekst. */
+.game-announcement .announcement-label,
+.announcement-layer .announcement-label {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: fit-content !important;
+  min-height: 34px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding: 8px 18px !important;
+  line-height: 1.05 !important;
+  border-radius: 999px !important;
+  text-align: center !important;
+}
+
+/* Zelfde ruimere pill voor de overgang naar Boom/Bus. */
+.experience-transition-eyebrow {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: fit-content !important;
+  min-height: 34px !important;
+  margin-inline: auto !important;
+  padding: 8px 18px !important;
+  line-height: 1.05 !important;
+  border-radius: 999px !important;
+  text-align: center !important;
+}
+
+@media (max-width: 520px) {
+  .game-announcement .announcement-label,
+  .announcement-layer .announcement-label,
+  .experience-transition-eyebrow {
+    min-height: 32px !important;
+    padding: 7px 15px !important;
+  }
+}
+
