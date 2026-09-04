@@ -3780,3 +3780,209 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
     transform: none !important;
   }
 }
+
+/* =========================================================
+   BUSBAAS V9 — LAATSTE VISUELE CORRECTIES
+   =========================================================
+   - JIJ en AAN DE BEURT exact centreren
+   - bus-door-geef avatar geel
+   - successtatus bewust groen houden
+   - shop GRATIS + Classic accenten geel
+   - compactere shop toggle
+   - audio/gameplay ongemoeid
+   ========================================================= */
+
+:root {
+  --bb-success: #38c98b;
+  --bb-success-deep: #1f9f6b;
+  --bb-success-soft: rgba(56, 201, 139, .16);
+}
+
+/* ---------------------------------------------------------
+   1. SPELERSRIJ — labels echt midden onder de naam
+   --------------------------------------------------------- */
+.game-player .player-info,
+.tree-hands .game-player .player-info,
+.game-players .game-player .player-info {
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  justify-items: center !important;
+  align-items: center !important;
+  align-content: center !important;
+  text-align: center !important;
+}
+
+.game-player .player-info > span,
+.tree-hands .game-player .player-info > span,
+.game-players .game-player .player-info > span {
+  width: 100% !important;
+  min-width: 0 !important;
+  text-align: center !important;
+}
+
+.game-player .player-info > small,
+.tree-hands .game-player .player-info > small,
+.game-players .game-player .player-info > small {
+  width: fit-content !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 24px !important;
+  margin: 5px auto 0 !important;
+  padding: 4px 12px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  justify-self: center !important;
+  text-align: center !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  border: 1.5px solid var(--bb-yellow-deep) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--bb-yellow) 14%, transparent) !important;
+  color: var(--bb-yellow) !important;
+}
+
+/* Actieve speler: rand/initialen blijven merkgeel, niet succesgroen. */
+.game-player.active .player-avatar,
+.game-players .game-player.active .player-avatar,
+.tree-hands .player-avatar {
+  border-color: var(--bb-yellow) !important;
+  color: var(--bb-yellow) !important;
+}
+
+/* ---------------------------------------------------------
+   2. BUS DOORGEVEN — kandidaat-avatar geel
+   --------------------------------------------------------- */
+.double-player-list button .player-avatar,
+.double-player-list .player-avatar,
+.double-panel .double-player-list .player-avatar {
+  border-color: var(--bb-yellow) !important;
+  color: var(--bb-yellow) !important;
+  background: color-mix(in srgb, var(--bb-yellow) 8%, var(--bb-card)) !important;
+  box-shadow: none !important;
+}
+
+/* ---------------------------------------------------------
+   3. GOED = GROEN, FOUT = ROOD, ACTIEF = GEEL
+   --------------------------------------------------------- */
+.result-area.correct {
+  border-color: color-mix(in srgb, var(--bb-success) 55%, var(--bb-line-strong)) !important;
+  background: color-mix(in srgb, var(--bb-success) 14%, var(--bb-card)) !important;
+  box-shadow: 0 10px 26px rgba(18, 108, 72, .10) !important;
+}
+
+.result-area.correct .result-icon {
+  border-color: var(--bb-success) !important;
+  background: color-mix(in srgb, var(--bb-success) 20%, var(--bb-card)) !important;
+  color: var(--bb-success) !important;
+}
+
+.result-area.correct h2,
+.result-area.correct .drink-message.success,
+.drink-message.success {
+  color: var(--bb-success) !important;
+}
+
+.result-area.correct .drink-message.success {
+  border-color: color-mix(in srgb, var(--bb-success) 38%, var(--bb-line)) !important;
+  background: color-mix(in srgb, var(--bb-success) 10%, transparent) !important;
+}
+
+/* Busfase gebruikt dezelfde succeslogica. */
+.bus-result.correct {
+  border-color: color-mix(in srgb, var(--bb-success) 55%, var(--bb-line-strong)) !important;
+  background: color-mix(in srgb, var(--bb-success) 14%, var(--bb-card)) !important;
+}
+
+.bus-result.correct .result-icon,
+.bus-result.correct h2 {
+  color: var(--bb-success) !important;
+}
+
+/* ---------------------------------------------------------
+   4. SHOP — gratis / Classic consequent Busbaas-geel
+   --------------------------------------------------------- */
+/* Breder dan eerdere selectors: badges mogen niet meer door een
+   lokale groene commerce-variabele winnen. */
+:is([class*="commerce"], [class*="shop"], [class*="store"]) :is(
+  [class*="free"],
+  [class*="gratis"],
+  [class*="included"],
+  [class*="owned"],
+  [class*="free-badge"],
+  [class*="badge-free"],
+  [class*="status-free"]
+) {
+  background: var(--bb-yellow) !important;
+  border-color: var(--bb-yellow-deep) !important;
+  color: #24251f !important;
+  box-shadow: none !important;
+}
+
+/* Eerste thema is Busbaas Classic: eventuele generieke badge/tag/pill
+   in die kaart wordt eveneens geel. */
+:is(.commerce-theme-card, .commerce-product-card, .commerce-shop-item, .commerce-catalog-item,
+    [class*="shop"][class*="theme"], [class*="commerce"][class*="theme"]):first-of-type
+:is([class*="badge"], [class*="tag"], [class*="pill"], [class*="status"]) {
+  background: var(--bb-yellow) !important;
+  border-color: var(--bb-yellow-deep) !important;
+  color: #24251f !important;
+  box-shadow: none !important;
+}
+
+/* Classic-preview: turquoise/groene statusdots naar geel. */
+:is(.commerce-theme-card, .commerce-product-card, .commerce-shop-item, .commerce-catalog-item,
+    [class*="shop"][class*="theme"], [class*="commerce"][class*="theme"]):first-of-type
+:is([class*="dot"], [class*="indicator"], [class*="accent"], [class*="status-dot"], [class*="preview-dot"]) {
+  background: var(--bb-yellow) !important;
+  border-color: color-mix(in srgb, var(--bb-yellow-deep) 70%, #24251f) !important;
+  box-shadow: none !important;
+}
+
+/* Ook custom properties op de Classic kaart zelf forceren. */
+:is(.commerce-theme-card, .commerce-product-card, .commerce-shop-item, .commerce-catalog-item,
+    [class*="shop"][class*="theme"], [class*="commerce"][class*="theme"]):first-of-type {
+  --accent: var(--bb-yellow) !important;
+  --theme-accent: var(--bb-yellow) !important;
+  --commerce-accent: var(--bb-yellow) !important;
+  --success: var(--bb-yellow) !important;
+}
+
+/* Toggle nóg strakker: 23px bol + 2px rondom. */
+:is([class*="commerce"], [class*="shop"], [class*="store"]) :is([class*="toggle"], [class*="switch"]) {
+  width: 51px !important;
+  height: 29px !important;
+  min-width: 51px !important;
+  min-height: 29px !important;
+  max-width: 51px !important;
+  max-height: 29px !important;
+  padding: 2px !important;
+  border-radius: 999px !important;
+  box-sizing: border-box !important;
+}
+
+:is([class*="commerce"], [class*="shop"], [class*="store"]) :is([class*="toggle"], [class*="switch"])::before,
+:is([class*="commerce"], [class*="shop"], [class*="store"]) :is([class*="toggle"], [class*="switch"])::after,
+:is([class*="commerce"], [class*="shop"], [class*="store"]) :is([class*="toggle"], [class*="switch"]) > :is(
+  span,
+  [class*="thumb"],
+  [class*="knob"],
+  [class*="handle"]
+) {
+  width: 23px !important;
+  height: 23px !important;
+  min-width: 23px !important;
+  min-height: 23px !important;
+  max-width: 23px !important;
+  max-height: 23px !important;
+}
+
+@media (max-width: 520px) {
+  .game-player .player-info > small,
+  .tree-hands .game-player .player-info > small,
+  .game-players .game-player .player-info > small {
+    min-height: 24px !important;
+    padding: 4px 11px !important;
+    margin-top: 4px !important;
+  }
+}
