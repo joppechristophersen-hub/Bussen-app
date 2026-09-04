@@ -1,14 +1,16 @@
 /*
  * =========================================================
- * BUSBAAS — SCHOOLBUS YELLOW UI V2
+ * BUSBAAS — SCHOOLBUS YELLOW UI V3 / FULL APP
  * =========================================================
  *
- * Alleen voor:
- * - Home
- * - Lobby
+ * Visuele merklaag voor de volledige kern-app:
+ * - Home / lobby
+ * - Meedoen / instellingen / spelregels
+ * - Kaartfase
+ * - Boom
+ * - Bus / eindscherm
  *
- * Gameplay, boom, bus, settings, shop en audio blijven
- * volledig ongemoeid.
+ * Geen gameplay- of audiologica. Shop/CommerceShell blijft apart.
  */
 
 :root {
@@ -584,6 +586,760 @@ body:has(.lobby-card) .app::after {
   .lobby-card > .logo.small-logo,
   .lobby-card .qr-placeholder,
   .lobby-card .player {
+    transform: none !important;
+  }
+}
+
+
+/* =========================================================
+   BUSBAAS V3 — GEDEELDE APP-STIJL
+   ========================================================= */
+
+body:has(.settings-card),
+body:has(.rules-guide-card),
+body:has(.game-card),
+body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-guide-card)) {
+  background-color: var(--bb-cream) !important;
+  background-image:
+    radial-gradient(circle at 8% 12%, rgba(246, 201, 69, 0.19) 0 7%, transparent 7.5%),
+    radial-gradient(circle at 93% 82%, rgba(103, 198, 193, 0.10) 0 7%, transparent 7.5%),
+    linear-gradient(125deg, transparent 0 48%, rgba(246, 201, 69, 0.045) 48% 50%, transparent 50% 100%) !important;
+  background-attachment: fixed;
+}
+
+.settings-card,
+.rules-guide-card,
+.app > .card:has(> .back-button):not(.settings-card):not(.rules-guide-card) {
+  width: min(94vw, 500px) !important;
+  border: 2px solid var(--bb-line) !important;
+  border-radius: 29px !important;
+  background: var(--bb-card) !important;
+  box-shadow:
+    0 18px 44px var(--bb-shadow),
+    0 6px 0 rgba(217, 157, 32, 0.12) !important;
+}
+
+.game-card {
+  border: 2px solid var(--bb-line) !important;
+  border-radius: 28px !important;
+  background: var(--bb-card) !important;
+  box-shadow: 0 16px 42px var(--bb-shadow) !important;
+}
+
+.settings-card > h1,
+.rules-guide-card > h1,
+.app > .card:has(> .back-button):not(.settings-card):not(.rules-guide-card) > h1,
+.game-top h1 {
+  color: var(--bb-ink) !important;
+  font-family: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.settings-card > .subtitle,
+.rules-guide-card > .subtitle,
+.app > .card:has(> .back-button):not(.settings-card):not(.rules-guide-card) > .subtitle,
+.game-top .subtitle {
+  color: var(--bb-ink-soft) !important;
+  font-weight: 720 !important;
+}
+
+.settings-card > .logo.small-logo,
+.rules-guide-card > .logo.small-logo,
+.app > .card:has(> .back-button):not(.settings-card):not(.rules-guide-card) > .logo.small-logo,
+.game-top > .logo.small-logo {
+  width: 61px !important;
+  height: 57px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 2px solid #24251f !important;
+  border-radius: 18px !important;
+  background: var(--bb-yellow) !important;
+  box-shadow: 0 5px 0 var(--bb-yellow-deep) !important;
+  font-size: 29px !important;
+  transform: rotate(-2.5deg);
+}
+
+.back-button {
+  border: 1px solid var(--bb-line-strong) !important;
+  border-radius: 13px !important;
+  background: var(--bb-soft) !important;
+  color: var(--bb-ink) !important;
+  font-weight: 850 !important;
+  box-shadow: 0 3px 0 var(--bb-line) !important;
+}
+
+.back-button:active {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 var(--bb-line) !important;
+}
+
+/* =========================================================
+   MEEDOEN + INSTELLINGEN
+   ========================================================= */
+
+.setting {
+  border: 1px solid var(--bb-line) !important;
+  border-radius: 18px !important;
+  background: var(--bb-soft) !important;
+  box-shadow: 0 3px 0 rgba(36, 37, 31, 0.045) !important;
+}
+
+.setting label {
+  color: var(--bb-ink) !important;
+  font-weight: 900 !important;
+}
+
+.setting input,
+.setting select {
+  border: 2px solid var(--bb-line-strong) !important;
+  border-radius: 14px !important;
+  background: var(--bb-card) !important;
+  color: var(--bb-ink) !important;
+  font-weight: 760 !important;
+  box-shadow: inset 0 2px 0 rgba(36, 37, 31, 0.025) !important;
+}
+
+.setting input:focus,
+.setting select:focus {
+  border-color: var(--bb-yellow-deep) !important;
+  outline: 4px solid rgba(246, 201, 69, 0.18) !important;
+}
+
+.counter {
+  border: 2px solid var(--bb-line-strong) !important;
+  border-radius: 15px !important;
+  background: var(--bb-card) !important;
+  overflow: hidden;
+}
+
+.counter button {
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  font-weight: 950 !important;
+  box-shadow: none !important;
+}
+
+.counter span {
+  color: var(--bb-ink) !important;
+  font-weight: 950 !important;
+}
+
+.settings-card .secondary,
+.setting > button.secondary {
+  border: 2px solid var(--bb-line-strong) !important;
+  border-radius: 15px !important;
+  background: var(--bb-card) !important;
+  color: var(--bb-ink) !important;
+  font-weight: 850 !important;
+  box-shadow: 0 4px 0 var(--bb-line) !important;
+}
+
+.game-summary {
+  border: 2px dashed rgba(36, 37, 31, 0.24) !important;
+  border-radius: 19px !important;
+  background: var(--bb-yellow-soft) !important;
+  color: var(--bb-ink) !important;
+  transform: rotate(-0.25deg);
+}
+
+.game-summary strong {
+  color: var(--bb-ink) !important;
+  font-weight: 950 !important;
+}
+
+.game-summary p {
+  color: var(--bb-ink-soft) !important;
+  font-weight: 720 !important;
+}
+
+.settings-card > .start-button,
+.app > .card:has(> .back-button):not(.settings-card):not(.rules-guide-card) > .start-button,
+.rules-guide-card > .start-button {
+  min-height: 57px !important;
+  border: 2px solid rgba(36, 37, 31, 0.18) !important;
+  border-radius: 17px !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  font-weight: 950 !important;
+  box-shadow: 0 6px 0 var(--bb-yellow-deep) !important;
+}
+
+.settings-card > .start-button:active,
+.app > .card:has(> .back-button):not(.settings-card):not(.rules-guide-card) > .start-button:active,
+.rules-guide-card > .start-button:active {
+  transform: translateY(4px) !important;
+  box-shadow: 0 2px 0 var(--bb-yellow-deep) !important;
+}
+
+.join-error {
+  border: 1px solid rgba(243, 109, 98, 0.30) !important;
+  border-radius: 13px !important;
+  background: color-mix(in srgb, var(--bb-coral) 11%, var(--bb-card)) !important;
+  color: var(--bb-coral-deep) !important;
+  font-weight: 800 !important;
+}
+
+/* =========================================================
+   SPELREGELS
+   ========================================================= */
+
+.rules-guide {
+  gap: 11px !important;
+}
+
+.rule-guide-item {
+  border: 1px solid var(--bb-line) !important;
+  border-radius: 19px !important;
+  background: var(--bb-soft) !important;
+  box-shadow: 0 3px 0 rgba(36, 37, 31, 0.045) !important;
+}
+
+.rule-guide-item h2 {
+  color: var(--bb-ink) !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.025em !important;
+}
+
+.rule-guide-item p {
+  color: var(--bb-ink-soft) !important;
+}
+
+.rule-number {
+  border: 2px solid rgba(36, 37, 31, 0.14) !important;
+  border-radius: 14px !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  font-weight: 950 !important;
+  box-shadow: 0 4px 0 var(--bb-yellow-deep) !important;
+}
+
+.rule-guide-item:nth-child(2) .rule-number {
+  background: var(--bb-aqua) !important;
+  box-shadow: 0 4px 0 var(--bb-aqua-deep) !important;
+}
+
+.rule-guide-item:nth-child(3) .rule-number {
+  background: var(--bb-coral) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 0 var(--bb-coral-deep) !important;
+}
+
+.rule-guide-item:nth-child(4) .rule-number {
+  background: var(--bb-blue) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 0 #5262bf !important;
+}
+
+.rule-guide-item.final-rule {
+  border-style: dashed !important;
+  background: var(--bb-yellow-soft) !important;
+}
+
+/* =========================================================
+   GAME HEADER + GEMEENSCHAPPELIJKE PANELEN
+   ========================================================= */
+
+.game-top {
+  border-bottom: 1px solid var(--bb-line) !important;
+  padding-bottom: 15px !important;
+}
+
+.game-info,
+.turn-message,
+.my-cards,
+.game-players,
+.guess-area,
+.waiting-message,
+.dealing-message,
+.tree-message,
+.bus-draw-panel,
+.bus-ready-panel,
+.checkpoint-panel,
+.double-panel,
+.bus-choice-panel,
+.bus-finished-panel,
+.tree-distribute-panel,
+.tree-active-panel,
+.tree-hands {
+  border: 1px solid var(--bb-line) !important;
+  border-radius: 18px !important;
+  background: var(--bb-soft) !important;
+  color: var(--bb-ink) !important;
+  box-shadow: 0 3px 0 rgba(36, 37, 31, 0.045) !important;
+}
+
+.section-title h2,
+.guess-area h2,
+.tree-match-heading h2,
+.bus-preview-title,
+.double-question {
+  color: var(--bb-ink) !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.025em !important;
+}
+
+.section-title > span,
+.tree-progress,
+.remaining-drinks,
+.card-count,
+.bus-position-label,
+.bus-drinks {
+  border-radius: 999px !important;
+  background: var(--bb-yellow-soft) !important;
+  color: var(--bb-ink) !important;
+  font-weight: 900 !important;
+}
+
+/* =========================================================
+   KAARTFASE
+   ========================================================= */
+
+.step-progress .step span {
+  border: 2px solid var(--bb-line-strong) !important;
+  background: var(--bb-card) !important;
+  color: var(--bb-ink-soft) !important;
+  box-shadow: 0 3px 0 var(--bb-line) !important;
+}
+
+.step-progress .step.active span {
+  border-color: rgba(36, 37, 31, 0.18) !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: 0 4px 0 var(--bb-yellow-deep) !important;
+}
+
+.step-progress .step.completed span {
+  background: var(--bb-aqua) !important;
+  color: #173e3b !important;
+  box-shadow: 0 4px 0 var(--bb-aqua-deep) !important;
+}
+
+.step-progress .step small {
+  color: var(--bb-ink-soft) !important;
+  font-weight: 760 !important;
+}
+
+.turn-message {
+  background: var(--bb-yellow-soft) !important;
+  border-style: dashed !important;
+}
+
+.turn-message strong {
+  color: var(--bb-ink) !important;
+  font-weight: 950 !important;
+}
+
+.playing-card,
+.revealed-card,
+.tree-playing-card,
+.tree-active-card,
+.bus-reference-card,
+.mini-playing-card,
+.setup-card:not(.placeholder) {
+  border: 2px solid rgba(36, 37, 31, 0.16) !important;
+  background: #fffdf8 !important;
+  box-shadow:
+    0 8px 0 rgba(36, 37, 31, 0.08),
+    0 13px 24px rgba(36, 37, 31, 0.10) !important;
+}
+
+.cards-row .playing-card:nth-child(odd) {
+  transform: rotate(-1deg);
+}
+
+.cards-row .playing-card:nth-child(even) {
+  transform: rotate(1deg);
+}
+
+.empty-card,
+.hidden-card,
+.tree-card-back,
+.bus-card-back,
+.setup-card.placeholder,
+.bus-hidden-reference {
+  border: 2px solid #24251f !important;
+  background:
+    repeating-linear-gradient(135deg, rgba(36, 37, 31, 0.08) 0 7px, transparent 7px 14px),
+    var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: 0 6px 0 var(--bb-yellow-deep) !important;
+}
+
+.guess-grid button,
+.disco-button {
+  min-height: 54px !important;
+  border: 2px solid var(--bb-line-strong) !important;
+  border-radius: 16px !important;
+  background: var(--bb-card) !important;
+  color: var(--bb-ink) !important;
+  font-weight: 900 !important;
+  box-shadow: 0 5px 0 var(--bb-line) !important;
+  transition: transform 110ms ease, box-shadow 110ms ease, background 110ms ease !important;
+}
+
+.guess-grid button:active,
+.disco-button:active {
+  transform: translateY(3px) !important;
+  box-shadow: 0 2px 0 var(--bb-line) !important;
+}
+
+.disco-button {
+  border-color: rgba(109, 127, 230, 0.28) !important;
+  background: color-mix(in srgb, var(--bb-blue) 16%, var(--bb-card)) !important;
+  color: var(--bb-ink) !important;
+  box-shadow: 0 5px 0 color-mix(in srgb, var(--bb-blue) 55%, transparent) !important;
+}
+
+.game-player,
+.drink-player {
+  border: 1px solid var(--bb-line) !important;
+  border-radius: 15px !important;
+  background: var(--bb-card) !important;
+}
+
+.game-player.active {
+  border: 2px solid rgba(217, 157, 32, 0.32) !important;
+  background: var(--bb-yellow-soft) !important;
+  box-shadow: 0 4px 0 rgba(217, 157, 32, 0.14) !important;
+}
+
+.game-player .player-avatar,
+.drink-player .player-avatar {
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: 0 3px 0 var(--bb-yellow-deep) !important;
+}
+
+.result-area.correct {
+  border: 2px solid rgba(66, 159, 154, 0.28) !important;
+  border-radius: 21px !important;
+  background: color-mix(in srgb, var(--bb-aqua) 14%, var(--bb-card)) !important;
+}
+
+.result-area.wrong {
+  border: 2px solid rgba(217, 83, 73, 0.28) !important;
+  border-radius: 21px !important;
+  background: color-mix(in srgb, var(--bb-coral) 12%, var(--bb-card)) !important;
+}
+
+.result-icon {
+  border: 2px solid rgba(36, 37, 31, 0.12) !important;
+  border-radius: 16px !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: 0 4px 0 var(--bb-yellow-deep) !important;
+}
+
+.drink-message {
+  border-radius: 14px !important;
+  background: color-mix(in srgb, var(--bb-coral) 14%, var(--bb-card)) !important;
+  color: var(--bb-coral-deep) !important;
+  font-weight: 900 !important;
+}
+
+.drink-message.success {
+  background: color-mix(in srgb, var(--bb-aqua) 16%, var(--bb-card)) !important;
+  color: var(--bb-aqua-deep) !important;
+}
+
+.next-countdown {
+  color: var(--bb-ink-soft) !important;
+  font-weight: 780 !important;
+}
+
+/* =========================================================
+   BOOM
+   ========================================================= */
+
+.tree-screen .game-top > .logo.small-logo {
+  background: var(--bb-aqua) !important;
+  box-shadow: 0 5px 0 var(--bb-aqua-deep) !important;
+}
+
+.tree-board {
+  border: 2px dashed rgba(36, 37, 31, 0.16) !important;
+  border-radius: 22px !important;
+  background: color-mix(in srgb, var(--bb-yellow) 6%, transparent) !important;
+}
+
+.tree-row-info {
+  color: var(--bb-ink) !important;
+  font-weight: 900 !important;
+}
+
+.tree-active-panel {
+  border: 2px solid rgba(103, 198, 193, 0.22) !important;
+  background: color-mix(in srgb, var(--bb-aqua) 10%, var(--bb-card)) !important;
+}
+
+.tree-active-label,
+.double-badge {
+  border-radius: 999px !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  font-weight: 950 !important;
+}
+
+.double-badge {
+  background: var(--bb-coral) !important;
+  color: #fff !important;
+}
+
+.tree-distribute-panel {
+  border: 2px solid rgba(246, 201, 69, 0.26) !important;
+  background: var(--bb-yellow-soft) !important;
+}
+
+.drink-counter {
+  border: 2px solid var(--bb-line-strong) !important;
+  border-radius: 14px !important;
+  background: var(--bb-card) !important;
+}
+
+.drink-counter button {
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  font-weight: 950 !important;
+}
+
+.tree-confirm-button,
+.tree-skip-button,
+.game-card .start-button {
+  min-height: 53px !important;
+  border-radius: 16px !important;
+  font-weight: 950 !important;
+}
+
+.tree-confirm-button,
+.game-card .start-button:not(.secondary) {
+  border: 2px solid rgba(36, 37, 31, 0.18) !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: 0 5px 0 var(--bb-yellow-deep) !important;
+}
+
+.tree-skip-button,
+.game-card .start-button.secondary {
+  border: 2px solid var(--bb-line-strong) !important;
+  background: var(--bb-card) !important;
+  color: var(--bb-ink) !important;
+  box-shadow: 0 4px 0 var(--bb-line) !important;
+}
+
+/* =========================================================
+   BUS
+   ========================================================= */
+
+.bus-screen .game-top > .logo.small-logo {
+  background: var(--bb-yellow) !important;
+  box-shadow: 0 5px 0 var(--bb-yellow-deep) !important;
+}
+
+.bus-driver-banner {
+  border: 2px solid rgba(36, 37, 31, 0.18) !important;
+  border-radius: 18px !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: 0 5px 0 var(--bb-yellow-deep) !important;
+}
+
+.bus-driver-banner .player-avatar {
+  background: #24251f !important;
+  color: var(--bb-yellow) !important;
+}
+
+.bus-track {
+  border: 3px solid #24251f !important;
+  border-radius: 22px !important;
+  background:
+    linear-gradient(90deg, transparent 0 7%, rgba(246, 201, 69, 0.58) 7% 9%, transparent 9% 91%, rgba(246, 201, 69, 0.58) 91% 93%, transparent 93% 100%),
+    #30312b !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04) !important;
+}
+
+.bus-status-row {
+  color: var(--bb-ink) !important;
+}
+
+.bus-choice-panel {
+  border: 2px solid rgba(246, 201, 69, 0.24) !important;
+  background: var(--bb-yellow-soft) !important;
+}
+
+.bus-choice-panel .guess-grid button {
+  background: var(--bb-card) !important;
+}
+
+.checkpoint-panel,
+.double-panel,
+.bus-ready-panel,
+.bus-draw-panel {
+  background: var(--bb-soft) !important;
+}
+
+.checkpoint-grid button {
+  border: 2px solid var(--bb-line-strong) !important;
+  border-radius: 14px !important;
+  background: var(--bb-card) !important;
+  color: var(--bb-ink) !important;
+  font-weight: 900 !important;
+  box-shadow: 0 4px 0 var(--bb-line) !important;
+}
+
+.checkpoint-grid button.active,
+.checkpoint-grid button.selected {
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: 0 4px 0 var(--bb-yellow-deep) !important;
+}
+
+.double-icon,
+.finish-trophy {
+  display: grid !important;
+  place-items: center !important;
+  border: 2px solid #24251f !important;
+  border-radius: 18px !important;
+  background: var(--bb-yellow) !important;
+  color: #24251f !important;
+  box-shadow: 0 5px 0 var(--bb-yellow-deep) !important;
+}
+
+.bus-riders {
+  border-radius: 15px !important;
+  background: var(--bb-soft) !important;
+  color: var(--bb-ink) !important;
+}
+
+.bus-finished-panel {
+  border: 2px dashed rgba(217, 157, 32, 0.34) !important;
+  background: var(--bb-yellow-soft) !important;
+}
+
+.finish-label {
+  border-radius: 999px !important;
+  background: #24251f !important;
+  color: var(--bb-yellow) !important;
+  font-weight: 950 !important;
+}
+
+/* =========================================================
+   POPUPS / OVERGANGSMOMENTEN
+   ========================================================= */
+
+.announcement-layer .game-announcement {
+  border: 2px solid rgba(36, 37, 31, 0.18) !important;
+  border-radius: 25px !important;
+  background: var(--bb-card) !important;
+  color: var(--bb-ink) !important;
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.18),
+    0 7px 0 var(--bb-yellow-deep) !important;
+}
+
+.announcement-icon {
+  border: 2px solid #24251f !important;
+  border-radius: 19px !important;
+  background: var(--bb-yellow) !important;
+  box-shadow: 0 5px 0 var(--bb-yellow-deep) !important;
+}
+
+.announcement-label {
+  border-radius: 999px !important;
+  background: #24251f !important;
+  color: var(--bb-yellow) !important;
+  font-weight: 950 !important;
+}
+
+.announcement-name {
+  color: var(--bb-ink) !important;
+  font-weight: 950 !important;
+}
+
+/* =========================================================
+   DONKERE MODUS — kaarten blijven bewust licht
+   ========================================================= */
+
+@media (prefers-color-scheme: dark) {
+  .playing-card,
+  .revealed-card,
+  .tree-playing-card,
+  .tree-active-card,
+  .bus-reference-card,
+  .mini-playing-card,
+  .setup-card:not(.placeholder) {
+    background: #fffdf8 !important;
+  }
+}
+
+html[data-theme="dark"] .playing-card,
+html[data-theme="dark"] .revealed-card,
+html[data-theme="dark"] .tree-playing-card,
+html[data-theme="dark"] .tree-active-card,
+html[data-theme="dark"] .bus-reference-card,
+html[data-theme="dark"] .mini-playing-card,
+html[data-theme="dark"] .setup-card:not(.placeholder),
+body[data-theme="dark"] .playing-card,
+body[data-theme="dark"] .revealed-card,
+body[data-theme="dark"] .tree-playing-card,
+body[data-theme="dark"] .tree-active-card,
+body[data-theme="dark"] .bus-reference-card,
+body[data-theme="dark"] .mini-playing-card,
+body[data-theme="dark"] .setup-card:not(.placeholder) {
+  background: #fffdf8 !important;
+}
+
+/* =========================================================
+   V3 MOBIEL
+   ========================================================= */
+
+@media (max-width: 520px) {
+  .settings-card,
+  .rules-guide-card,
+  .game-card,
+  .app > .card:has(> .back-button):not(.settings-card):not(.rules-guide-card) {
+    border-radius: 25px !important;
+  }
+
+  .game-card {
+    padding-left: max(14px, env(safe-area-inset-left)) !important;
+    padding-right: max(14px, env(safe-area-inset-right)) !important;
+  }
+
+  .setting,
+  .game-info,
+  .turn-message,
+  .my-cards,
+  .game-players,
+  .guess-area,
+  .tree-distribute-panel,
+  .tree-active-panel,
+  .bus-choice-panel,
+  .bus-finished-panel {
+    border-radius: 16px !important;
+  }
+
+  .game-top > .logo.small-logo {
+    width: 54px !important;
+    height: 51px !important;
+    font-size: 26px !important;
+  }
+
+  .guess-grid button,
+  .disco-button,
+  .tree-confirm-button,
+  .tree-skip-button,
+  .game-card .start-button {
+    min-height: 50px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-card > .logo.small-logo,
+  .rules-guide-card > .logo.small-logo,
+  .game-top > .logo.small-logo,
+  .cards-row .playing-card,
+  .game-summary {
     transform: none !important;
   }
 }
