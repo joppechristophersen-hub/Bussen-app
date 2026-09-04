@@ -1194,6 +1194,15 @@ function advanceTreeResolver(
     roomCode
   );
 
+  if (tree.resolutionSummary) {
+    emitSoundEffect(
+      roomCode,
+      {
+        type: "glass",
+      }
+    );
+  }
+
   queueNextTreeCard(
     roomCode,
     tree.resolutionSummary
@@ -3425,13 +3434,6 @@ io.on(
 
         sendGameState(
           roomCode
-        );
-
-        emitSoundEffect(
-          roomCode,
-          {
-            type: "glass",
-          }
         );
 
         advanceTreeResolver(
