@@ -1,6 +1,6 @@
 ﻿/*
  * =========================================================
- * BUSBAAS — SCHOOLBUS YELLOW UI V4 / FULL APP
+ * BUSBENDE — SCHOOLBUS YELLOW UI V4 / FULL APP
  * =========================================================
  *
  * Visuele merklaag voor de volledige kern-app:
@@ -165,7 +165,7 @@ body:has(.lobby-card) .app::after {
   z-index: -1;
 }
 
-/* De Busbaas-badge: donker bord + schoolbus-geel accent */
+/* De BusBende-badge: donker bord + schoolbus-geel accent */
 .app > .card:has(> .logo:not(.small-logo)) > .logo {
   position: relative;
   width: 92px !important;
@@ -209,7 +209,7 @@ body:has(.lobby-card) .app::after {
 }
 
 .app > .card:has(> .logo:not(.small-logo)) > h1::after {
-  content: "BUSBAAS";
+  content: "BUSBENDE";
   display: block;
   font-size: clamp(3.1rem, 14vw, 4.7rem);
   text-shadow: 0 4px 0 rgba(246, 201, 69, 0.36);
@@ -592,7 +592,7 @@ body:has(.lobby-card) .app::after {
 
 
 /* =========================================================
-   BUSBAAS V4 — GEDEELDE APP-STIJL
+   BUSBENDE V4 — GEDEELDE APP-STIJL
    ========================================================= */
 
 body:has(.settings-card),
@@ -1349,7 +1349,7 @@ body[data-theme="dark"] .setup-card:not(.placeholder) {
 
 /*
  * In ronde 1 staat in App.tsx nog het generieke 🂠-teken.
- * We verbergen alleen dat teken visueel en tonen de Busbaas-bus.
+ * We verbergen alleen dat teken visueel en tonen de BusBende-bus.
  * De markup/gameplay blijft volledig intact.
  */
 .cards-row .empty-card > span {
@@ -1429,7 +1429,7 @@ body[data-theme="dark"] .setup-card:not(.placeholder) {
 }
 
 /* =========================================================
-   V4 — SHOP / COMMERCE IN BUSBAAS-KLEUREN
+   V4 — SHOP / COMMERCE IN BUSBENDE-KLEUREN
    ========================================================= */
 
 /*
@@ -1654,7 +1654,7 @@ body[data-theme="dark"] .tree-card-face {
 }
 
 /* =========================================================
-   BUSBAAS V5 — FINAL VISUAL CONSISTENCY PASS
+   BUSBENDE V5 — FINAL VISUAL CONSISTENCY PASS
    =========================================================
    Doel:
    - geel alleen voor merk / actieve acties
@@ -1662,7 +1662,7 @@ body[data-theme="dark"] .tree-card-face {
    - checkpoints volledig geel in plaats van groen
    - spelregels volledig in dezelfde huisstijl
    - announcement/eindscherm zonder gele "balk"-shadow
-   - boom/bus overgangsanimaties volledig Busbaas
+   - boom/bus overgangsanimaties volledig BusBende
    - consistente maten, padding en radii op mobiel + desktop
    ========================================================= */
 
@@ -1836,7 +1836,7 @@ body[data-theme="dark"] .tree-card-face {
 }
 
 /* ---------------------------------------------------------
-   3. UITLEG-SPELREGELS — ÉÉN HELDERE BUSBAAS-STIJL
+   3. UITLEG-SPELREGELS — ÉÉN HELDERE BUSBENDE-STIJL
    --------------------------------------------------------- */
 
 .rules-guide-card {
@@ -2131,7 +2131,7 @@ body[data-theme="dark"] .tree-card-face {
 }
 
 /* ---------------------------------------------------------
-   9. EXPERIENCE TRANSITIONS — GROEN -> BUSBAAS
+   9. EXPERIENCE TRANSITIONS — GROEN -> BUSBENDE
    --------------------------------------------------------- */
 
 .experience-transition-layer,
@@ -2195,7 +2195,7 @@ body[data-theme="dark"] .tree-card-face {
   box-shadow: 0 4px 0 var(--bb-yellow-deep) !important;
 }
 
-/* Boom-overgang: vier Busbaas-kaarten i.p.v. oude groene kaartlook. */
+/* Boom-overgang: vier BusBende-kaarten i.p.v. oude groene kaartlook. */
 .experience-tree-cards span {
   position: relative !important;
   display: grid !important;
@@ -2423,7 +2423,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* =========================================================
-   BUSBAAS V6 — SCREENSHOT POLISH PASS
+   BUSBENDE V6 — SCREENSHOT POLISH PASS
    =========================================================
    Gebaseerd op mobiele screenshots 0212 t/m 0219.
    Doel: geen losse gele balken, meer ruimte bij checkpoints,
@@ -2666,7 +2666,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
   padding-top: 18px !important;
 }
 
-/* 6) SHOP — resterend teal/groen naar Busbaas-geel en controls compacter */
+/* 6) SHOP — resterend teal/groen naar BusBende-geel en controls compacter */
 :is(
   .commerce-shop-panel,
   .commerce-shop-card,
@@ -2826,7 +2826,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* =========================================================
-   BUSBAAS V7 — COMPLETE MOBILE POLISH
+   BUSBENDE V7 — COMPLETE MOBILE POLISH
    =========================================================
    Gebaseerd op screenshots 0220 t/m 0226 + overgangsfeedback.
    Alleen visueel: geen gameplay- of socketlogica.
@@ -3436,7 +3436,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* =========================================================
-   BUSBAAS V8 — FEEDBACK 0227 T/M 0231 + RUSTIGERE TIMING
+   BUSBENDE V8 — FEEDBACK 0227 T/M 0231 + RUSTIGERE TIMING
    =========================================================
    - popup emoji's op neutrale contrastbadge
    - huidige-kaart-label ruimer
@@ -3649,7 +3649,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
   box-shadow: none !important;
 }
 
-/* Theme preview indicators — Busbaas Classic hoort geel te zijn. */
+/* Theme preview indicators — BusBende Classic hoort geel te zijn. */
 :is([class*="commerce"], [class*="shop"]) :is(
   [class*="classic"],
   [class*="preview"],
@@ -3782,7 +3782,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* =========================================================
-   BUSBAAS V9 — LAATSTE VISUELE CORRECTIES
+   BUSBENDE V9 — LAATSTE VISUELE CORRECTIES
    =========================================================
    - JIJ en AAN DE BEURT exact centreren
    - bus-door-geef avatar geel
@@ -3900,7 +3900,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 }
 
 /* ---------------------------------------------------------
-   4. SHOP — gratis / Classic consequent Busbaas-geel
+   4. SHOP — gratis / Classic consequent BusBende-geel
    --------------------------------------------------------- */
 /* Breder dan eerdere selectors: badges mogen niet meer door een
    lokale groene commerce-variabele winnen. */
@@ -3919,7 +3919,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
   box-shadow: none !important;
 }
 
-/* Eerste thema is Busbaas Classic: eventuele generieke badge/tag/pill
+/* Eerste thema is BusBende Classic: eventuele generieke badge/tag/pill
    in die kaart wordt eveneens geel. */
 :is(.commerce-theme-card, .commerce-product-card, .commerce-shop-item, .commerce-catalog-item,
     [class*="shop"][class*="theme"], [class*="commerce"][class*="theme"]):first-of-type
@@ -3989,7 +3989,7 @@ body:has(.app > .card > .back-button):not(:has(.settings-card)):not(:has(.rules-
 
 
 /* =========================================================
-   BUSBAAS FLOW POLISH — RUIMERE POPUP BADGES
+   BUSBENDE FLOW POLISH — RUIMERE POPUP BADGES
    ========================================================= */
 
 /* Tekstpills in meldingen: meer ademruimte rondom de tekst. */

@@ -79,7 +79,7 @@ type CommerceShellProps = {
 };
 
 const SHOP_CATALOG_URL =
-  "https://bussen-app.onrender.com/shop-catalog.json";
+  "https://busbende.nl/shop-catalog.json";
 
 const OWNED_STORAGE_KEY =
   "busbaas-owned-items";
@@ -163,7 +163,7 @@ const FALLBACK_CLASSIC_THEME: ShopItem = {
     "theme-classic",
 
   name:
-    "Busbaas Classic",
+    "BusBende Classic",
 
   category:
     "themes",
@@ -175,7 +175,7 @@ const FALLBACK_CLASSIC_THEME: ShopItem = {
     "theme",
 
   description:
-    "De originele gele Busbaas-look. Inclusief lichte en donkere variant.",
+    "De originele gele BusBende-look. Inclusief lichte en donkere variant.",
 
   priceLabel:
     "Gratis",
@@ -646,7 +646,7 @@ function CommerceShell({
           );
 
         /*
-         * Busbaas Classic wordt lokaal genormaliseerd.
+         * BusBende Classic wordt lokaal genormaliseerd.
          * Zo kan een oudere online catalogus nooit meer
          * de oude groene Classic-kleuren terugbrengen.
          */
@@ -658,9 +658,9 @@ function CommerceShell({
                 ? {
                     ...item,
                     name:
-                      "Busbaas Classic",
+                      "BusBende Classic",
                     description:
-                      "De originele gele Busbaas-look. Inclusief lichte en donkere variant.",
+                      "De originele gele BusBende-look. Inclusief lichte en donkere variant.",
                     priceLabel:
                       "Gratis",
                     free:
@@ -746,7 +746,7 @@ function CommerceShell({
         ]);
 
         setShopError(
-          "De online shop kon niet worden geladen. Busbaas Classic blijft beschikbaar."
+          "De online shop kon niet worden geladen. BusBende Classic blijft beschikbaar."
         );
       } finally {
         if (
@@ -1486,7 +1486,7 @@ function CommerceShell({
             <header className="bb-market-header">
               <div>
                 <span className="bb-market-eyebrow">
-                  BUSBAAS
+                  BUSBENDE
                 </span>
 
                 <h1>
@@ -1494,7 +1494,7 @@ function CommerceShell({
                 </h1>
 
                 <p>
-                  Maak Busbaas helemaal van jullie.
+                  Maak BusBende helemaal van jullie.
                 </p>
               </div>
 
@@ -1552,7 +1552,7 @@ function CommerceShell({
 
               <p>
                 {automaticAppearance
-                  ? `Busbaas volgt nu automatisch je apparaat (${systemDark ? "donker" : "licht"}).`
+                  ? `BusBende volgt nu automatisch je apparaat (${systemDark ? "donker" : "licht"}).`
                   : "Automatisch staat uit. Kies hieronder zelf licht of donker."}
               </p>
 
@@ -1777,7 +1777,7 @@ function CommerceShell({
               </span>
 
               <p>
-                Licht en donker zijn altijd onderdeel van Busbaas. Alleen extra stijlen en cosmetische items kunnen premium zijn.
+                Licht en donker zijn altijd onderdeel van BusBende. Alleen extra stijlen en cosmetische items kunnen premium zijn.
               </p>
             </footer>
           </div>
@@ -1808,7 +1808,7 @@ function CommerceShell({
             </strong>
 
             <p>
-              Dit item staat al klaar in de Busbaas-shop. Later koppelen we hier de echte Google Play- en App Store-aankoop aan.
+              Dit item staat al klaar in de BusBende-shop. Later koppelen we hier de echte Google Play- en App Store-aankoop aan.
             </p>
 
             <button
