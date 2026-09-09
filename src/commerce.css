@@ -981,4 +981,76 @@ body.busbende-web-banner-active .bb-privacy-launcher {
     border-radius: 20px;
   }
 }
+/* =========================================================
+   BUSBENDE — GELUIDSKNOP RECHTSBOVEN
+   ========================================================= */
 
+.experience-sound-button {
+  position: fixed !important;
+  top:
+    calc(
+      env(safe-area-inset-top) +
+      14px
+    ) !important;
+  right:
+    calc(
+      env(safe-area-inset-right) +
+      14px
+    ) !important;
+
+  bottom: auto !important;
+  left: auto !important;
+
+  z-index: 1450 !important;
+}
+
+/* Geluidsmenu opent ook rechtsboven onder de knop */
+.experience-sound-panel {
+  position: fixed !important;
+
+  top:
+    calc(
+      env(safe-area-inset-top) +
+      68px
+    ) !important;
+
+  right:
+    calc(
+      env(safe-area-inset-right) +
+      14px
+    ) !important;
+
+  bottom: auto !important;
+  left: auto !important;
+
+  z-index: 1700 !important;
+}
+
+@media (max-width: 520px) {
+  .experience-sound-button {
+    top:
+      calc(
+        env(safe-area-inset-top) +
+        10px
+      ) !important;
+
+    right:
+      calc(
+        env(safe-area-inset-right) +
+        10px
+      ) !important;
+  }
+
+  .experience-sound-panel {
+    top:
+      calc(
+        env(safe-area-inset-top) +
+        62px
+      ) !important;
+
+    right: 10px !important;
+    left: 10px !important;
+
+    width: auto !important;
+  }
+}

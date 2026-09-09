@@ -53,8 +53,14 @@ type SoundEffectPayload = {
   localPlayAt?: number;
 };
 
-const SOUND_STORAGE_KEY =
+const SFX_STORAGE_KEY =
   "busbaas-sound-enabled";
+
+const MUSIC_ENABLED_STORAGE_KEY =
+  "busbende-music-enabled";
+
+const MUSIC_VOLUME_STORAGE_KEY =
+  "busbende-music-volume";
 
 const CARD_SOUNDS = [
   "/sounds/card-take-1.mp3",
@@ -89,6 +95,21 @@ const BUS_HORN_SOUND =
  */
 const DISCO_SOUND =
   "/sounds/disco.mp3";
+
+const BACKGROUND_MUSIC =
+  "/sounds/background-music.mp3";
+
+const CLICK_SOUND =
+  "/sounds/ui-click.mp3";
+
+const DEFAULT_MUSIC_VOLUME =
+  0.35;
+
+const GAMEPLAY_MUSIC_FACTOR =
+  0.60;
+
+const CLICK_VOLUME =
+  0.35;
 
 /*
  * =========================================================
@@ -193,6 +214,7 @@ class BusbaasAudioEngine {
       CORRECT_SOUND,
       WRONG_SOUND,
       BUS_HORN_SOUND,
+      CLICK_SOUND,
     ];
 
     await Promise.allSettled(
@@ -510,6 +532,20 @@ class BusbaasAudioEngine {
     );
   }
 
+  playClick(
+    localPlayAt:
+      number
+  ) {
+    void this.scheduleFile(
+      CLICK_SOUND,
+      localPlayAt,
+      {
+        volume:
+          CLICK_VOLUME,
+      }
+    );
+  }
+
   playFinish(
     localPlayAt:
       number
@@ -534,17 +570,55 @@ const audioEngine =
  * =========================================================
  */
 
-function readSoundEnabled() {
+function readSfxEnabled() {
   try {
     return (
       localStorage.getItem(
-        SOUND_STORAGE_KEY
+        SFX_STORAGE_KEY
       ) !== "false"
     );
   } catch {
     return true;
   }
 }
+
+function readMusicEnabled() {
+  try {
+    return (
+      localStorage.getItem(
+        MUSIC_ENABLED_STORAGE_KEY
+      ) !== "false"
+    );
+  } catch {
+    return true;
+  }
+}
+
+function readMusicVolume() {
+  try {
+    const raw =
+      localStorage.getItem(
+        MUSIC_VOLUME_STORAGE_KEY
+      );
+
+    const parsed =
+      Number(raw);
+
+    if (
+      raw !== null &&
+      Number.isFinite(parsed) &&
+      parsed >= 0 &&
+      parsed <= 1
+    ) {
+      return parsed;
+    }
+  } catch {
+    // Gebruik standaardvolume.
+  }
+
+  return DEFAULT_MUSIC_VOLUME;
+}
+
 
 function detectPhase():
   AppPhase {
@@ -623,12 +697,34 @@ function ExperienceShell({
   children,
 }: ExperienceShellProps) {
   const [
-    soundEnabled,
-    setSoundEnabled,
+    sfxEnabled,
+    setSfxEnabled,
   ] =
     useState(
-      readSoundEnabled
+      readSfxEnabled
     );
+
+  const [
+    musicEnabled,
+    setMusicEnabled,
+  ] =
+    useState(
+      readMusicEnabled
+    );
+
+  const [
+    musicVolume,
+    setMusicVolume,
+  ] =
+    useState(
+      readMusicVolume
+    );
+
+  const [
+    soundSettingsOpen,
+    setSoundSettingsOpen,
+  ] =
+    useState(false);
 
   const [
     transition,
@@ -646,9 +742,24 @@ function ExperienceShell({
       null
     );
 
-  const soundEnabledRef =
+  const sfxEnabledRef =
     useRef(
-      soundEnabled
+      sfxEnabled
+    );
+
+  const musicEnabledRef =
+    useRef(
+      musicEnabled
+    );
+
+  const musicVolumeRef =
+    useRef(
+      musicVolume
+    );
+
+  const backgroundMusicRef =
+    useRef<HTMLAudioElement | null>(
+      null
     );
 
   const previousPhaseRef =
@@ -692,18 +803,105 @@ function ExperienceShell({
     );
 
   useEffect(() => {
-    soundEnabledRef.current =
-      soundEnabled;
+    sfxEnabledRef.current =
+      sfxEnabled;
 
     localStorage.setItem(
-      SOUND_STORAGE_KEY,
+      SFX_STORAGE_KEY,
       String(
-        soundEnabled
+        sfxEnabled
       )
     );
   }, [
-    soundEnabled,
+    sfxEnabled,
   ]);
+
+  useEffect(() => {
+    musicEnabledRef.current =
+      musicEnabled;
+
+    localStorage.setItem(
+      MUSIC_ENABLED_STORAGE_KEY,
+      String(
+        musicEnabled
+      )
+    );
+  }, [
+    musicEnabled,
+  ]);
+
+  useEffect(() => {
+    musicVolumeRef.current =
+      musicVolume;
+
+    localStorage.setItem(
+      MUSIC_VOLUME_STORAGE_KEY,
+      String(
+        musicVolume
+      )
+    );
+
+    const music =
+      backgroundMusicRef.current;
+
+    if (music) {
+      const phase =
+        detectPhase();
+
+      music.volume =
+        Math.min(
+          1,
+          musicVolume *
+            (
+              phase === "other"
+                ? 1
+                : GAMEPLAY_MUSIC_FACTOR
+            )
+        );
+    }
+  }, [
+    musicVolume,
+  ]);
+
+
+  /*
+   * =========================
+   * BACKGROUND MUSIC
+   * =========================
+   *
+   * De korte track loopt bewust continu.
+   * Home/lobby: 18%
+   * Gameplay: 10%
+   */
+
+  useEffect(() => {
+    const music =
+      new Audio(
+        BACKGROUND_MUSIC
+      );
+
+    music.loop =
+      true;
+
+    music.preload =
+      "auto";
+
+    music.volume =
+      musicVolumeRef.current;
+
+    backgroundMusicRef.current =
+      music;
+
+    return () => {
+      music.pause();
+
+      music.src =
+        "";
+
+      backgroundMusicRef.current =
+        null;
+    };
+  }, []);
 
   /*
    * Mobiele browsers/WebViews willen eerst
@@ -715,9 +913,29 @@ function ExperienceShell({
   useEffect(() => {
     function unlockAudio() {
       if (
-        soundEnabledRef.current
+        sfxEnabledRef.current
       ) {
         void audioEngine.unlock();
+      }
+
+      if (
+        musicEnabledRef.current
+      ) {
+        const music =
+          backgroundMusicRef.current;
+
+        if (
+          music &&
+          music.paused
+        ) {
+          void music
+            .play()
+            .catch(
+              () => {
+                // Volgende gebruikersactie probeert opnieuw.
+              }
+            );
+        }
       }
     }
 
@@ -738,12 +956,155 @@ function ExperienceShell({
     };
   }, []);
 
+
   function soundIsOn() {
     return (
-      soundEnabledRef.current
+      sfxEnabledRef.current
     );
   }
 
+
+  /*
+   * =========================
+   * PRE-GAME UI CLICK
+   * =========================
+   *
+   * Alleen op knoppen voordat cards/tree/bus actief is.
+   * Gameplayknoppen houden dus alleen hun eigen SFX.
+   */
+
+  useEffect(() => {
+    function handleUiClick(
+      event:
+        PointerEvent
+    ) {
+      if (
+        !soundIsOn() ||
+        detectPhase() !==
+          "other"
+      ) {
+        return;
+      }
+
+      const target =
+        event.target;
+
+      if (
+        !(target instanceof Element)
+      ) {
+        return;
+      }
+
+      const button =
+        target.closest(
+          "button"
+        );
+
+      if (
+        !button ||
+        button.hasAttribute(
+          "disabled"
+        )
+      ) {
+        return;
+      }
+
+      audioEngine.playClick(
+        Date.now() + 20
+      );
+    }
+
+    window.addEventListener(
+      "pointerdown",
+      handleUiClick
+    );
+
+    return () => {
+      window.removeEventListener(
+        "pointerdown",
+        handleUiClick
+      );
+    };
+  }, []);
+
+  /*
+   * =========================
+   * MUSIC VOLUME PER FASE
+   * =========================
+   */
+
+  useEffect(() => {
+    const root =
+      document.getElementById(
+        "root"
+      );
+
+    if (
+      !root
+    ) {
+      return;
+    }
+
+    function syncMusic() {
+      const music =
+        backgroundMusicRef.current;
+
+      if (
+        !music
+      ) {
+        return;
+      }
+
+      const phase =
+        detectPhase();
+
+      music.volume =
+        Math.min(
+          1,
+          musicVolumeRef.current *
+            (
+              phase === "other"
+                ? 1
+                : GAMEPLAY_MUSIC_FACTOR
+            )
+        );
+
+      if (
+        !musicEnabledRef.current
+      ) {
+        music.pause();
+      }
+    }
+
+    syncMusic();
+
+    const observer =
+      new MutationObserver(
+        syncMusic
+      );
+
+    observer.observe(
+      root,
+      {
+        childList:
+          true,
+
+        subtree:
+          true,
+
+        attributes:
+          true,
+
+        attributeFilter: [
+          "class",
+        ],
+      }
+    );
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   /*
    * =========================================================
@@ -1326,14 +1687,67 @@ function ExperienceShell({
       );
   }
 
-  async function toggleSound() {
+  async function toggleMusic() {
     const next =
-      !soundEnabled;
+      !musicEnabled;
 
-    soundEnabledRef.current =
+    musicEnabledRef.current =
       next;
 
-    setSoundEnabled(
+    setMusicEnabled(
+      next
+    );
+
+    const music =
+      backgroundMusicRef.current;
+
+    if (!music) {
+      return;
+    }
+
+    if (next) {
+      const phase =
+        detectPhase();
+
+      music.volume =
+        Math.min(
+          1,
+          musicVolumeRef.current *
+            (
+              phase === "other"
+                ? 1
+                : GAMEPLAY_MUSIC_FACTOR
+            )
+        );
+
+      void music
+        .play()
+        .catch(
+          () => {
+            // Volgende gebruikersactie probeert opnieuw.
+          }
+        );
+
+      showSoundToast(
+        "Muziek aan"
+      );
+    } else {
+      music.pause();
+
+      showSoundToast(
+        "Muziek uit"
+      );
+    }
+  }
+
+  async function toggleSfx() {
+    const next =
+      !sfxEnabled;
+
+    sfxEnabledRef.current =
+      next;
+
+    setSfxEnabled(
       next
     );
 
@@ -1341,14 +1755,47 @@ function ExperienceShell({
       await audioEngine.unlock();
 
       showSoundToast(
-        "Geluid aan"
+        "Sound effects aan"
       );
     } else {
       showSoundToast(
-        "Geluid uit"
+        "Sound effects uit"
       );
     }
   }
+
+  function changeMusicVolume(
+    difference:
+      number
+  ) {
+    setMusicVolume(
+      (
+        current
+      ) => {
+        const next =
+          Math.max(
+            0,
+            Math.min(
+              1,
+              Math.round(
+                (
+                  current +
+                  difference
+                ) *
+                  10
+              ) /
+                10
+            )
+          );
+
+        musicVolumeRef.current =
+          next;
+
+        return next;
+      }
+    );
+  }
+
 
   return (
     <>
@@ -1370,27 +1817,502 @@ function ExperienceShell({
         className={[
           "experience-sound-button",
 
-          soundEnabled
+          musicEnabled ||
+          sfxEnabled
             ? "enabled"
             : "disabled",
         ].join(
           " "
         )}
-        onClick={
-          toggleSound
+        onClick={() =>
+          setSoundSettingsOpen(
+            (
+              current
+            ) =>
+              !current
+          )
         }
-        aria-label={
-          soundEnabled
-            ? "Geluid uitschakelen"
-            : "Geluid inschakelen"
-        }
+        aria-label="Geluidsinstellingen openen"
       >
         <SpeakerIcon
           muted={
-            !soundEnabled
+            !musicEnabled &&
+            !sfxEnabled
           }
         />
       </button>
+
+      {soundSettingsOpen && (
+        <div
+          style={{
+            position:
+              "fixed",
+
+            right:
+              "16px",
+
+            bottom:
+              "74px",
+
+            zIndex:
+              1700,
+
+            width:
+              "min(340px, calc(100vw - 32px))",
+
+            boxSizing:
+              "border-box",
+
+            padding:
+              "18px",
+
+            borderRadius:
+              "20px",
+
+            border:
+              "1px solid rgba(29,33,31,.12)",
+
+            background:
+              "#FFF8E7",
+
+            color:
+              "#1D211F",
+
+            boxShadow:
+              "0 20px 54px rgba(0,0,0,.24)",
+          }}
+        >
+          <div
+            style={{
+              display:
+                "flex",
+
+              justifyContent:
+                "space-between",
+
+              alignItems:
+                "center",
+
+              gap:
+                "12px",
+
+              marginBottom:
+                "18px",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize:
+                    ".66rem",
+
+                  fontWeight:
+                    950,
+
+                  letterSpacing:
+                    ".11em",
+
+                  opacity:
+                    .62,
+                }}
+              >
+                GELUID
+              </div>
+
+              <h3
+                style={{
+                  margin:
+                    "2px 0 0",
+
+                  fontSize:
+                    "1.25rem",
+                }}
+              >
+                Instellingen
+              </h3>
+            </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                setSoundSettingsOpen(
+                  false
+                )
+              }
+              style={{
+                width:
+                  "36px",
+
+                height:
+                  "36px",
+
+                border:
+                  0,
+
+                borderRadius:
+                  "12px",
+
+                background:
+                  "rgba(29,33,31,.08)",
+
+                color:
+                  "inherit",
+
+                fontSize:
+                  "1rem",
+
+                fontWeight:
+                  900,
+
+                cursor:
+                  "pointer",
+              }}
+              aria-label="Geluidsinstellingen sluiten"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div
+            style={{
+              display:
+                "flex",
+
+              justifyContent:
+                "space-between",
+
+              alignItems:
+                "center",
+
+              gap:
+                "16px",
+
+              padding:
+                "12px 0",
+
+              borderBottom:
+                "1px solid rgba(29,33,31,.10)",
+            }}
+          >
+            <div>
+              <strong>
+                Muziek
+              </strong>
+
+              <div
+                style={{
+                  marginTop:
+                    "2px",
+
+                  fontSize:
+                    ".76rem",
+
+                  opacity:
+                    .62,
+                }}
+              >
+                Achtergrondmuziek
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={
+                toggleMusic
+              }
+              style={{
+                minWidth:
+                  "64px",
+
+                padding:
+                  "8px 12px",
+
+                border:
+                  0,
+
+                borderRadius:
+                  "999px",
+
+                background:
+                  musicEnabled
+                    ? "#F6C945"
+                    : "rgba(29,33,31,.10)",
+
+                color:
+                  "#1D211F",
+
+                fontWeight:
+                  950,
+
+                cursor:
+                  "pointer",
+              }}
+            >
+              {
+                musicEnabled
+                  ? "Aan"
+                  : "Uit"
+              }
+            </button>
+          </div>
+
+          <div
+            style={{
+              padding:
+                "14px 0",
+
+              borderBottom:
+                "1px solid rgba(29,33,31,.10)",
+            }}
+          >
+            <div
+              style={{
+                display:
+                  "flex",
+
+                justifyContent:
+                  "space-between",
+
+                alignItems:
+                  "center",
+
+                marginBottom:
+                  "10px",
+              }}
+            >
+              <strong>
+                Muziekvolume
+              </strong>
+
+              <span
+                style={{
+                  fontWeight:
+                    900,
+                }}
+              >
+                {
+                  Math.round(
+                    musicVolume *
+                      100
+                  )
+                }%
+              </span>
+            </div>
+
+            <div
+              style={{
+                display:
+                  "grid",
+
+                gridTemplateColumns:
+                  "42px 1fr 42px",
+
+                gap:
+                  "10px",
+
+                alignItems:
+                  "center",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() =>
+                  changeMusicVolume(
+                    -0.1
+                  )
+                }
+                disabled={
+                  musicVolume <=
+                  0
+                }
+                style={{
+                  height:
+                    "40px",
+
+                  border:
+                    0,
+
+                  borderRadius:
+                    "12px",
+
+                  background:
+                    "rgba(29,33,31,.08)",
+
+                  color:
+                    "inherit",
+
+                  fontSize:
+                    "1.25rem",
+
+                  fontWeight:
+                    950,
+
+                  cursor:
+                    "pointer",
+                }}
+              >
+                −
+              </button>
+
+              <div
+                style={{
+                  height:
+                    "10px",
+
+                  overflow:
+                    "hidden",
+
+                  borderRadius:
+                    "999px",
+
+                  background:
+                    "rgba(29,33,31,.12)",
+                }}
+              >
+                <div
+                  style={{
+                    width:
+                      `${musicVolume * 100}%`,
+
+                    height:
+                      "100%",
+
+                    borderRadius:
+                      "999px",
+
+                    background:
+                      "#F6C945",
+
+                    transition:
+                      "width .15s ease",
+                  }}
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  changeMusicVolume(
+                    0.1
+                  )
+                }
+                disabled={
+                  musicVolume >=
+                  1
+                }
+                style={{
+                  height:
+                    "40px",
+
+                  border:
+                    0,
+
+                  borderRadius:
+                    "12px",
+
+                  background:
+                    "rgba(29,33,31,.08)",
+
+                  color:
+                    "inherit",
+
+                  fontSize:
+                    "1.25rem",
+
+                  fontWeight:
+                    950,
+
+                  cursor:
+                    "pointer",
+                }}
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display:
+                "flex",
+
+              justifyContent:
+                "space-between",
+
+              alignItems:
+                "center",
+
+              gap:
+                "16px",
+
+              paddingTop:
+                "14px",
+            }}
+          >
+            <div>
+              <strong>
+                Sound effects
+              </strong>
+
+              <div
+                style={{
+                  marginTop:
+                    "2px",
+
+                  fontSize:
+                    ".76rem",
+
+                  opacity:
+                    .62,
+                }}
+              >
+                Clicks, kaarten en spelgeluiden
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={
+                toggleSfx
+              }
+              style={{
+                minWidth:
+                  "64px",
+
+                padding:
+                  "8px 12px",
+
+                border:
+                  0,
+
+                borderRadius:
+                  "999px",
+
+                background:
+                  sfxEnabled
+                    ? "#F6C945"
+                    : "rgba(29,33,31,.10)",
+
+                color:
+                  "#1D211F",
+
+                fontWeight:
+                  950,
+
+                cursor:
+                  "pointer",
+              }}
+            >
+              {
+                sfxEnabled
+                  ? "Aan"
+                  : "Uit"
+              }
+            </button>
+          </div>
+        </div>
+      )}
+
 
       {soundToast && (
         <div className="experience-sound-toast">
