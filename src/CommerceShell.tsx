@@ -15,6 +15,10 @@ import {
   savePrivacyConsent,
 } from "./privacy/ConsentManager";
 
+import {
+  createAdRuntime,
+} from "./ads/AdManager";
+
 import "./commerce.css";
 
 type ShopCategory =
@@ -525,6 +529,15 @@ function CommerceShell({
     getAdConsentMode(
       privacyConsent
     );
+
+  const adRuntime =
+    createAdRuntime({
+      consent:
+        privacyConsent,
+
+      isNative:
+        isNativeApp,
+    });
 
   function choosePrivacyMode(
     status:
@@ -1198,9 +1211,24 @@ function CommerceShell({
         finishAdDelayTimerRef.current =
           window.setTimeout(
             () => {
-              setAdVisible(
-                true
-              );
+              /*
+               * In productie wordt dit straks:
+               * AdMob interstitial op native,
+               * web-interstitial/provider op web.
+               *
+               * Tot die tijd tonen we alleen de
+               * bestaande testadvertentie als
+               * consent een advertentieverzoek
+               * toestaat.
+               */
+              if (
+                adRuntime.canRequestAds &&
+                adRuntime.interstitialEnabled
+              ) {
+                setAdVisible(
+                  true
+                );
+              }
 
               finishAdDelayTimerRef.current =
                 null;
@@ -1256,7 +1284,10 @@ function CommerceShell({
         );
       }
     };
-  }, []);
+  }, [
+    adRuntime.canRequestAds,
+    adRuntime.interstitialEnabled,
+  ]);
 
   /*
    * =========================
@@ -2058,6 +2089,18 @@ function CommerceShell({
               </code>
             </div>
 
+            <div className="bb-privacy-tech-status">
+              <span>
+                Runtime:
+              </span>
+
+              <code>
+                {adRuntime.platform}
+                {" · "}
+                {adRuntime.provider}
+              </code>
+            </div>
+
             {privacyConsent.status !==
               "unknown" && (
               <button
@@ -2099,13 +2142,9 @@ function CommerceShell({
 
               <span>
                 Testmodus:{" "}
-                {adConsentMode ===
-                "personalized"
-                  ? "personalisatie toegestaan"
-                  : adConsentMode ===
-                      "contextual"
-                    ? "contextueel"
-                    : "wacht op privacykeuze"}
+                {adRuntime.canRequestAds
+                  ? `${adRuntime.mode} · ${adRuntime.platform}`
+                  : "wacht op privacykeuze"}
               </span>
             </div>
           </div>
