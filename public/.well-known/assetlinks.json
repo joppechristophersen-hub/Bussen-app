@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.BusBaas.game",
+      "sha256_cert_fingerprints": [
+        "F3:3C:F2:DA:0F:F9:AF:04:E7:CC:F4:E5:75:4E:36:AA:B9:A2:E6:40:5A:D9:A1:F5:3B:57:81:42:4D:C4:7B:06"
+      ]
+    }
+  }
+]
