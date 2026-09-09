@@ -747,3 +747,238 @@ body.busbende-web-banner-active .experience-sound-button {
   }
 }
 
+/* =========================================================
+   BUSBENDE — PRIVACY / CONSENT TESTLAAG
+   ========================================================= */
+
+.bb-privacy-launcher {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 1210;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid var(--bb-border, rgba(36, 37, 31, .18));
+  border-radius: 999px;
+  background: color-mix(
+    in srgb,
+    var(--bb-surface, #fffaf0) 94%,
+    transparent
+  );
+  color: var(--bb-text, #24251f);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font: inherit;
+  cursor: pointer;
+}
+
+.bb-privacy-launcher span {
+  font-size: .95rem;
+}
+
+.bb-privacy-launcher strong {
+  font-size: .78rem;
+  font-weight: 900;
+}
+
+body.busbende-web-banner-active .bb-privacy-launcher {
+  bottom:
+    calc(
+      var(--busbende-web-ad-height) +
+      env(safe-area-inset-bottom) +
+      14px
+    );
+}
+
+.bb-privacy-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  display: grid;
+  place-items: center;
+  padding:
+    max(18px, env(safe-area-inset-top))
+    max(16px, env(safe-area-inset-right))
+    max(18px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+  background: rgba(6, 8, 7, .76);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  overflow-y: auto;
+}
+
+.bb-privacy-box {
+  width: min(520px, 100%);
+  max-height: min(760px, 92vh);
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 24px;
+  border: 1px solid var(--bb-border, rgba(36, 37, 31, .18));
+  border-radius: 24px;
+  background: var(--bb-surface, #fffaf0);
+  color: var(--bb-text, #24251f);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .28);
+}
+
+.bb-privacy-icon {
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 12px;
+  border-radius: 16px;
+  background: var(--market-yellow, #f6c945);
+  font-size: 1.4rem;
+}
+
+.bb-privacy-eyebrow {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--bb-muted, #6c6656);
+  font-size: .68rem;
+  font-weight: 950;
+  letter-spacing: .11em;
+}
+
+.bb-privacy-box h2 {
+  margin: 0;
+  font-size: clamp(1.45rem, 5vw, 2rem);
+  line-height: 1.05;
+}
+
+.bb-privacy-intro {
+  margin: 12px 0 18px;
+  color: var(--bb-muted, #6c6656);
+  line-height: 1.45;
+}
+
+.bb-privacy-status,
+.bb-privacy-tech-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 11px 13px;
+  border-radius: 14px;
+  background: var(--bb-surface-soft, #efe6c9);
+}
+
+.bb-privacy-status span,
+.bb-privacy-tech-status span {
+  color: var(--bb-muted, #6c6656);
+  font-size: .75rem;
+  font-weight: 800;
+}
+
+.bb-privacy-status strong {
+  text-align: right;
+  font-size: .82rem;
+}
+
+.bb-privacy-tech-status code {
+  padding: 4px 7px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, .08);
+  color: inherit;
+  font-size: .72rem;
+}
+
+.bb-privacy-options {
+  display: grid;
+  gap: 10px;
+}
+
+.bb-privacy-options > button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 14px;
+  border: 1px solid var(--bb-border, rgba(36, 37, 31, .18));
+  border-radius: 16px;
+  background: var(--bb-surface, #fffaf0);
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.bb-privacy-options > button.selected {
+  border-color: var(--market-yellow, #f6c945);
+  box-shadow: 0 0 0 2px color-mix(
+    in srgb,
+    var(--market-yellow, #f6c945) 30%,
+    transparent
+  );
+}
+
+.bb-privacy-option-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--bb-surface-soft, #efe6c9);
+  font-size: 1.05rem;
+}
+
+.bb-privacy-options strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: .9rem;
+}
+
+.bb-privacy-options small {
+  display: block;
+  color: var(--bb-muted, #6c6656);
+  font-size: .76rem;
+  line-height: 1.35;
+}
+
+.bb-privacy-tech-status {
+  margin-top: 14px;
+}
+
+.bb-privacy-close {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 2px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--market-yellow, #f6c945);
+  color: #24251f;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.bb-privacy-note {
+  margin: 14px 0 0;
+  color: var(--bb-muted, #6c6656);
+  font-size: .68rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 520px) {
+  .bb-privacy-launcher {
+    left: 10px;
+    min-height: 38px;
+    padding: 7px 10px;
+  }
+
+  .bb-privacy-launcher strong {
+    font-size: .72rem;
+  }
+
+  .bb-privacy-box {
+    padding: 19px;
+    border-radius: 20px;
+  }
+}
+

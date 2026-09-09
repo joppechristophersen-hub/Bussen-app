@@ -8,6 +8,13 @@ import {
 
 import { Capacitor } from "@capacitor/core";
 
+import {
+  type PrivacyConsent,
+  getAdConsentMode,
+  readPrivacyConsent,
+  savePrivacyConsent,
+} from "./privacy/ConsentManager";
+
 import "./commerce.css";
 
 type ShopCategory =
@@ -484,6 +491,59 @@ function CommerceShell({
     useState<ShopItem | null>(
       null
     );
+
+  /*
+   * =========================
+   * PRIVACY / CONSENT
+   * =========================
+   *
+   * Dit is bewust nog een lokale testlaag.
+   * Er draait hier nog GEEN echte tracking- of
+   * advertentie-SDK achter.
+   */
+
+  const [
+    privacyConsent,
+    setPrivacyConsent,
+  ] =
+    useState<PrivacyConsent>(
+      readPrivacyConsent
+    );
+
+  const [
+    privacyOpen,
+    setPrivacyOpen,
+  ] =
+    useState(
+      () =>
+        readPrivacyConsent()
+          .status ===
+        "unknown"
+    );
+
+  const adConsentMode =
+    getAdConsentMode(
+      privacyConsent
+    );
+
+  function choosePrivacyMode(
+    status:
+      "contextual" |
+      "personalized"
+  ) {
+    const nextConsent =
+      savePrivacyConsent({
+        status,
+      });
+
+    setPrivacyConsent(
+      nextConsent
+    );
+
+    setPrivacyOpen(
+      false
+    );
+  }
 
   /*
    * =========================
@@ -1519,6 +1579,25 @@ function CommerceShell({
         </button>
       )}
 
+      <button
+        type="button"
+        className="bb-privacy-launcher"
+        onClick={() =>
+          setPrivacyOpen(
+            true
+          )
+        }
+        aria-label="Privacy-instellingen openen"
+      >
+        <span>
+          🔒
+        </span>
+
+        <strong>
+          Privacy
+        </strong>
+      </button>
+
       {shopOpen && (
         <div className="bb-market-layer">
           <div className="bb-market">
@@ -1864,6 +1943,145 @@ function CommerceShell({
         </div>
       )}
 
+      {privacyOpen && (
+        <div className="bb-privacy-layer">
+          <section
+            className="bb-privacy-box"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="bb-privacy-title"
+          >
+            <div className="bb-privacy-icon">
+              🔒
+            </div>
+
+            <span className="bb-privacy-eyebrow">
+              PRIVACY — TESTFASE
+            </span>
+
+            <h2 id="bb-privacy-title">
+              Kies je advertentievoorkeur
+            </h2>
+
+            <p className="bb-privacy-intro">
+              BusBende gebruikt nu nog geen echte advertentietracking.
+              Deze keuze bouwen we alvast in zodat AdMob en de
+              toestemmingsflow later netjes kunnen aansluiten.
+            </p>
+
+            <div className="bb-privacy-status">
+              <span>
+                Huidige status
+              </span>
+
+              <strong>
+                {privacyConsent.status ===
+                "unknown"
+                  ? "Nog geen keuze"
+                  : privacyConsent.status ===
+                      "personalized"
+                    ? "Personalisatie toegestaan"
+                    : "Alleen contextuele advertenties"}
+              </strong>
+            </div>
+
+            <div className="bb-privacy-options">
+              <button
+                type="button"
+                className={
+                  privacyConsent.status ===
+                  "contextual"
+                    ? "selected"
+                    : ""
+                }
+                onClick={() =>
+                  choosePrivacyMode(
+                    "contextual"
+                  )
+                }
+              >
+                <span className="bb-privacy-option-icon">
+                  🛡️
+                </span>
+
+                <span>
+                  <strong>
+                    Alleen contextuele advertenties
+                  </strong>
+
+                  <small>
+                    Geen advertentiepersonalisatie op basis van
+                    activiteit buiten BusBende.
+                  </small>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className={
+                  privacyConsent.status ===
+                  "personalized"
+                    ? "selected"
+                    : ""
+                }
+                onClick={() =>
+                  choosePrivacyMode(
+                    "personalized"
+                  )
+                }
+              >
+                <span className="bb-privacy-option-icon">
+                  🎯
+                </span>
+
+                <span>
+                  <strong>
+                    Personalisatie toestaan
+                  </strong>
+
+                  <small>
+                    Voorbereiding voor relevantere advertenties.
+                    Op iPhone blijft eventuele Apple ATT-toestemming
+                    later een aparte stap.
+                  </small>
+                </span>
+              </button>
+            </div>
+
+            <div className="bb-privacy-tech-status">
+              <span>
+                Advertentiemodus:
+              </span>
+
+              <code>
+                {adConsentMode}
+              </code>
+            </div>
+
+            {privacyConsent.status !==
+              "unknown" && (
+              <button
+                type="button"
+                className="bb-privacy-close"
+                onClick={() =>
+                  setPrivacyOpen(
+                    false
+                  )
+                }
+              >
+                Sluiten
+              </button>
+            )}
+
+            <p className="bb-privacy-note">
+              Dit scherm is nog geen definitieve CMP/GDPR- of
+              Apple ATT-implementatie. Er wordt nu alleen lokaal
+              op dit apparaat opgeslagen welke testkeuze je maakt.
+            </p>
+          </section>
+        </div>
+      )}
+
       {showWebBanner && (
         <aside
           className="busbende-web-ad"
@@ -1880,7 +2098,14 @@ function CommerceShell({
               </strong>
 
               <span>
-                Hier komt later een echte banneradvertentie.
+                Testmodus:{" "}
+                {adConsentMode ===
+                "personalized"
+                  ? "personalisatie toegestaan"
+                  : adConsentMode ===
+                      "contextual"
+                    ? "contextueel"
+                    : "wacht op privacykeuze"}
               </span>
             </div>
           </div>
