@@ -1,5 +1,5 @@
 /* =========================================================
-   BUSBAAS — SHOP REBUILD
+   BUSBENDE — SHOP REBUILD
    Nieuwe shoplaag met eigen bb-market-* classes.
    Oude commerce/shop overrides uit homeLobbyPolish.css
    raken deze interface bewust niet meer.
@@ -587,3 +587,163 @@ body:has(.rules-guide-card) .bb-market-launcher {
     font-size: .89rem;
   }
 }
+
+/* =========================================================
+   BUSBENDE — WEB-ONLY VASTE ADVERTENTIEBANNER
+   =========================================================
+   - alleen zichtbaar wanneer CommerceShell op web draait
+   - native Capacitor-app toont deze banner niet
+   - pagina krijgt extra onderruimte zodat gameplay niet wordt afgedekt
+   ========================================================= */
+
+:root {
+  --busbende-web-ad-height: 68px;
+}
+
+body.busbende-web-banner-active {
+  padding-bottom:
+    calc(
+      var(--busbende-web-ad-height) +
+      env(safe-area-inset-bottom)
+    ) !important;
+}
+
+.busbende-web-ad {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1250;
+  min-height:
+    calc(
+      var(--busbende-web-ad-height) +
+      env(safe-area-inset-bottom)
+    );
+  box-sizing: border-box;
+  padding:
+    7px
+    max(10px, env(safe-area-inset-right))
+    calc(7px + env(safe-area-inset-bottom))
+    max(10px, env(safe-area-inset-left));
+  border-top: 1px solid var(--bb-border, rgba(36, 37, 31, .18));
+  background: color-mix(
+    in srgb,
+    var(--bb-surface, #fffaf0) 96%,
+    transparent
+  );
+  color: var(--bb-text, #24251f);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, .10);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.busbende-web-ad-inner {
+  width: min(760px, 100%);
+  min-height: 54px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 7px 12px;
+  border: 1px dashed color-mix(
+    in srgb,
+    var(--bb-muted, #6c6656) 36%,
+    transparent
+  );
+  border-radius: 14px;
+  background: color-mix(
+    in srgb,
+    var(--bb-surface-soft, #efe6c9) 68%,
+    var(--bb-surface, #fffaf0)
+  );
+}
+
+.busbende-web-ad-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--market-yellow, #f6c945);
+  color: #24251f;
+  font-size: .62rem;
+  font-weight: 950;
+  letter-spacing: .08em;
+  white-space: nowrap;
+}
+
+.busbende-web-ad-placeholder {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1.15;
+}
+
+.busbende-web-ad-placeholder strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .82rem;
+}
+
+.busbende-web-ad-placeholder span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--bb-muted, #6c6656);
+  font-size: .72rem;
+}
+
+/* Zwevende UI op web boven de banner houden. */
+body.busbende-web-banner-active .bb-market-launcher,
+body.busbende-web-banner-active .experience-sound-button {
+  bottom:
+    calc(
+      var(--busbende-web-ad-height) +
+      env(safe-area-inset-bottom) +
+      14px
+    ) !important;
+}
+
+/* Shop/purchase en de grote advertentie blijven bewust boven de banner. */
+.bb-market-layer,
+.bb-market-purchase-layer,
+.commerce-ad-layer {
+  z-index: 1600;
+}
+
+@media (max-width: 520px) {
+  :root {
+    --busbende-web-ad-height: 64px;
+  }
+
+  .busbende-web-ad {
+    padding-top: 5px;
+  }
+
+  .busbende-web-ad-inner {
+    min-height: 50px;
+    gap: 8px;
+    padding: 6px 9px;
+    border-radius: 12px;
+  }
+
+  .busbende-web-ad-label {
+    min-height: 26px;
+    padding-inline: 7px;
+    font-size: .57rem;
+  }
+
+  .busbende-web-ad-placeholder strong {
+    font-size: .78rem;
+  }
+
+  .busbende-web-ad-placeholder span {
+    font-size: .68rem;
+  }
+}
+

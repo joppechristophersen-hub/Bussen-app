@@ -6,6 +6,8 @@ import {
   useState,
 } from "react";
 
+import { Capacitor } from "@capacitor/core";
+
 import "./commerce.css";
 
 type ShopCategory =
@@ -412,6 +414,12 @@ function readManualAppearanceMode():
 function CommerceShell({
   children,
 }: CommerceShellProps) {
+  const isNativeApp =
+    Capacitor.isNativePlatform();
+
+  const showWebBanner =
+    !isNativeApp;
+
   const [
     shopOpen,
     setShopOpen,
@@ -537,6 +545,37 @@ function CommerceShell({
     useRef<number | null>(
       null
     );
+
+  /*
+   * =========================
+   * WEB-ONLY BANNER
+   * =========================
+   *
+   * Browser: vaste advertentieruimte onderin.
+   * Native app: geen vaste banner.
+   */
+
+  useEffect(() => {
+    if (!showWebBanner) {
+      document.body.classList.remove(
+        "busbende-web-banner-active"
+      );
+
+      return;
+    }
+
+    document.body.classList.add(
+      "busbende-web-banner-active"
+    );
+
+    return () => {
+      document.body.classList.remove(
+        "busbende-web-banner-active"
+      );
+    };
+  }, [
+    showWebBanner,
+  ]);
 
   /*
    * =========================
@@ -1823,6 +1862,29 @@ function CommerceShell({
             </button>
           </div>
         </div>
+      )}
+
+      {showWebBanner && (
+        <aside
+          className="busbende-web-ad"
+          aria-label="Advertentie"
+        >
+          <div className="busbende-web-ad-inner">
+            <span className="busbende-web-ad-label">
+              ADVERTENTIE
+            </span>
+
+            <div className="busbende-web-ad-placeholder">
+              <strong>
+                BusBende web
+              </strong>
+
+              <span>
+                Hier komt later een echte banneradvertentie.
+              </span>
+            </div>
+          </div>
+        </aside>
       )}
 
       {adVisible && (
