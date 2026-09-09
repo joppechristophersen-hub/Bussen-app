@@ -9,6 +9,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <!-- AdMob test app ID -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="@string/admob_app_id" />
+
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
             android:name=".MainActivity"
@@ -17,20 +22,11 @@
             android:launchMode="singleTask"
             android:exported="true">
 
-            <!-- Normaal openen vanaf het app-icoon -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!--
-                BusBende App Link
-
-                https://busbende.nl/join/ABCDE
-
-                Android opent deze URL straks direct in de BusBende-app
-                wanneer de app geïnstalleerd en het domein geverifieerd is.
-            -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -58,8 +54,6 @@
         </provider>
 
     </application>
-
-    <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
 
