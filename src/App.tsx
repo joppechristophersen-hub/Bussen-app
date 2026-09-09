@@ -12,6 +12,14 @@ import {
   io,
 } from "socket.io-client";
 
+import {
+  Capacitor,
+} from "@capacitor/core";
+
+import {
+  App as CapacitorApp,
+} from "@capacitor/app";
+
 import "./App.css";
 
 type Screen =
@@ -327,6 +335,51 @@ const socket = io(
       false,
   }
 );
+
+function getJoinCodeFromUrl(
+  rawUrl:
+    string
+) {
+  try {
+    const parsedUrl =
+      new URL(
+        rawUrl,
+        window.location.origin
+      );
+
+    const legacyRoom =
+      parsedUrl.searchParams
+        .get("room")
+        ?.trim()
+        .toUpperCase();
+
+    const pathMatch =
+      parsedUrl.pathname.match(
+        /^\/join\/([A-Z0-9]{5})\/?$/i
+      );
+
+    const pathRoom =
+      pathMatch?.[1]
+        ?.toUpperCase();
+
+    const roomFromUrl =
+      pathRoom ||
+      legacyRoom;
+
+    if (
+      roomFromUrl &&
+      /^[A-Z0-9]{5}$/.test(
+        roomFromUrl
+      )
+    ) {
+      return roomFromUrl;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
 
 function App() {
   const socketId =
@@ -698,44 +751,124 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const params =
-      new URLSearchParams(
-        window.location.search
-      );
+    let cancelled =
+      false;
 
-    const legacyRoom =
-      params
-        .get("room")
-        ?.trim()
-        .toUpperCase();
+    let removeAppUrlListener:
+      (() => Promise<void>) |
+      null =
+      null;
 
-    const pathMatch =
-      window.location.pathname.match(
-        /^\/join\/([A-Z0-9]{5})\/?$/i
-      );
-
-    const pathRoom =
-      pathMatch?.[1]
-        ?.toUpperCase();
-
-    const roomFromUrl =
-      pathRoom ||
-      legacyRoom;
-
-    if (
-      roomFromUrl &&
-      /^[A-Z0-9]{5}$/.test(
-        roomFromUrl
-      )
+    function openJoinFromUrl(
+      rawUrl:
+        string
     ) {
+      const roomFromUrl =
+        getJoinCodeFromUrl(
+          rawUrl
+        );
+
+      if (
+        !roomFromUrl
+      ) {
+        return;
+      }
+
       setJoinCode(
         roomFromUrl
+      );
+
+      setJoinError(
+        ""
       );
 
       setScreen(
         "join"
       );
     }
+
+    /*
+     * Web:
+     * - /join/ABCDE
+     * - ?room=ABCDE
+     */
+    openJoinFromUrl(
+      window.location.href
+    );
+
+    /*
+     * Native Android/iOS:
+     *
+     * Cold start:
+     * de app was helemaal gesloten en wordt via
+     * https://busbende.nl/join/ABCDE geopend.
+     *
+     * Warm start:
+     * de app draaide al en krijgt daarna een nieuwe
+     * App Link binnen.
+     */
+    if (
+      Capacitor.isNativePlatform()
+    ) {
+      void CapacitorApp
+        .getLaunchUrl()
+        .then(
+          (launchUrl) => {
+            if (
+              cancelled ||
+              !launchUrl?.url
+            ) {
+              return;
+            }
+
+            openJoinFromUrl(
+              launchUrl.url
+            );
+          }
+        );
+
+      void CapacitorApp
+        .addListener(
+          "appUrlOpen",
+          (event) => {
+            if (
+              cancelled ||
+              !event.url
+            ) {
+              return;
+            }
+
+            openJoinFromUrl(
+              event.url
+            );
+          }
+        )
+        .then(
+          (handle) => {
+            if (
+              cancelled
+            ) {
+              void handle.remove();
+              return;
+            }
+
+            removeAppUrlListener =
+              () =>
+                handle.remove();
+          }
+        );
+    }
+
+    return () => {
+      cancelled =
+        true;
+
+      if (
+        removeAppUrlListener
+      ) {
+        void removeAppUrlListener();
+      }
+    };
   }, []);
 
   useEffect(() => {
