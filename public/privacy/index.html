@@ -9,902 +9,743 @@
   />
 
   <meta
-    name="robots"
-    content="index,follow"
-  />
-
-  <title>
-    Privacybeleid | BusBende
-  </title>
-
-  <meta
     name="description"
     content="Privacybeleid van BusBende."
   />
 
+  <title>Privacybeleid | BusBende</title>
+
   <style>
+    :root {
+      color-scheme: light;
+
+      --background: #f6f0df;
+      --surface: #fffaf0;
+      --surface-soft: #efe6c9;
+
+      --yellow: #f6c945;
+      --yellow-dark: #d99d20;
+
+      --text: #24251f;
+      --muted: #6c6656;
+      --border: #d6c99f;
+    }
+
     * {
       box-sizing: border-box;
     }
 
-    html {
-      background: #f6c945;
-    }
-
     body {
       margin: 0;
-      min-height: 100vh;
+
+      background:
+        linear-gradient(
+          180deg,
+          #f6c945 0,
+          #f6c945 220px,
+          var(--background) 220px,
+          var(--background) 100%
+        );
+
+      color: var(--text);
+
       font-family:
         system-ui,
         -apple-system,
         BlinkMacSystemFont,
         "Segoe UI",
         sans-serif;
-      background:
-        linear-gradient(
-          180deg,
-          #f6c945 0,
-          #f6c945 230px,
-          #fff8e7 230px,
-          #fff8e7 100%
-        );
-      color: #1d211f;
+
       line-height: 1.65;
     }
 
-    .page {
-      width:
-        min(
-          900px,
-          calc(100% - 32px)
-        );
-      margin: 0 auto;
-      padding:
-        42px 0 70px;
+    main {
+      width: min(900px, calc(100% - 28px));
+
+      margin: 80px auto;
+
+      padding: 42px;
+
+      border: 2px solid var(--text);
+      border-radius: 28px;
+
+      background: var(--surface);
+
+      box-shadow:
+        7px 7px 0 var(--text);
     }
 
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 28px;
-      text-decoration: none;
-      color: #1d211f;
-      font-size: 24px;
-      font-weight: 900;
-      letter-spacing: -0.8px;
-    }
+    .logo {
+      width: 72px;
+      height: 72px;
 
-    .brand-badge {
       display: grid;
       place-items: center;
-      width: 42px;
-      height: 42px;
-      border: 3px solid #1d211f;
-      border-radius: 14px;
-      background: #fff8e7;
-      font-size: 22px;
-      box-shadow:
-        3px 3px 0 #1d211f;
-    }
 
-    .hero {
-      margin-bottom: 32px;
+      margin-bottom: 18px;
+
+      border: 2px solid var(--text);
+      border-radius: 20px;
+
+      background: var(--yellow);
+
+      box-shadow:
+        3px 3px 0 var(--text);
+
+      font-size: 2rem;
     }
 
     .eyebrow {
-      margin: 0 0 6px;
-      font-size: 13px;
+      display: block;
+
+      margin-bottom: 4px;
+
+      font-size: .75rem;
       font-weight: 900;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
+
+      letter-spacing: .15em;
     }
 
     h1 {
-      margin: 0;
-      max-width: 700px;
+      margin: 0 0 8px;
+
       font-size:
-        clamp(
-          38px,
-          8vw,
-          64px
-        );
-      line-height: 0.98;
-      letter-spacing: -2px;
+        clamp(2.2rem, 8vw, 4rem);
+
+      line-height: .95;
+
+      letter-spacing: -.05em;
     }
 
     .intro {
-      max-width: 670px;
-      margin: 18px 0 0;
-      font-size: 17px;
-      font-weight: 600;
-    }
+      margin:
+        16px 0 34px;
 
-    .card {
-      padding:
-        clamp(
-          22px,
-          5vw,
-          42px
-        );
-      border: 3px solid #1d211f;
-      border-radius: 28px;
-      background: #fffdf5;
-      box-shadow:
-        7px 7px 0 #1d211f;
-    }
+      color: var(--muted);
 
-    section + section {
-      margin-top: 38px;
+      font-size: 1rem;
     }
 
     h2 {
       margin:
-        0 0 12px;
-      font-size: 24px;
-      line-height: 1.2;
+        36px 0 10px;
+
+      font-size: 1.35rem;
     }
 
-    h3 {
-      margin:
-        22px 0 8px;
-      font-size: 18px;
-    }
-
-    p {
-      margin:
-        0 0 14px;
+    p,
+    li {
+      color: #49483f;
     }
 
     ul {
-      margin:
-        10px 0 16px;
-      padding-left: 24px;
-    }
-
-    li + li {
-      margin-top: 8px;
+      padding-left: 22px;
     }
 
     a {
-      color: #8a5300;
-      font-weight: 750;
+      color: #7d5700;
+
+      font-weight: 700;
     }
 
-    .note {
-      padding: 16px 18px;
-      margin-top: 18px;
-      border: 2px solid #1d211f;
+    .notice {
+      margin: 24px 0;
+
+      padding: 18px;
+
+      border: 2px solid var(--border);
       border-radius: 16px;
-      background: #f6c945;
-      font-weight: 650;
+
+      background: var(--surface-soft);
+    }
+
+    .notice strong {
+      display: block;
+
+      margin-bottom: 4px;
+
+      color: var(--text);
     }
 
     .meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 20px;
-      margin-top: 28px;
+      margin-top: 40px;
+
       padding-top: 22px;
+
       border-top:
-        2px dashed
-        rgba(
-          29,
-          33,
-          31,
-          0.35
-        );
-      font-size: 14px;
+        1px solid var(--border);
+
+      color: var(--muted);
+
+      font-size: .85rem;
     }
 
-    footer {
-      padding-top: 28px;
-      text-align: center;
-      font-size: 14px;
-      opacity: 0.72;
-    }
-
-    @media (
-      max-width: 600px
-    ) {
+    @media (max-width: 620px) {
       body {
         background:
           linear-gradient(
             180deg,
             #f6c945 0,
-            #f6c945 190px,
-            #fff8e7 190px,
-            #fff8e7 100%
+            #f6c945 150px,
+            var(--background) 150px,
+            var(--background) 100%
           );
       }
 
-      .page {
-        padding-top: 24px;
-      }
+      main {
+        margin: 28px auto 50px;
 
-      .card {
+        padding:
+          28px 20px;
+
         border-radius: 22px;
+
         box-shadow:
-          4px 4px 0 #1d211f;
+          5px 5px 0 var(--text);
       }
     }
   </style>
 </head>
 
 <body>
-  <main class="page">
-
-    <a
-      class="brand"
-      href="/"
-      aria-label="Terug naar BusBende"
-    >
-      <span class="brand-badge">
-        🚌
-      </span>
-
-      BusBende
-    </a>
-
-
-    <header class="hero">
-
-      <p class="eyebrow">
-        Privacy
-      </p>
-
-      <h1>
-        Privacybeleid
-      </h1>
-
-      <p class="intro">
-        Bij BusBende willen we zo
-        zorgvuldig en transparant
-        mogelijk omgaan met jouw
-        gegevens. Op deze pagina leggen
-        we uit welke gegevens BusBende
-        gebruikt, waarom dat gebeurt en
-        welke keuzes je daarbij hebt.
-      </p>
-
-    </header>
-
-
-    <article class="card">
-
-      <section>
-
-        <h2>
-          1. Over BusBende
-        </h2>
-
-        <p>
-          BusBende is een digitaal
-          gezelschapsspel dat via de
-          website en mobiele applicatie
-          gespeeld kan worden.
-        </p>
-
-        <p>
-          Spelers kunnen een speelkamer
-          aanmaken of aan een bestaande
-          speelkamer deelnemen. Daarbij
-          kunnen gegevens worden
-          verwerkt die nodig zijn om het
-          multiplayer-spel technisch te
-          laten functioneren.
-        </p>
-
-      </section>
-
-
-      <section>
-
-        <h2>
-          2. Welke gegevens gebruiken we?
-        </h2>
-
-        <h3>
-          Spelgegevens
-        </h3>
-
-        <p>
-          Wanneer je BusBende speelt,
-          kunnen onder andere de
-          volgende gegevens tijdelijk
-          worden verwerkt:
-        </p>
-
-        <ul>
-          <li>
-            de spelersnaam die je zelf
-            invoert;
-          </li>
-
-          <li>
-            de code van de speelkamer;
-          </li>
-
-          <li>
-            informatie over de actieve
-            speelkamer en deelnemers;
-          </li>
-
-          <li>
-            spelstatus en spelacties die
-            nodig zijn om het spel tussen
-            apparaten te synchroniseren.
-          </li>
-        </ul>
-
-        <p>
-          Deze informatie is nodig om
-          verschillende spelers aan
-          hetzelfde spel te laten
-          deelnemen en het spel op de
-          aangesloten apparaten gelijk
-          te laten verlopen.
-        </p>
-
-
-        <h3>
-          Instellingen op jouw apparaat
-        </h3>
-
-        <p>
-          BusBende kan bepaalde
-          voorkeuren lokaal op jouw
-          apparaat opslaan, bijvoorbeeld:
-        </p>
-
-        <ul>
-          <li>
-            muziek aan of uit;
-          </li>
-
-          <li>
-            muziekvolume;
-          </li>
-
-          <li>
-            sound effects aan of uit;
-          </li>
-
-          <li>
-            uiterlijk- en
-            thema-instellingen;
-          </li>
-
-          <li>
-            gekozen of ontgrendelde
-            cosmetische items;
-          </li>
-
-          <li>
-            privacy- en
-            advertentievoorkeuren.
-          </li>
-        </ul>
-
-        <p>
-          Deze informatie kan via lokale
-          opslag op jouw apparaat worden
-          bewaard zodat je instellingen
-          niet iedere keer opnieuw hoeft
-          te kiezen.
-        </p>
-
-      </section>
-
-
-      <section>
-
-        <h2>
-          3. Advertenties
-        </h2>
-
-        <p>
-          BusBende kan advertenties
-          tonen om het spel gratis
-          beschikbaar te kunnen houden.
-        </p>
-
-        <p>
-          In de mobiele applicatie
-          gebruiken we hiervoor Google
-          AdMob. Afhankelijk van jouw
-          locatie, instellingen en
-          gegeven toestemming kunnen
-          Google en aangesloten
-          advertentiepartners gegevens
-          verwerken voor het tonen,
-          meten en beveiligen van
-          advertenties.
-        </p>
-
-        <p>
-          Hierbij kan het bijvoorbeeld
-          gaan om apparaat-informatie,
-          advertentiegegevens,
-          technische informatie en,
-          wanneer hiervoor toestemming
-          is gegeven en dit van
-          toepassing is, identifiers die
-          gebruikt kunnen worden voor
-          advertentiedoeleinden.
-        </p>
-
-        <p>
-          Welke advertentiepartners en
-          doeleinden precies van
-          toepassing zijn, wordt waar
-          nodig weergegeven in het
-          privacy- en
-          toestemmingsvenster van
-          Google.
-        </p>
-
-        <p>
-          Meer informatie over hoe
-          Google gegevens gebruikt bij
-          sites en apps van partners is
-          te vinden op:
-        </p>
-
-        <p>
-          <a
-            href="https://policies.google.com/technologies/partner-sites"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Hoe Google gegevens gebruikt
-            van sites of apps die onze
-            services gebruiken
-          </a>
-        </p>
-
-      </section>
-
-
-      <section>
-
-        <h2>
-          4. Toestemming en
-          advertentievoorkeuren
-        </h2>
-
-        <p>
-          Waar dit wettelijk vereist is,
-          vragen we toestemming voordat
-          bepaalde gegevens voor
-          advertentiedoeleinden worden
-          verwerkt.
-        </p>
-
-        <p>
-          Hiervoor kan BusBende gebruik
-          maken van Google's User
-          Messaging Platform (UMP).
-          Daarmee kun je keuzes maken
-          over onder andere
-          gepersonaliseerde
-          advertenties.
-        </p>
-
-        <p>
-          Je kunt je beschikbare
-          privacykeuzes later opnieuw
-          bekijken via de privacyknop in
-          BusBende.
-        </p>
-
-        <div class="note">
-          Geen toestemming geven voor
-          gepersonaliseerde advertenties
-          betekent niet automatisch dat
-          er geen advertenties worden
-          getoond. Er kunnen bijvoorbeeld
-          niet-gepersonaliseerde of
-          contextuele advertenties worden
-          weergegeven.
-        </div>
-
-      </section>
-
-
-      <section>
-
-        <h2>
-          5. Website en lokale opslag
-        </h2>
-
-        <p>
-          De webversie van BusBende kan
-          lokale opslag gebruiken voor
-          functionele instellingen en
-          voorkeuren.
-        </p>
-
-        <p>
-          Wanneer er in de toekomst
-          externe advertentie- of
-          analysetechnologie op de
-          website wordt toegevoegd die
-          toestemming vereist, zal die
-          technologie waar nodig pas
-          worden gebruikt nadat de
-          vereiste privacykeuze is
-          gemaakt.
-        </p>
-
-      </section>
-
-
-      <section>
-
-        <h2>
-          6. Waarom verwerken we deze
-          gegevens?
-        </h2>
-
-        <p>
-          Gegevens worden alleen
-          verwerkt voor doeleinden die
-          relevant zijn voor BusBende,
-          zoals:
-        </p>
-
-        <ul>
-          <li>
-            het mogelijk maken van
-            multiplayer-spellen;
-          </li>
-
-          <li>
-            het synchroniseren van de
-            spelstatus;
-          </li>
-
-          <li>
-            het onthouden van jouw
-            instellingen;
-          </li>
-
-          <li>
-            het beveiligen en technisch
-            onderhouden van de dienst;
-          </li>
-
-          <li>
-            het tonen en meten van
-            advertenties;
-          </li>
-
-          <li>
-            het voldoen aan wettelijke
-            verplichtingen.
-          </li>
-        </ul>
-
-      </section>
-
-
-      <section>
-
-        <h2>
-          7. Bewaartermijnen
-        </h2>
-
-        <p>
-          Spelgegevens die alleen nodig
-          zijn voor een actieve
-          multiplayer-sessie worden in
-          beginsel niet langer bewaard
-          dan noodzakelijk is voor het
-          functioneren van die sessie.
-        </p>
-
-        <p>
-          Lokale instellingen kunnen op
-          jouw apparaat blijven staan
-          totdat je deze wijzigt,
-          verwijdert, de lokale
-          appgegevens wist of de app
-          verwijdert.
-        </p>
-
-        <p>
-          Externe partijen zoals Google
-          kunnen eigen bewaartermijnen
-          hanteren voor gegevens die zij
-          overeenkomstig hun eigen
-          privacybeleid verwerken.
-        </p>
-
-      </section>
-
-
-      <section>
-
-        <h2>
-          8. Delen van gegevens
-        </h2>
-
-        <p>
-          BusBende verkoopt jouw
-          persoonsgegevens niet.
-        </p>
-
-        <p>
-          Gegevens kunnen wel worden
-          verwerkt door dienstverleners
-          die noodzakelijk zijn voor het
-          functioneren en aanbieden van
-          BusBende, bijvoorbeeld:
-        </p>
-
-        <ul>
-          <li>
-            hosting- en technische
-            infrastructuurproviders;
-          </li>
-
-          <li>
-            Google AdMob en
-            advertentiepartners wanneer
-            advertenties worden getoond;
-          </li>
-
-          <li>
-            andere technische
-            dienstverleners die in de
-            toekomst noodzakelijk kunnen
-            zijn voor BusBende.
-          </li>
-        </ul>
-
-      </section>
-
-
-      <section>
-
-        <h2>
-          9. Minderjarigen
-        </h2>
-
-        <p>
-          BusBende is niet bedoeld om
-          bewust persoonsgegevens van
-          kinderen te verzamelen.
-        </p>
-
-        <p>
-          BusBende is een digitaal
-          gezelschapsspel. Verwijzingen
-          naar drinken of drankregels in
-          het spel vormen geen
-          aanmoediging om alcohol te
-          gebruiken. Spelers blijven zelf
-          verantwoordelijk voor het
-          naleven van toepasselijke
-          leeftijdsgrenzen en wetgeving.
-        </p>
-
-      </section>
-
-
-      <section>
-
-        <h2>
-          10. Jouw privacyrechten
-        </h2>
-
-        <p>
-          Wanneer de Algemene
-          verordening gegevensbescherming
-          (AVG) van toepassing is, kun je
-          afhankelijk van de situatie
-          onder andere het recht hebben
-          om:
-        </p>
-
-        <ul>
-          <li>
-            inzage te vragen in jouw
-            persoonsgegevens;
-          </li>
-
-          <li>
-            gegevens te laten
-            corrigeren;
-          </li>
-
-          <li>
-            gegevens te laten
-            verwijderen;
-          </li>
-
-          <li>
-            bezwaar te maken tegen
-            bepaalde verwerkingen;
-          </li>
-
-          <li>
-            verwerking te laten
-            beperken;
-          </li>
-
-          <li>
-            eerder gegeven toestemming
-            in te trekken.
-          </li>
-        </ul>
-
-        <p>
-          Het intrekken van toestemming
-          heeft geen invloed op de
-          rechtmatigheid van verwerking
-          die vóór de intrekking heeft
-          plaatsgevonden.
-        </p>
-
-      </section>
-
-
-      <section>
-
-        <h2>
-          11. Beveiliging
-        </h2>
-
-        <p>
-          We nemen redelijke technische
-          en organisatorische
-          maatregelen om gegevens te
-          beschermen tegen verlies,
-          misbruik en ongeautoriseerde
-          toegang.
-        </p>
-
-        <p>
-          Geen enkele online dienst kan
-          echter absolute veiligheid
-          garanderen.
-        </p>
-
-      </section>
-
-
-      <section>
-
-        <h2>
-          12. Externe diensten
-        </h2>
-
-        <p>
-          Voor diensten van externe
-          partijen gelden daarnaast de
-          privacyvoorwaarden van die
-          partijen.
-        </p>
-
-        <p>
-          Voor Google:
-        </p>
-
-        <ul>
-          <li>
-            <a
-              href="https://policies.google.com/privacy"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Privacybeleid van Google
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="https://policies.google.com/technologies/ads"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Google en advertenties
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="https://policies.google.com/technologies/partner-sites"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Gegevensgebruik op sites
-              en apps van partners
-            </a>
-          </li>
-        </ul>
-
-      </section>
-
-
-      <section>
-
-        <h2>
-          13. Wijzigingen
-        </h2>
-
-        <p>
-          Dit privacybeleid kan worden
-          aangepast wanneer BusBende,
-          gebruikte technologie,
-          wetgeving of onze werkwijze
-          verandert.
-        </p>
-
-        <p>
-          De meest recente versie wordt
-          op deze pagina gepubliceerd.
-        </p>
-
-      </section>
-
-
-      <section>
-
-        <h2>
-          14. Contact
-        </h2>
-
-        <p>
-          Heb je vragen over dit
-          privacybeleid of over de
-          verwerking van jouw gegevens?
-          Neem dan contact op met
-          BusBende.
-        </p>
-
-        <!--
-          VERVANG HIER LATER HET
-          E-MAILADRES ALS JE JE
-          @busbende.nl MAIL HEBT.
-        -->
-
-        <p>
-          E-mail:
-          <strong>
-            info@busbende.nl
-          </strong>
-        </p>
-
-      </section>
-
-
-      <div class="meta">
-
-        <span>
-          <strong>
-            Versie:
-          </strong>
-          1.0
-        </span>
-
-        <span>
-          <strong>
-            Laatst bijgewerkt:
-          </strong>
-          9 september 2026
-        </span>
-
-      </div>
-
-    </article>
-
-
-    <footer>
-      © 2026 BusBende
-    </footer>
+
+  <main>
+
+    <div class="logo">
+      🚌
+    </div>
+
+    <span class="eyebrow">
+      BUSBENDE
+    </span>
+
+    <h1>
+      Privacybeleid
+    </h1>
+
+    <p class="intro">
+      In dit privacybeleid leggen we uit welke gegevens BusBende
+      kan verwerken wanneer je onze website of app gebruikt,
+      waarom we dat doen en welke keuzes je hebt.
+    </p>
+
+
+    <h2>
+      1. Wie is verantwoordelijk?
+    </h2>
+
+    <p>
+      BusBende is verantwoordelijk voor de verwerking van
+      persoonsgegevens binnen de BusBende-dienst voor zover
+      BusBende zelf bepaalt waarvoor en hoe deze gegevens
+      worden gebruikt.
+    </p>
+
+    <p>
+      Voor vragen over privacy kun je contact opnemen via:
+      <a href="mailto:info@busbende.nl">
+        info@busbende.nl
+      </a>.
+    </p>
+
+
+    <h2>
+      2. Welke gegevens kan BusBende verwerken?
+    </h2>
+
+    <p>
+      Afhankelijk van hoe je BusBende gebruikt, kunnen onder
+      andere de volgende gegevens worden verwerkt:
+    </p>
+
+    <ul>
+      <li>
+        de spelersnaam die je zelf invoert;
+      </li>
+
+      <li>
+        de kamercode van een actieve spelkamer;
+      </li>
+
+      <li>
+        informatie over deelnemers in een actieve spelkamer;
+      </li>
+
+      <li>
+        spelstatus, kaarten, keuzes en andere acties die nodig
+        zijn om een multiplayerpotje te laten werken;
+      </li>
+
+      <li>
+        technische gegevens die nodig zijn voor de werking,
+        beveiliging en communicatie van de website of app;
+      </li>
+
+      <li>
+        lokaal opgeslagen instellingen, zoals geluid,
+        volume, uiterlijk, thema's en advertentie- of
+        privacyvoorkeuren.
+      </li>
+    </ul>
+
+
+    <h2>
+      3. Multiplayer en spelkamers
+    </h2>
+
+    <p>
+      BusBende gebruikt een online server om spelers in dezelfde
+      kamer met elkaar te verbinden en de spelstatus tussen
+      apparaten te synchroniseren.
+    </p>
+
+    <p>
+      De door jou ingevoerde spelersnaam en gegevens over het
+      lopende spel kunnen gedurende de actieve spelsessie door
+      de server worden verwerkt zodat alle spelers dezelfde
+      actuele spelinformatie ontvangen.
+    </p>
+
+    <p>
+      Gebruik daarom geen gevoelige persoonsgegevens als
+      spelersnaam.
+    </p>
+
+
+    <h2>
+      4. Advertenties op de website — Google AdSense
+    </h2>
+
+    <p>
+      De webversie van BusBende kan advertenties tonen via
+      Google AdSense.
+    </p>
+
+    <p>
+      Wanneer Google-advertentietechnologie op een pagina wordt
+      gebruikt, kan informatie naar Google worden verzonden.
+      Dit kan onder andere bestaan uit:
+    </p>
+
+    <ul>
+      <li>
+        je IP-adres;
+      </li>
+
+      <li>
+        informatie over je browser en apparaat;
+      </li>
+
+      <li>
+        de URL van de bezochte pagina;
+      </li>
+
+      <li>
+        informatie over advertentievertoningen en interacties;
+      </li>
+
+      <li>
+        cookies, lokale opslag of vergelijkbare
+        technologieën, wanneer deze mogen worden gebruikt.
+      </li>
+    </ul>
+
+    <p>
+      Google kan deze gegevens onder andere gebruiken om
+      advertenties te leveren, de werking en effectiviteit
+      ervan te meten, fraude en misbruik tegen te gaan en,
+      wanneer hiervoor toestemming is gegeven,
+      advertenties te personaliseren.
+    </p>
+
+    <div class="notice">
+
+      <strong>
+        Meer informatie over gegevensgebruik door Google
+      </strong>
+
+      <a
+        href="https://policies.google.com/technologies/partner-sites?hl=nl"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Hoe Google gegevens gebruikt van sites en apps
+        die Google-services gebruiken
+      </a>
+
+    </div>
+
+
+    <h2>
+      5. Advertenties in de mobiele app — Google AdMob
+    </h2>
+
+    <p>
+      In de Android- en iOS-versie kan BusBende gebruikmaken
+      van Google AdMob voor het tonen van advertenties.
+    </p>
+
+    <p>
+      Afhankelijk van het apparaat, je regio en je
+      privacykeuzes kan Google daarbij technische gegevens en
+      advertentie-identificatoren verwerken.
+    </p>
+
+    <p>
+      BusBende gebruikt geen vaste advertentiebanner tijdens
+      het normale speelscherm van de mobiele app. Advertenties
+      kunnen op andere natuurlijke momenten binnen de app
+      worden weergegeven.
+    </p>
+
+
+    <h2>
+      6. Cookies, lokale opslag en vergelijkbare technieken
+    </h2>
+
+    <p>
+      BusBende gebruikt lokale opslag op je apparaat om
+      instellingen te bewaren, zoals:
+    </p>
+
+    <ul>
+      <li>
+        gekozen uiterlijk en thema;
+      </li>
+
+      <li>
+        cosmetische instellingen;
+      </li>
+
+      <li>
+        geluidsinstellingen;
+      </li>
+
+      <li>
+        privacy- en advertentievoorkeuren.
+      </li>
+    </ul>
+
+    <p>
+      Google AdSense en AdMob kunnen daarnaast cookies,
+      advertentie-identificatoren of vergelijkbare
+      technologieën gebruiken wanneer dat volgens de
+      toepasselijke regels en je privacykeuzes is toegestaan.
+    </p>
+
+
+    <h2>
+      7. Toestemming voor advertenties
+    </h2>
+
+    <p>
+      Voor gebruikers in de Europese Economische Ruimte,
+      het Verenigd Koninkrijk en Zwitserland kan toestemming
+      worden gevraagd voor het gebruik van cookies of lokale
+      opslag en voor het gebruik van persoonsgegevens voor
+      gepersonaliseerde advertenties.
+    </p>
+
+    <p>
+      Voor webadvertenties kan BusBende hiervoor gebruikmaken
+      van een door Google gecertificeerd platform voor
+      toestemmingsbeheer (CMP).
+    </p>
+
+    <p>
+      In de mobiele app kan de Google User Messaging Platform
+      (UMP)-technologie worden gebruikt voor het beheren van
+      advertentietoestemming.
+    </p>
+
+    <p>
+      Waar mogelijk kun je je privacykeuze later opnieuw
+      openen en wijzigen.
+    </p>
+
+
+    <h2>
+      8. Contextuele en gepersonaliseerde advertenties
+    </h2>
+
+    <p>
+      Afhankelijk van je toestemming kunnen advertenties
+      contextueel of gepersonaliseerd zijn.
+    </p>
+
+    <p>
+      Contextuele advertenties worden bijvoorbeeld afgestemd
+      op algemene factoren zoals de inhoud van de pagina of
+      een globale regio.
+    </p>
+
+    <p>
+      Gepersonaliseerde advertenties kunnen daarnaast gebruik
+      maken van informatie over interesses of eerdere
+      activiteit, voor zover hiervoor geldige toestemming is
+      verkregen.
+    </p>
+
+
+    <h2>
+      9. Waarom verwerken we gegevens?
+    </h2>
+
+    <p>
+      Gegevens kunnen worden gebruikt om:
+    </p>
+
+    <ul>
+      <li>
+        BusBende technisch te laten functioneren;
+      </li>
+
+      <li>
+        multiplayerkamers en spellen te synchroniseren;
+      </li>
+
+      <li>
+        gebruikersinstellingen te onthouden;
+      </li>
+
+      <li>
+        fouten, fraude en misbruik te voorkomen;
+      </li>
+
+      <li>
+        advertenties te tonen en advertentieprestaties
+        te meten;
+      </li>
+
+      <li>
+        te voldoen aan wettelijke verplichtingen.
+      </li>
+    </ul>
+
+
+    <h2>
+      10. Rechtsgrond
+    </h2>
+
+    <p>
+      Afhankelijk van de verwerking kan BusBende zich baseren
+      op:
+    </p>
+
+    <ul>
+      <li>
+        uitvoering van de dienst die je gebruikt;
+      </li>
+
+      <li>
+        een gerechtvaardigd belang, bijvoorbeeld voor
+        beveiliging en technische werking;
+      </li>
+
+      <li>
+        jouw toestemming, bijvoorbeeld wanneer die vereist is
+        voor advertentiepersonalisatie of bepaalde cookies;
+      </li>
+
+      <li>
+        een wettelijke verplichting.
+      </li>
+    </ul>
+
+
+    <h2>
+      11. Met wie kunnen gegevens worden gedeeld?
+    </h2>
+
+    <p>
+      BusBende kan voor de werking van de dienst gebruikmaken
+      van externe dienstverleners.
+    </p>
+
+    <p>
+      Dit kan onder andere Google omvatten voor:
+    </p>
+
+    <ul>
+      <li>
+        Google AdSense op de website;
+      </li>
+
+      <li>
+        Google AdMob in de mobiele apps;
+      </li>
+
+      <li>
+        advertentietoestemming en gerelateerde
+        privacyfunctionaliteit.
+      </li>
+    </ul>
+
+    <p>
+      Externe partijen verwerken gegevens volgens hun eigen
+      voorwaarden en privacybeleid wanneer zij zelfstandig
+      verantwoordelijk zijn voor die verwerking.
+    </p>
+
+
+    <h2>
+      12. Bewaartermijnen
+    </h2>
+
+    <p>
+      BusBende bewaart persoonsgegevens niet langer dan nodig
+      voor het doel waarvoor ze worden gebruikt.
+    </p>
+
+    <p>
+      Actieve multiplayergegevens zijn in beginsel gekoppeld
+      aan de spelsessie. Instellingen die lokaal op je apparaat
+      worden bewaard, kunnen aanwezig blijven totdat je deze
+      gegevens wist of de app of browseropslag verwijdert.
+    </p>
+
+    <p>
+      Externe dienstverleners, zoals Google, hanteren hun eigen
+      bewaartermijnen voor gegevens die zij verwerken.
+    </p>
+
+
+    <h2>
+      13. Jouw privacyrechten
+    </h2>
+
+    <p>
+      Als de AVG van toepassing is, kun je onder omstandigheden
+      onder andere het recht hebben op:
+    </p>
+
+    <ul>
+      <li>
+        inzage in je persoonsgegevens;
+      </li>
+
+      <li>
+        correctie van onjuiste gegevens;
+      </li>
+
+      <li>
+        verwijdering van persoonsgegevens;
+      </li>
+
+      <li>
+        beperking van verwerking;
+      </li>
+
+      <li>
+        bezwaar tegen bepaalde verwerkingen;
+      </li>
+
+      <li>
+        overdraagbaarheid van gegevens;
+      </li>
+
+      <li>
+        intrekking van eerder gegeven toestemming.
+      </li>
+    </ul>
+
+    <p>
+      Voor een verzoek kun je contact opnemen via
+      <a href="mailto:info@busbende.nl">
+        info@busbende.nl
+      </a>.
+    </p>
+
+
+    <h2>
+      14. Minderjarigen en alcohol
+    </h2>
+
+    <p>
+      BusBende is een digitaal kaart- en gezelschapsspel.
+      Het spel kan verwijzingen bevatten naar drinken en
+      alcohol.
+    </p>
+
+    <p>
+      BusBende moedigt minderjarigen niet aan om alcohol te
+      gebruiken. Gebruikers moeten zich houden aan de
+      toepasselijke wetgeving en zelf verantwoordelijk omgaan
+      met alcohol.
+    </p>
+
+    <p>
+      BusBende kan ook zonder alcohol worden gespeeld.
+    </p>
+
+
+    <h2>
+      15. Beveiliging
+    </h2>
+
+    <p>
+      We proberen passende technische en organisatorische
+      maatregelen te gebruiken om gegevens te beschermen tegen
+      verlies, ongeoorloofde toegang of misbruik.
+    </p>
+
+    <p>
+      Geen enkele online dienst kan echter absolute beveiliging
+      garanderen.
+    </p>
+
+
+    <h2>
+      16. Wijzigingen in dit privacybeleid
+    </h2>
+
+    <p>
+      BusBende kan dit privacybeleid aanpassen wanneer de
+      dienst, gebruikte technologie of wet- en regelgeving
+      verandert.
+    </p>
+
+    <p>
+      De meest recente versie wordt gepubliceerd op deze
+      pagina.
+    </p>
+
+
+    <h2>
+      17. Contact
+    </h2>
+
+    <p>
+      Heb je vragen over dit privacybeleid of de verwerking
+      van persoonsgegevens?
+    </p>
+
+    <p>
+      Neem dan contact op via:
+      <a href="mailto:info@busbende.nl">
+        info@busbende.nl
+      </a>.
+    </p>
+
+
+    <div class="meta">
+
+      <strong>
+        BusBende privacybeleid
+      </strong>
+
+      <br />
+
+      Versie 1.1
+
+      <br />
+
+      Laatst bijgewerkt:
+      11 september 2026
+
+    </div>
 
   </main>
+
 </body>
 </html>
