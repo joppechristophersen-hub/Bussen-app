@@ -2,17 +2,13 @@ import {
   type ReactNode,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 
 import { Capacitor } from "@capacitor/core";
 
 import {
-  type PrivacyConsent,
-  getAdConsentMode,
   readPrivacyConsent,
-  savePrivacyConsent,
 } from "./privacy/ConsentManager";
 
 import {
@@ -501,62 +497,56 @@ function CommerceShell({
    * PRIVACY / CONSENT
    * =========================
    *
-   * Dit is bewust nog een lokale testlaag.
-   * Er draait hier nog GEEN echte tracking- of
-   * advertentie-SDK achter.
+   * Web:
+   * Google AdSense Privacy & messaging (CMP).
+   *
+   * Native:
+   * AdManager onderschept de Privacy-knop en opent
+   * de Google UMP privacy-opties voor AdMob.
+   *
+   * De oude lokale BusBende-testpopup wordt niet meer
+   * gebruikt als toestemmingsmechanisme.
    */
-
-  const [
-    privacyConsent,
-    setPrivacyConsent,
-  ] =
-    useState<PrivacyConsent>(
-      readPrivacyConsent
-    );
-
-  const [
-    privacyOpen,
-    setPrivacyOpen,
-  ] =
-    useState(
-      () =>
-        readPrivacyConsent()
-          .status ===
-        "unknown"
-    );
-
-  const adConsentMode =
-    getAdConsentMode(
-      privacyConsent
-    );
 
   const adRuntime =
     createAdRuntime({
       consent:
-        privacyConsent,
+        readPrivacyConsent(),
 
       isNative:
         isNativeApp,
     });
 
-  function choosePrivacyMode(
-    status:
-      "contextual" |
-      "personalized"
-  ) {
-    const nextConsent =
-      savePrivacyConsent({
-        status,
-      });
+  function openPrivacySettings() {
+    /*
+     * Native wordt door AdManager afgehandeld via de
+     * bestaande .bb-privacy-launcher capture-bridge.
+     */
+    if (isNativeApp) {
+      return;
+    }
 
-    setPrivacyConsent(
-      nextConsent
-    );
-
-    setPrivacyOpen(
-      false
+    /*
+     * Web:
+     * zolang AdSense busbende.nl nog beoordeelt, openen we
+     * altijd het publieke privacybeleid in een nieuw tabblad.
+     *
+     * Dit werkt ook tijdens lokaal testen op localhost en
+     * voorkomt dat Vite / de SPA alleen dezelfde pagina
+     * opnieuw laadt via /privacy/.
+     *
+     * Na AdSense-goedkeuring voegt Google bij een actief
+     * Europees Privacy & messaging-bericht zelf de vereiste
+     * consent-revocationlink toe. Daarom hoeft deze BusBende-
+     * knop de Google CMP nu niet zelf te forceren.
+     */
+    window.open(
+      "https://busbende.nl/privacy/",
+      "_blank",
+      "noopener,noreferrer"
     );
   }
+
 
   /*
    * =========================
@@ -593,31 +583,6 @@ function CommerceShell({
       );
     });
 
-  /*
-   * =========================
-   * ADVERTENTIE NA POTJE
-   * =========================
-   */
-
-  const [
-    adVisible,
-    setAdVisible,
-  ] =
-    useState(false);
-
-  const [
-    adCountdown,
-    setAdCountdown,
-  ] =
-    useState(3);
-
-  const gameWasFinishedRef =
-    useRef(false);
-
-  const finishAdDelayTimerRef =
-    useRef<number | null>(
-      null
-    );
 
   /*
    * =========================
@@ -1161,193 +1126,6 @@ function CommerceShell({
     };
   }, []);
 
-  /*
-   * =========================
-   * EINDE SPEL DETECTEREN
-   * =========================
-   */
-
-  useEffect(() => {
-    const root =
-      document.getElementById(
-        "root"
-      );
-
-    if (!root) {
-      return;
-    }
-
-    function checkFinishedGame() {
-      const gameFinished =
-        Boolean(
-          document.querySelector(
-            ".bus-finished-panel"
-          )
-        );
-
-      if (
-        gameFinished &&
-        !gameWasFinishedRef.current
-      ) {
-        setAdCountdown(
-          3
-        );
-
-        if (
-          finishAdDelayTimerRef.current !==
-          null
-        ) {
-          window.clearTimeout(
-            finishAdDelayTimerRef.current
-          );
-        }
-
-        /*
-         * Eerst drie seconden alleen het
-         * eindscherm tonen. De endgame-lock
-         * in ExperienceShell houdt de knoppen
-         * in deze periode verborgen.
-         */
-        finishAdDelayTimerRef.current =
-          window.setTimeout(
-            () => {
-              /*
-               * In productie wordt dit straks:
-               * AdMob interstitial op native,
-               * web-interstitial/provider op web.
-               *
-               * Tot die tijd tonen we alleen de
-               * bestaande testadvertentie als
-               * consent een advertentieverzoek
-               * toestaat.
-               */
-              if (
-                adRuntime.canRequestAds &&
-                adRuntime.interstitialEnabled
-              ) {
-                setAdVisible(
-                  true
-                );
-              }
-
-              finishAdDelayTimerRef.current =
-                null;
-            },
-            3000
-          );
-      }
-
-      if (
-        !gameFinished &&
-        finishAdDelayTimerRef.current !==
-          null
-      ) {
-        window.clearTimeout(
-          finishAdDelayTimerRef.current
-        );
-
-        finishAdDelayTimerRef.current =
-          null;
-      }
-
-      gameWasFinishedRef.current =
-        gameFinished;
-    }
-
-    const observer =
-      new MutationObserver(
-        checkFinishedGame
-      );
-
-    observer.observe(
-      root,
-      {
-        childList:
-          true,
-
-        subtree:
-          true,
-      }
-    );
-
-    checkFinishedGame();
-
-    return () => {
-      observer.disconnect();
-
-      if (
-        finishAdDelayTimerRef.current !==
-        null
-      ) {
-        window.clearTimeout(
-          finishAdDelayTimerRef.current
-        );
-      }
-    };
-  }, [
-    adRuntime.canRequestAds,
-    adRuntime.interstitialEnabled,
-  ]);
-
-  /*
-   * =========================
-   * TEST AD TIMER
-   * =========================
-   */
-
-  useEffect(() => {
-    if (
-      !adVisible
-    ) {
-      return;
-    }
-
-    if (
-      adCountdown <=
-      0
-    ) {
-      const finishTimer =
-        window.setTimeout(
-          () => {
-            setAdVisible(
-              false
-            );
-          },
-          400
-        );
-
-      return () => {
-        window.clearTimeout(
-          finishTimer
-        );
-      };
-    }
-
-    const timer =
-      window.setTimeout(
-        () => {
-          setAdCountdown(
-            (
-              current
-            ) =>
-              Math.max(
-                0,
-                current - 1
-              )
-          );
-        },
-        1000
-      );
-
-    return () => {
-      window.clearTimeout(
-        timer
-      );
-    };
-  }, [
-    adVisible,
-    adCountdown,
-  ]);
 
   /*
    * =========================
@@ -1613,10 +1391,8 @@ function CommerceShell({
       <button
         type="button"
         className="bb-privacy-launcher"
-        onClick={() =>
-          setPrivacyOpen(
-            true
-          )
+        onClick={
+          openPrivacySettings
         }
         aria-label="Privacy-instellingen openen"
       >
@@ -1974,157 +1750,6 @@ function CommerceShell({
         </div>
       )}
 
-      {privacyOpen && (
-        <div className="bb-privacy-layer">
-          <section
-            className="bb-privacy-box"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="bb-privacy-title"
-          >
-            <div className="bb-privacy-icon">
-              🔒
-            </div>
-
-            <span className="bb-privacy-eyebrow">
-              PRIVACY — TESTFASE
-            </span>
-
-            <h2 id="bb-privacy-title">
-              Kies je advertentievoorkeur
-            </h2>
-
-            <p className="bb-privacy-intro">
-              BusBende gebruikt nu nog geen echte advertentietracking.
-              Deze keuze bouwen we alvast in zodat AdMob en de
-              toestemmingsflow later netjes kunnen aansluiten.
-            </p>
-
-            <div className="bb-privacy-status">
-              <span>
-                Huidige status
-              </span>
-
-              <strong>
-                {privacyConsent.status ===
-                "unknown"
-                  ? "Nog geen keuze"
-                  : privacyConsent.status ===
-                      "personalized"
-                    ? "Personalisatie toegestaan"
-                    : "Alleen contextuele advertenties"}
-              </strong>
-            </div>
-
-            <div className="bb-privacy-options">
-              <button
-                type="button"
-                className={
-                  privacyConsent.status ===
-                  "contextual"
-                    ? "selected"
-                    : ""
-                }
-                onClick={() =>
-                  choosePrivacyMode(
-                    "contextual"
-                  )
-                }
-              >
-                <span className="bb-privacy-option-icon">
-                  🛡️
-                </span>
-
-                <span>
-                  <strong>
-                    Alleen contextuele advertenties
-                  </strong>
-
-                  <small>
-                    Geen advertentiepersonalisatie op basis van
-                    activiteit buiten BusBende.
-                  </small>
-                </span>
-              </button>
-
-              <button
-                type="button"
-                className={
-                  privacyConsent.status ===
-                  "personalized"
-                    ? "selected"
-                    : ""
-                }
-                onClick={() =>
-                  choosePrivacyMode(
-                    "personalized"
-                  )
-                }
-              >
-                <span className="bb-privacy-option-icon">
-                  🎯
-                </span>
-
-                <span>
-                  <strong>
-                    Personalisatie toestaan
-                  </strong>
-
-                  <small>
-                    Voorbereiding voor relevantere advertenties.
-                    Op iPhone blijft eventuele Apple ATT-toestemming
-                    later een aparte stap.
-                  </small>
-                </span>
-              </button>
-            </div>
-
-            <div className="bb-privacy-tech-status">
-              <span>
-                Advertentiemodus:
-              </span>
-
-              <code>
-                {adConsentMode}
-              </code>
-            </div>
-
-            <div className="bb-privacy-tech-status">
-              <span>
-                Runtime:
-              </span>
-
-              <code>
-                {adRuntime.platform}
-                {" · "}
-                {adRuntime.provider}
-              </code>
-            </div>
-
-            {privacyConsent.status !==
-              "unknown" && (
-              <button
-                type="button"
-                className="bb-privacy-close"
-                onClick={() =>
-                  setPrivacyOpen(
-                    false
-                  )
-                }
-              >
-                Sluiten
-              </button>
-            )}
-
-            <p className="bb-privacy-note">
-              Dit scherm is nog geen definitieve CMP/GDPR- of
-              Apple ATT-implementatie. Er wordt nu alleen lokaal
-              op dit apparaat opgeslagen welke testkeuze je maakt.
-            </p>
-          </section>
-        </div>
-      )}
-
       {showWebBanner && (
         <aside
           className="busbende-web-ad"
@@ -2141,57 +1766,13 @@ function CommerceShell({
               </strong>
 
               <span>
-                Testmodus:{" "}
-                {adRuntime.canRequestAds
-                  ? `${adRuntime.mode} · ${adRuntime.platform}`
-                  : "wacht op privacykeuze"}
+                Google AdSense · {adRuntime.platform}
               </span>
             </div>
           </div>
         </aside>
       )}
 
-      {adVisible && (
-        <div className="commerce-ad-layer">
-          <div className="commerce-ad">
-            <span className="commerce-ad-label">
-              ADVERTENTIE
-            </span>
-
-            <div className="commerce-ad-placeholder">
-              <div className="commerce-ad-logo">
-                🚌
-              </div>
-
-              <h2>
-                Advertentieplek
-              </h2>
-
-              <p>
-                Hier verschijnt later na ieder potje de echte advertentie.
-              </p>
-            </div>
-
-            <div className="commerce-ad-timer">
-              {adCountdown >
-              0 ? (
-                <>
-                  Verder over{" "}
-                  <strong>
-                    {
-                      adCountdown
-                    }
-                  </strong>
-                </>
-              ) : (
-                <strong>
-                  Klaar ✓
-                </strong>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
