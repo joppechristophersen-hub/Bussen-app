@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.BusBaas.game',
+  appId: 'com.busbende.game',
   appName: 'BusBende',
   webDir: 'dist'
 };
