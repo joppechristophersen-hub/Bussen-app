@@ -1,0 +1,846 @@
+/*
+ * BUSBENDE — APP BRANDING OVERRIDES
+ *
+ * Alleen presentatie. Geen gameplay/logica.
+ * Wordt na App.css, commerce.css en public-site.css geladen.
+ * Inclusief de geconsolideerde achtergrond- en kaartanimaties.
+ */
+
+:root {
+  --bb-radius-xs: 8px;
+  --bb-radius-sm: 11px;
+  --bb-radius-md: 15px;
+  --bb-radius-lg: 20px;
+  --bb-shadow: 0 14px 34px rgba(10, 12, 10, 0.08);
+}
+
+/* app canvas */
+
+.app {
+  position: relative;
+  isolation: isolate;
+  overflow-x: hidden;
+  min-height: 100dvh;
+  padding: 28px 16px 42px;
+  background:
+    radial-gradient(
+      circle at top center,
+      color-mix(in srgb, var(--bb-accent) 18%, transparent),
+      transparent 360px
+    ),
+    radial-gradient(
+      circle at bottom left,
+      rgba(246, 201, 69, 0.12),
+      transparent 300px
+    ),
+    var(--bb-background);
+  color: var(--bb-text);
+}
+
+.app::before,
+.app::after {
+  content: "";
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 14px;
+  border: 1px solid rgba(36, 37, 31, 0.08);
+  box-shadow: 0 18px 34px rgba(10, 12, 10, 0.08);
+}
+
+.app::before {
+  width: 78px;
+  height: 112px;
+  top: 108px;
+  left: 38px;
+  opacity: 0.15;
+  transform: rotate(-18deg);
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.12) 0 10px,
+      rgba(255, 255, 255, 0.04) 10px 20px
+    ),
+    linear-gradient(135deg, var(--bb-accent), var(--bb-accent-strong));
+  box-shadow:
+    84vw 34px 0 -8px rgba(246, 201, 69, 0.18),
+    8vw 68vh 0 -6px rgba(246, 201, 69, 0.14),
+    78vw 72vh 0 -10px rgba(246, 201, 69, 0.12);
+}
+
+.app::after {
+  width: 72px;
+  height: 102px;
+  top: 300px;
+  right: 54px;
+  opacity: 0.14;
+  transform: rotate(14deg);
+  background:
+    linear-gradient(180deg, rgba(255, 250, 240, 0.92), rgba(239, 230, 201, 0.92));
+  box-shadow:
+    -82vw 124px 0 -8px rgba(255, 250, 240, 0.16),
+    -10vw 54vh 0 -6px rgba(255, 250, 240, 0.14),
+    -74vw 72vh 0 -10px rgba(255, 250, 240, 0.12);
+}
+
+.app > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* hoofdpanelen */
+
+.app > .card,
+.app .card {
+  border: 1px solid var(--bb-border) !important;
+  border-radius: var(--bb-radius-lg) !important;
+  background: var(--bb-surface) !important;
+  box-shadow: var(--bb-shadow) !important;
+}
+
+.app > .card:not(.game-card) {
+  width: min(100%, 520px);
+  padding: 32px 30px;
+}
+
+/* typografie */
+
+.app h1,
+.app h2,
+.app h3,
+.app strong {
+  color: var(--bb-text);
+}
+
+.app h1 {
+  letter-spacing: -0.035em;
+  font-weight: 850;
+}
+
+.app .subtitle {
+  color: var(--bb-muted) !important;
+  line-height: 1.55;
+}
+
+/* logo */
+
+.app .logo {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 20px;
+  border-radius: 17px !important;
+  display: grid;
+  place-items: center;
+  background: var(--bb-accent) !important;
+  color: #171915;
+  box-shadow: none !important;
+  font-size: 31px;
+}
+
+.app .small-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 13px !important;
+  font-size: 24px;
+}
+
+/* algemene knoppen */
+
+.app button {
+  border-radius: var(--bb-radius-sm) !important;
+  font-weight: 800;
+  transition:
+    transform 0.12s ease,
+    opacity 0.12s ease,
+    background 0.12s ease;
+}
+
+.app button:not(.remove-player):not(.drink-counter button):not(.checkpoint-grid button) {
+  min-height: 48px;
+}
+
+.app button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.app button:disabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+
+.app > .card > button:not(.secondary):not(.back-button),
+.app .start-button,
+.app .tree-confirm-button {
+  border: 1px solid var(--bb-accent) !important;
+  background: var(--bb-accent) !important;
+  color: #171915 !important;
+  box-shadow: none !important;
+}
+
+.app .secondary,
+.app button.secondary,
+.app .tree-skip-button {
+  border: 1px solid var(--bb-border) !important;
+  background: var(--bb-surface-soft) !important;
+  color: var(--bb-text) !important;
+  box-shadow: none !important;
+}
+
+.app .back-button {
+  min-height: 38px !important;
+  padding: 0 4px !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--bb-muted) !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+}
+
+/* inputs / settings */
+
+.app .setting {
+  margin-top: 22px;
+}
+
+.app .setting label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--bb-muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.app input,
+.app select {
+  min-height: 49px;
+  border: 1px solid var(--bb-border) !important;
+  border-radius: var(--bb-radius-sm) !important;
+  background: var(--bb-background) !important;
+  color: var(--bb-text) !important;
+  box-shadow: none !important;
+  outline: none;
+}
+
+.app input:focus,
+.app select:focus {
+  border-color: var(--bb-accent-strong) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bb-accent) 18%, transparent) !important;
+}
+
+.app .counter {
+  border: 1px solid var(--bb-border) !important;
+  border-radius: var(--bb-radius-sm) !important;
+  overflow: hidden;
+  background: var(--bb-background);
+}
+
+.app .counter button {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--bb-text) !important;
+}
+
+.app .counter span {
+  color: var(--bb-text);
+  font-weight: 850;
+}
+
+/* settings summary */
+
+.app .game-summary {
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid var(--bb-border) !important;
+  border-radius: var(--bb-radius-md) !important;
+  background: var(--bb-surface-soft) !important;
+  box-shadow: none !important;
+}
+
+.app .game-summary p {
+  color: var(--bb-muted);
+}
+
+/* lobby */
+
+.app .lobby-card {
+  width: min(100%, 560px) !important;
+}
+
+.app .qr-placeholder {
+  padding: 22px;
+  border: 1px solid var(--bb-border) !important;
+  border-radius: var(--bb-radius-md) !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+.app .qr-placeholder p {
+  margin-bottom: 0;
+  color: #6e6e68 !important;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.app .room-code {
+  margin-top: 18px;
+  padding: 17px 18px;
+  border: 1px solid var(--bb-border) !important;
+  border-radius: var(--bb-radius-md) !important;
+  background: var(--bb-background) !important;
+}
+
+.app .room-code span {
+  color: var(--bb-muted);
+}
+
+.app .room-code strong {
+  letter-spacing: 0.16em;
+}
+
+.app .players-header {
+  margin-top: 26px;
+}
+
+.app .player-list {
+  gap: 8px;
+}
+
+.app .player {
+  min-height: 56px;
+  padding: 8px 10px;
+  border: 1px solid var(--bb-border) !important;
+  border-radius: var(--bb-radius-sm) !important;
+  background: var(--bb-background) !important;
+  box-shadow: none !important;
+}
+
+.app .player-avatar {
+  background: var(--bb-accent) !important;
+  color: #171915 !important;
+  box-shadow: none !important;
+}
+
+.app .host-label {
+  color: var(--bb-accent-strong) !important;
+  background: transparent !important;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.app .waiting-message {
+  border: 1px solid var(--bb-border) !important;
+  border-radius: var(--bb-radius-sm) !important;
+  background: var(--bb-surface-soft) !important;
+  color: var(--bb-muted) !important;
+  box-shadow: none !important;
+}
+
+/* game shell */
+
+.app .game-card {
+  width: min(100%, 760px) !important;
+  padding: 28px !important;
+}
+
+.app .game-top {
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--bb-border);
+}
+
+.app .section-title,
+.app .players-header,
+.app .bus-preview-title {
+  border-bottom-color: var(--bb-border) !important;
+}
+
+.app .section-title span,
+.app .tree-active-label,
+.app .bus-status-row span,
+.app .tree-row-info span,
+.app .bus-riders span {
+  color: var(--bb-muted) !important;
+}
+
+/* cards: clean, not toy-like */
+
+.app .playing-card,
+.app .mini-playing-card,
+.app .tree-card-face,
+.app .tree-active-card,
+.app .bus-card-face,
+.app .setup-card {
+  border-radius: 12px !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.10) !important;
+}
+
+.app .tree-card-back,
+.app .bus-card-back {
+  border-radius: 12px !important;
+  background:
+    linear-gradient(
+      135deg,
+      var(--bb-accent),
+      var(--bb-accent-strong)
+    ) !important;
+  color: #171915 !important;
+  box-shadow: none !important;
+}
+
+/* game panels */
+
+.app .tree-message,
+.app .tree-distribute-panel,
+.app .tree-active-panel,
+.app .checkpoint-panel,
+.app .bus-ready-panel,
+.app .bus-draw-panel,
+.app .double-panel,
+.app .bus-riders,
+.app .bus-driver-banner,
+.app .bus-status-row,
+.app .remaining-drinks,
+.app .tree-progress {
+  border: 1px solid var(--bb-border) !important;
+  border-radius: var(--bb-radius-md) !important;
+  background: var(--bb-surface-soft) !important;
+  box-shadow: none !important;
+}
+
+.app .tree-board,
+.app .bus-track {
+  border-radius: var(--bb-radius-md);
+}
+
+.app .tree-row {
+  border-bottom-color: var(--bb-border) !important;
+}
+
+.app .tree-row-info strong {
+  color: var(--bb-text);
+}
+
+.app .double-badge {
+  background: var(--bb-accent) !important;
+  color: #171915 !important;
+}
+
+/* distribution / counters */
+
+.app .drink-player,
+.app .double-player-list button {
+  border: 1px solid var(--bb-border) !important;
+  border-radius: var(--bb-radius-sm) !important;
+  background: var(--bb-background) !important;
+  box-shadow: none !important;
+}
+
+.app .drink-counter {
+  border: 1px solid var(--bb-border);
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.app .drink-counter button {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--bb-surface-soft) !important;
+  color: var(--bb-text) !important;
+}
+
+.app .checkpoint-grid button {
+  border: 1px solid var(--bb-border) !important;
+  background: var(--bb-background) !important;
+  color: var(--bb-text) !important;
+}
+
+.app .checkpoint-grid button.selected {
+  border-color: var(--bb-accent-strong) !important;
+  background: var(--bb-accent) !important;
+  color: #171915 !important;
+}
+
+/* announcements / result states */
+
+.app .game-announcement,
+.app .stock-shuffle-popup {
+  border: 1px solid var(--bb-border) !important;
+  border-radius: var(--bb-radius-md) !important;
+  box-shadow: var(--bb-shadow) !important;
+}
+
+.app .join-error {
+  padding: 11px 12px;
+  border-radius: 9px;
+  background: rgba(190, 52, 52, 0.08);
+  color: #b43434 !important;
+  font-size: 13px;
+}
+
+/* rules inside app */
+
+.app .rules-guide-card {
+  width: min(100%, 640px) !important;
+}
+
+.app .rule-guide-item {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--bb-border) !important;
+}
+
+.app .rule-number {
+  background: var(--bb-accent) !important;
+  color: #171915 !important;
+  box-shadow: none !important;
+}
+
+/* floating commerce + sound controls */
+
+.bb-market-launcher,
+.bb-privacy-launcher,
+.experience-sound-button {
+  border: 1px solid var(--bb-border) !important;
+  border-radius: 12px !important;
+  background: var(--bb-surface) !important;
+  color: var(--bb-text) !important;
+  box-shadow: 0 8px 22px rgba(10, 12, 10, 0.10) !important;
+}
+
+.bb-market-launcher span,
+.bb-privacy-launcher span {
+  filter: none !important;
+}
+
+.bb-market,
+.bb-privacy-box {
+  border: 1px solid var(--bb-border) !important;
+  border-radius: 18px !important;
+  background: var(--bb-surface) !important;
+  box-shadow: 0 24px 60px rgba(10, 12, 10, 0.16) !important;
+}
+
+/* responsive */
+
+@media (max-width: 680px) {
+  .app {
+    padding: 16px 12px 34px;
+  }
+
+  .app::before {
+    width: 58px;
+    height: 84px;
+    top: 94px;
+    left: 12px;
+    box-shadow:
+      82vw 28px 0 -8px rgba(246, 201, 69, 0.16),
+      4vw 74vh 0 -8px rgba(246, 201, 69, 0.12),
+      72vw 78vh 0 -10px rgba(246, 201, 69, 0.1);
+  }
+
+  .app::after {
+    width: 54px;
+    height: 78px;
+    top: 260px;
+    right: 10px;
+    box-shadow:
+      -80vw 120px 0 -8px rgba(255, 250, 240, 0.14),
+      -6vw 58vh 0 -8px rgba(255, 250, 240, 0.12),
+      -70vw 78vh 0 -10px rgba(255, 250, 240, 0.1);
+  }
+
+  .app > .card:not(.game-card) {
+    padding: 26px 20px;
+  }
+
+  .app .game-card {
+    padding: 20px 16px !important;
+  }
+
+  .app .logo {
+    width: 56px;
+    height: 56px;
+    font-size: 27px;
+  }
+
+  .app .small-logo {
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+  }
+
+
+}
+/* Geconsolideerde achtergrond en zwevende kaarten. */
+
+/* ---------------------------------------------------------
+   1. ACHTERGROND
+   --------------------------------------------------------- */
+
+.app {
+  position: relative;
+  isolation: isolate;
+  overflow-x: hidden;
+  background:
+    radial-gradient(
+      circle at 50% -120px,
+      color-mix(in srgb, var(--bb-accent) 18%, transparent),
+      transparent 430px
+    ),
+    radial-gradient(
+      circle at 12% 78%,
+      color-mix(in srgb, var(--bb-accent) 8%, transparent),
+      transparent 320px
+    ),
+    var(--bb-background) !important;
+}
+
+body[data-bb-color-mode="dark"] .app {
+  background:
+    radial-gradient(
+      circle at 50% -100px,
+      rgba(246, 201, 69, 0.15),
+      transparent 440px
+    ),
+    radial-gradient(
+      circle at 8% 72%,
+      rgba(246, 201, 69, 0.055),
+      transparent 340px
+    ),
+    radial-gradient(
+      circle at 92% 38%,
+      rgba(246, 201, 69, 0.045),
+      transparent 300px
+    ),
+    linear-gradient(
+      180deg,
+      #101612 0%,
+      #0c120f 54%,
+      #080d0b 100%
+    ) !important;
+}
+
+/* ---------------------------------------------------------
+   2. ZWEVENDE KAARTEN
+   --------------------------------------------------------- */
+
+.app::before,
+.app::after {
+  content: "";
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  width: 62px;
+  height: 88px;
+  border-radius: 10px;
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--bb-text) 13%,
+      transparent
+    );
+  opacity: 0.20;
+  will-change: transform;
+}
+
+.app::before {
+  left: 5vw;
+  top: 16vh;
+  background:
+    linear-gradient(
+      45deg,
+      transparent 46%,
+      rgba(255, 255, 255, 0.13) 46% 54%,
+      transparent 54%
+    ),
+    linear-gradient(
+      -45deg,
+      transparent 46%,
+      rgba(255, 255, 255, 0.09) 46% 54%,
+      transparent 54%
+    ),
+    linear-gradient(
+      145deg,
+      var(--bb-accent),
+      var(--bb-accent-strong)
+    );
+
+  box-shadow:
+    84vw 8vh 0 -5px
+      color-mix(in srgb, var(--bb-accent) 72%, transparent),
+    9vw 64vh 0 -9px
+      color-mix(in srgb, var(--bb-accent) 52%, transparent),
+    75vw 68vh 0 -12px
+      color-mix(in srgb, var(--bb-accent) 45%, transparent);
+
+  transform: rotate(-16deg);
+  animation: bb-card-float-a 15s ease-in-out infinite;
+}
+
+.app::after {
+  right: 6vw;
+  top: 31vh;
+  background:
+    radial-gradient(
+      circle at 18px 18px,
+      rgba(186, 45, 45, 0.55) 0 4px,
+      transparent 5px
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 250, 240, 0.96),
+      rgba(239, 230, 201, 0.92)
+    );
+
+  box-shadow:
+    -82vw 13vh 0 -7px rgba(255, 250, 240, 0.13),
+    -10vw 48vh 0 -10px rgba(255, 250, 240, 0.12),
+    -72vw 62vh 0 -13px rgba(255, 250, 240, 0.10);
+
+  transform: rotate(13deg);
+  animation: bb-card-float-b 18s ease-in-out infinite;
+}
+
+@keyframes bb-card-float-a {
+  0%,
+  100% {
+    transform:
+      translate3d(0, 0, 0)
+      rotate(-16deg);
+  }
+
+  50% {
+    transform:
+      translate3d(8px, -18px, 0)
+      rotate(-10deg);
+  }
+}
+
+@keyframes bb-card-float-b {
+  0%,
+  100% {
+    transform:
+      translate3d(0, 0, 0)
+      rotate(13deg);
+  }
+
+  50% {
+    transform:
+      translate3d(-9px, 16px, 0)
+      rotate(8deg);
+  }
+}
+
+.app > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------------------------------------------------------
+   3. HOOFDPANEEL IETS MINDER "LOS"
+   --------------------------------------------------------- */
+
+.app .card {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+body[data-bb-color-mode="dark"] .app .card {
+  background:
+    color-mix(
+      in srgb,
+      var(--bb-surface) 94%,
+      transparent
+    ) !important;
+
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.24) !important;
+}
+
+/* ---------------------------------------------------------
+   5. PANELS / STATUS IETS RUSTIGER
+   --------------------------------------------------------- */
+
+.app .tree-message,
+.app .tree-distribute-panel,
+.app .tree-active-panel,
+.app .checkpoint-panel,
+.app .bus-ready-panel,
+.app .bus-draw-panel,
+.app .double-panel,
+.app .bus-riders,
+.app .bus-driver-banner,
+.app .bus-status-row,
+.app .remaining-drinks,
+.app .tree-progress {
+  background:
+    color-mix(
+      in srgb,
+      var(--bb-surface-soft) 88%,
+      transparent
+    ) !important;
+}
+
+/* ---------------------------------------------------------
+   6. MOBIEL
+   --------------------------------------------------------- */
+
+@media (max-width: 680px) {
+  .app::before {
+    width: 46px;
+    height: 66px;
+    left: 3vw;
+    top: 13vh;
+
+    box-shadow:
+      82vw 7vh 0 -6px
+        color-mix(in srgb, var(--bb-accent) 60%, transparent),
+      8vw 69vh 0 -9px
+        color-mix(in srgb, var(--bb-accent) 40%, transparent),
+      73vw 73vh 0 -11px
+        color-mix(in srgb, var(--bb-accent) 36%, transparent);
+  }
+
+  .app::after {
+    width: 43px;
+    height: 62px;
+    right: 3vw;
+    top: 30vh;
+
+    box-shadow:
+      -80vw 12vh 0 -7px rgba(255, 250, 240, 0.11),
+      -7vw 50vh 0 -9px rgba(255, 250, 240, 0.10),
+      -70vw 67vh 0 -11px rgba(255, 250, 240, 0.08);
+  }
+
+  .app .game-top .logo,
+  .app .game-top .small-logo {
+    width: 43px !important;
+    min-width: 43px !important;
+    height: 43px !important;
+    font-size: 21px !important;
+  }
+
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app::before,
+  .app::after {
+    animation: none !important;
+  }
+}
+
+/* Shared brand markup: the name is real text on every app screen. */
+.bb-brand-mark { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.bb-brand-mark .logo { flex-shrink: 0; margin-bottom: 0; }
+.bb-brand-name { color: var(--bb-text); font-size: 18px; font-weight: 850; letter-spacing: -0.025em; }
+.game-top .bb-brand-mark { flex-direction: column; gap: 6px; margin-bottom: 0; }
+.game-top .bb-brand-name { font-size: 12px; }
+.bb-brand-mark-home { margin-bottom: 20px; }
+@media (max-width: 680px) { .game-top { gap: 12px; } }
+
+.app { text-align: center; }
+.bb-brand-mark { justify-content: center; }
+.game-top .bb-brand-mark { flex-shrink: 0; }

@@ -853,12 +853,9 @@ function WebJoinGate({
 
 
           <p className="web-join-browser-note">
-            Via de webversie kunnen
-            advertenties worden
-            weergegeven. In de app
-            blijft het speelscherm vrij
-            van een vaste
-            advertentiebalk.
+            De webversie is advertentievrij.
+            In de app blijft het speelscherm vrij
+            van een vaste advertentiebalk.
           </p>
 
 

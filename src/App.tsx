@@ -20,7 +20,7 @@ import {
   App as CapacitorApp,
 } from "@capacitor/app";
 
-import "./App.css";
+import BrandLogo from "./BrandLogo";
 
 type Screen =
   | "home"
@@ -3375,9 +3375,7 @@ function App() {
 
         <section className="card game-card bus-screen">
           <div className="game-top">
-            <div className="logo small-logo">
-              🚌
-            </div>
+            <BrandLogo small />
 
             <div>
               <h1>
@@ -3873,9 +3871,7 @@ function App() {
 
         <section className="card game-card bus-screen">
           <div className="game-top">
-            <div className="logo small-logo">
-              🚌
-            </div>
+            <BrandLogo small />
 
             <div>
               <h1>
@@ -4689,9 +4685,7 @@ function App() {
 
         <section className="card game-card tree-screen">
           <div className="game-top">
-            <div className="logo small-logo">
-              🌲
-            </div>
+            <BrandLogo small icon="🌲" />
 
             <div>
               <h1>
@@ -5515,9 +5509,7 @@ function App() {
 
         <section className="card game-card">
           <div className="game-top">
-            <div className="logo small-logo">
-              🚌
-            </div>
+            <BrandLogo small />
 
             <div>
               <h1>
@@ -6026,9 +6018,7 @@ function App() {
     return (
       <main className="app">
         <section className="card lobby-card">
-          <div className="logo small-logo">
-            🚌
-          </div>
+          <BrandLogo small />
 
           <h1>
             Jullie zijn erbij!
@@ -6178,9 +6168,7 @@ function App() {
             ← Terug
           </button>
 
-          <div className="logo small-logo">
-            🚌
-          </div>
+          <BrandLogo small />
 
           <h1>
             Meedoen
@@ -6292,9 +6280,7 @@ function App() {
             ← Terug
           </button>
 
-          <div className="logo small-logo">
-            📖
-          </div>
+          <BrandLogo small icon="📖" />
 
           <h1>
             Spelregels
@@ -6441,9 +6427,7 @@ function App() {
             ← Terug
           </button>
 
-          <div className="logo small-logo">
-            ⚙️
-          </div>
+          <BrandLogo small icon="⚙️" />
 
           <h1>
             Spelregels
@@ -6857,9 +6841,7 @@ function App() {
             ← Terug
           </button>
 
-          <div className="logo small-logo">
-            🚌
-          </div>
+          <BrandLogo small />
 
           <h1>
             Nieuw spel
@@ -7025,12 +7007,10 @@ function App() {
   return (
     <main className="app">
       <section className="card">
-        <div className="logo">
-          🚌
-        </div>
+        <BrandLogo />
 
         <h1>
-          Bussen
+          BusBende
         </h1>
 
         <p className="subtitle">

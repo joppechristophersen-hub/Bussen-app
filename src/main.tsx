@@ -1,53 +1,28 @@
-import {
-  StrictMode,
-} from "react";
-
-import {
-  createRoot,
-} from "react-dom/client";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 
 import "./index.css";
+import "./App.css";
+import "./commerce.css";
 
-import App from "./App.tsx";
+import App from "./App";
+import CommerceShell from "./CommerceShell";
+import PublicSite from "./PublicSite";
+import WebJoinGate from "./WebJoinGate";
 
-import CommerceShell from "./CommerceShell.tsx";
-
-import ExperienceShell from "./ExperienceShell.tsx";
-
-import WebJoinGate from "./WebJoinGate.tsx";
-
-
-/*
- * Visuele BusBende-polish
- * bewust als laatste laden.
- */
-import "./homeLobbyPolish.css";
-
-
-document.title =
-  "BusBende";
-
+import "./public-site.css";
+import "./app-branding.css";
 
 createRoot(
-  document.getElementById(
-    "root"
-  )!
+  document.getElementById("root")!
 ).render(
   <StrictMode>
-
     <CommerceShell>
-
-      <WebJoinGate>
-
-        <ExperienceShell>
-
+      <PublicSite>
+        <WebJoinGate>
           <App />
-
-        </ExperienceShell>
-
-      </WebJoinGate>
-
+        </WebJoinGate>
+      </PublicSite>
     </CommerceShell>
-
   </StrictMode>
 );

@@ -7,15 +7,9 @@ import {
 
 import { Capacitor } from "@capacitor/core";
 
-import {
-  readPrivacyConsent,
-} from "./privacy/ConsentManager";
+// Keep the native UMP button bridge and endgame AdMob watcher installed.
+import "./ads/AdManager";
 
-import {
-  createAdRuntime,
-} from "./ads/AdManager";
-
-import "./commerce.css";
 
 type ShopCategory =
   | "themes"
@@ -424,10 +418,7 @@ function CommerceShell({
   const isNativeApp =
     Capacitor.isNativePlatform();
 
-  const showWebBanner =
-    !isNativeApp;
-
-  const [
+const [
     shopOpen,
     setShopOpen,
   ] =
@@ -508,16 +499,7 @@ function CommerceShell({
    * gebruikt als toestemmingsmechanisme.
    */
 
-  const adRuntime =
-    createAdRuntime({
-      consent:
-        readPrivacyConsent(),
-
-      isNative:
-        isNativeApp,
-    });
-
-  function openPrivacySettings() {
+function openPrivacySettings() {
     /*
      * Native wordt door AdManager afgehandeld via de
      * bestaande .bb-privacy-launcher capture-bridge.
@@ -584,42 +566,15 @@ function CommerceShell({
     });
 
 
-  /*
-   * =========================
-   * WEB-ONLY BANNER
-   * =========================
-   *
-   * Browser: vaste advertentieruimte onderin.
-   * Native app: geen vaste banner.
-   */
-
-  useEffect(() => {
-    if (!showWebBanner) {
-      document.body.classList.remove(
-        "busbende-web-banner-active"
-      );
-
-      return;
-    }
-
-    document.body.classList.add(
-      "busbende-web-banner-active"
-    );
-
-    return () => {
-      document.body.classList.remove(
-        "busbende-web-banner-active"
-      );
-    };
-  }, [
-    showWebBanner,
-  ]);
-
-  /*
+/*
    * =========================
    * DEVICE THEME
    * =========================
    */
+
+  useEffect(() => {
+    document.body.classList.remove("busbende-web-banner-active");
+  }, []);
 
   useEffect(() => {
     const media =
@@ -1750,28 +1705,7 @@ function CommerceShell({
         </div>
       )}
 
-      {showWebBanner && (
-        <aside
-          className="busbende-web-ad"
-          aria-label="Advertentie"
-        >
-          <div className="busbende-web-ad-inner">
-            <span className="busbende-web-ad-label">
-              ADVERTENTIE
-            </span>
 
-            <div className="busbende-web-ad-placeholder">
-              <strong>
-                BusBende web
-              </strong>
-
-              <span>
-                Google AdSense · {adRuntime.platform}
-              </span>
-            </div>
-          </div>
-        </aside>
-      )}
 
     </>
   );
