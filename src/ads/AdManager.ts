@@ -5,6 +5,7 @@ import {
 import {
   AdMob,
   AdmobConsentStatus,
+  InterstitialAdPluginEvents,
 } from "@capacitor-community/admob";
 
 import {
@@ -305,9 +306,10 @@ let preparedAt = 0;
 let preparedPersonalized = false;
 let preparing: Promise<boolean> | null = null;
 
-// Load only at the end screen. Never wait for a network request on an ad click.
+// Preload during the bus phase; never wait for network loading at the endgame deadline.
 export function prepareNativeInterstitial(): Promise<boolean> {
   if (!Capacitor.isNativePlatform() || interstitialBusy) return Promise.resolve(false);
+  if (preparedAt && Date.now() - preparedAt < 55 * 60 * 1000) return Promise.resolve(true);
   if (preparing) return preparing;
   const version = preparationVersion;
   preparing = (async () => {
@@ -341,13 +343,22 @@ export async function showNativeInterstitial({ personalized }: { personalized: b
   // Consume before showing: repeated taps cannot show a second ad.
   preparedAt = 0;
   interstitialBusy = true;
+  const listeners: Array<{ remove: () => Promise<void> }> = [];
   try {
+    let finish!: (shown: boolean) => void;
+    const dismissed = new Promise<boolean>((resolve) => { finish = resolve; });
+    listeners.push(await AdMob.addListener(InterstitialAdPluginEvents.Dismissed, () => finish(true)));
+    listeners.push(await AdMob.addListener(InterstitialAdPluginEvents.FailedToShow, () => finish(false)));
+    // The screen may have gone into the background while listeners were registered.
+    if (document.visibilityState !== "visible") return false;
     await AdMob.showInterstitial();
-    return true;
+    // showInterstitial() resolves when shown, not when the user closes the ad.
+    return await dismissed;
   } catch (error) {
     console.error("Interstitial tonen mislukt:", error);
     return false;
   } finally {
+    await Promise.allSettled(listeners.map((listener) => listener.remove()));
     interstitialBusy = false;
   }
 }

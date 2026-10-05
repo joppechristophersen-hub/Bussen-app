@@ -1,32 +1,38 @@
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { prepareNativeInterstitial, showNativeInterstitial } from "./AdManager";
 
-// An announced, optional break after the score screen, never a pre-game ad.
-export default function NativeEndgameAd() {
-  const [ready, setReady] = useState(false);
-  const [used, setUsed] = useState(false);
-  const consumed = useRef(false);
-  useEffect(() => {
-    let active = true;
-    if (Capacitor.isNativePlatform()) {
-      void prepareNativeInterstitial().then((loaded) => {
-        if (active) setReady(loaded);
-      });
-    }
-    return () => { active = false; };
-  }, []);
+// Every native participant gets one announced ad break after the result.
+export default function NativeEndgameAd({ children }: { children: ReactNode }) {
+  const native = Capacitor.isNativePlatform();
+  const [complete, setComplete] = useState(!native);
+  const [showing, setShowing] = useState(false);
+  const started = useRef(false);
 
-  if (!Capacitor.isNativePlatform() || !ready || used) return null;
+  useEffect(() => {
+    if (!native) return;
+    let active = true;
+    // Fallback preload. If it finishes after the deadline, no delayed ad appears.
+    void prepareNativeInterstitial();
+    const timer = window.setTimeout(() => {
+      if (started.current || !active) return;
+      started.current = true;
+      setShowing(true);
+      void showNativeInterstitial({ personalized: false }).finally(() => {
+        if (active) {
+          setShowing(false);
+          setComplete(true);
+        }
+      });
+    }, 3000);
+    return () => { active = false; window.clearTimeout(timer); };
+  }, [native]);
+
+  if (complete) return <>{children}</>;
   return (
-    <div className="bb-endgame-ad">
-      <p>Het potje is afgelopen. Je kunt nu een advertentie bekijken of direct verdergaan.</p>
-      <button type="button" className="start-button secondary" onClick={() => {
-        if (consumed.current) return;
-        consumed.current = true;
-        setUsed(true);
-        void showNativeInterstitial({ personalized: false });
-      }}>Advertentie bekijken</button>
+    <div className="bb-endgame-ad" role="status" aria-live="polite">
+      <p>{showing ? "Advertentiepauze. Daarna kun je verder." :
+        "Het potje is afgelopen. Over 3 seconden volgt een advertentiepauze; daarna verschijnen de eindknoppen."}</p>
     </div>
   );
 }

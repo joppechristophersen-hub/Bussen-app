@@ -24,6 +24,7 @@ import BrandLogo from "./BrandLogo";
 import CardBackdrop from "./CardBackdrop";
 import PlayingCardFace from "./PlayingCardFace";
 import NativeEndgameAd from "./ads/NativeEndgameAd";
+import { prepareNativeInterstitial } from "./ads/AdManager";
 
 type Screen =
   | "home"
@@ -599,6 +600,12 @@ function App() {
 
   const soundClockReadyRef =
     useRef(false);
+
+  useEffect(() => {
+    if (Capacitor.isNativePlatform() && gameState?.phase === "bus") {
+      void prepareNativeInterstitial();
+    }
+  }, [gameState?.phase]);
 
   useEffect(() => {
     let cancelled = false;
@@ -4041,7 +4048,6 @@ function App() {
           {gameState.phase ===
             "bus-finished" && (
             <div className="bus-finished-panel">
-              <NativeEndgameAd />
               <div className="finish-trophy">
                 🏆
               </div>
@@ -4058,6 +4064,7 @@ function App() {
                 De hele bus is goed gespeeld.
               </p>
 
+              <NativeEndgameAd>
               {isHost ? (
                 <>
                   <button
@@ -4115,6 +4122,7 @@ function App() {
                   </button>
                 </>
               )}
+              </NativeEndgameAd>
             </div>
           )}
 
