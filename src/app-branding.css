@@ -844,3 +844,48 @@ body[data-bb-color-mode="dark"] .app .card {
 .app { text-align: center; }
 .bb-brand-mark { justify-content: center; }
 .game-top .bb-brand-mark { flex-shrink: 0; }
+
+/* Real playing-card faces replace the old empty box-shadow silhouettes. */
+.app::before, .app::after { content: none; }
+.app > .bb-card-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+.bb-backdrop-slot { position: absolute; width: 78px; height: 112px; opacity: 0.32; }
+.bb-backdrop-slot-1 { left: 6%; top: 14%; transform: rotate(-17deg); }
+.bb-backdrop-slot-2 { right: 9%; top: -4%; transform: rotate(12deg); }
+.bb-backdrop-slot-3 { right: 7%; top: 34%; transform: rotate(13deg); }
+.bb-backdrop-slot-4 { left: 8%; top: 33%; transform: rotate(8deg); }
+.bb-backdrop-slot-5 { left: 20%; bottom: 14%; transform: rotate(-11deg); }
+.bb-backdrop-slot-6 { right: 12%; bottom: 32%; transform: rotate(-13deg); }
+.bb-backdrop-slot-7 { right: 20%; bottom: 7%; transform: rotate(10deg); }
+.bb-backdrop-slot-8 { left: 14%; bottom: 10%; transform: rotate(9deg); }
+.app .bb-backdrop-card {
+  width: 100%; height: 100%; min-height: 0; margin: 0;
+  animation: bb-backdrop-drift 16s ease-in-out infinite;
+}
+.app .bb-backdrop-card .card-corner { font-size: 15px; }
+.app .bb-backdrop-card .card-center-symbol { font-size: 38px; }
+.bb-backdrop-slot:nth-child(even) .bb-backdrop-card { animation-delay: -8s; animation-duration: 19s; }
+body[data-bb-color-mode="dark"] .bb-backdrop-slot { opacity: 0.20; }
+.app .bb-brand-mark-home .logo {
+  width: 100px; height: 100px; border-radius: 26px !important;
+  transform: rotate(-4deg);
+  background: linear-gradient(145deg, #ffdc65, var(--bb-accent)) !important;
+  box-shadow: 0 8px 0 color-mix(in srgb, var(--bb-accent-strong) 55%, transparent), 0 16px 32px rgba(0,0,0,0.12) !important;
+}
+.bb-bus-emblem { width: 100%; height: 100%; display: block; }
+@keyframes bb-backdrop-drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+@media (max-width: 680px) {
+  .bb-backdrop-slot { width: 49px; height: 70px; }
+  .app .bb-backdrop-card .card-corner { font-size: 10px; }
+  .app .bb-backdrop-card .card-center-symbol { font-size: 24px; }
+  .bb-backdrop-slot-5 { left: 4%; bottom: 12%; }
+  .bb-backdrop-slot-7 { right: 4%; bottom: 9%; }
+  .app .bb-brand-mark-home .logo { width: 88px; height: 88px; }
+}
+@media (prefers-reduced-motion: reduce) { .app .bb-backdrop-card { animation: none; } }

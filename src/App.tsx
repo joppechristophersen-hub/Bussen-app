@@ -21,6 +21,9 @@ import {
 } from "@capacitor/app";
 
 import BrandLogo from "./BrandLogo";
+import CardBackdrop from "./CardBackdrop";
+import PlayingCardFace from "./PlayingCardFace";
+import NativeEndgameAd from "./ads/NativeEndgameAd";
 
 type Screen =
   | "home"
@@ -1606,40 +1609,8 @@ function App() {
    * - actieve kaart in de bus
    */
 
-  function renderPlayingCard(
-    card: Card
-  ) {
-    return (
-      <>
-        <div className="card-corner card-corner-top">
-          <strong>
-            {getCardRank(
-              card
-            )}
-          </strong>
-
-          <span>
-            {card.symbol}
-          </span>
-        </div>
-
-        <div className="card-center-symbol">
-          {card.symbol}
-        </div>
-
-        <div className="card-corner card-corner-bottom">
-          <strong>
-            {getCardRank(
-              card
-            )}
-          </strong>
-
-          <span>
-            {card.symbol}
-          </span>
-        </div>
-      </>
-    );
+  function renderPlayingCard(card: Card) {
+    return <PlayingCardFace rank={getCardRank(card)} symbol={card.symbol} />;
   }
 
   function renderAnnouncement() {
@@ -3369,6 +3340,7 @@ function App() {
 
     return (
       <main className="app">
+      <CardBackdrop />
         {renderAnnouncement()}
 
         {renderStockShufflePopup()}
@@ -3857,6 +3829,7 @@ function App() {
 
     return (
       <main className="app">
+      <CardBackdrop />
         {renderAnnouncement()}
 
         {renderStockShufflePopup()}
@@ -4068,6 +4041,7 @@ function App() {
           {gameState.phase ===
             "bus-finished" && (
             <div className="bus-finished-panel">
+              <NativeEndgameAd />
               <div className="finish-trophy">
                 🏆
               </div>
@@ -4578,6 +4552,7 @@ function App() {
     ) {
       return (
         <main className="app">
+      <CardBackdrop />
           <section className="card game-card">
             <div className="waiting-message">
               Boom wordt opgebouwd...
@@ -4679,6 +4654,7 @@ function App() {
 
     return (
       <main className="app">
+      <CardBackdrop />
         {renderTreeResolutionPopup(
           tree
         )}
@@ -5505,6 +5481,7 @@ function App() {
 
     return (
       <main className="app">
+      <CardBackdrop />
         {renderDiscoCelebration()}
 
         <section className="card game-card">
@@ -6017,6 +5994,7 @@ function App() {
   ) {
     return (
       <main className="app">
+      <CardBackdrop />
         <section className="card lobby-card">
           <BrandLogo small />
 
@@ -6152,6 +6130,7 @@ function App() {
   ) {
     return (
       <main className="app">
+      <CardBackdrop />
         <section className="card">
           <button
             className="back-button"
@@ -6268,6 +6247,7 @@ function App() {
   ) {
     return (
       <main className="app">
+      <CardBackdrop />
         <section className="card rules-guide-card">
           <button
             className="back-button"
@@ -6415,6 +6395,7 @@ function App() {
   ) {
     return (
       <main className="app">
+      <CardBackdrop />
         <section className="card settings-card">
           <button
             className="back-button"
@@ -6829,6 +6810,7 @@ function App() {
   ) {
     return (
       <main className="app">
+      <CardBackdrop />
         <section className="card settings-card">
           <button
             className="back-button"
@@ -7006,6 +6988,7 @@ function App() {
 
   return (
     <main className="app">
+      <CardBackdrop />
       <section className="card">
         <BrandLogo />
 

@@ -31,6 +31,7 @@ function SiteHeader() {
       <nav className="bb-site-nav" aria-label="Hoofdnavigatie">
         <a href="/">Home</a>
         <a href="/spelregels/">Spelregels</a>
+        <a href="/verantwoord-spelen/">Verantwoord spelen</a>
         <a className="bb-site-nav-play" href="/spelen/">
           Spelen
         </a>
@@ -52,6 +53,7 @@ function SiteFooter() {
 
       <nav aria-label="Footer">
         <a href="/spelregels/">Spelregels</a>
+        <a href="/verantwoord-spelen/">Verantwoord spelen</a>
         <a href="/privacy/">Privacy</a>
         <a href="mailto:info@busbende.nl">Contact</a>
       </nav>
@@ -535,6 +537,78 @@ function RulesPage() {
   );
 }
 
+function ResponsiblePlayPage() {
+  return (
+    <div className="bb-site">
+      <SiteHeader />
+      <main className="bb-rules">
+        <section className="bb-rules-hero">
+          <span className="bb-site-kicker">VERANTWOORD SPELEN</span>
+          <h1>Samen spelen, met respect voor ieders grens.</h1>
+          <p>BusBende is een kaartspel. Alcohol is nooit nodig om mee te doen.
+            Kies gerust voor punten of sla een opdracht over: de gezelligheid staat voorop.</p>
+        </section>
+        <section className="bb-rule-section">
+          <div className="bb-rule-section-number">1</div>
+          <div className="bb-rule-section-content">
+            <span>MAAK SAMEN AFSPRAKEN</span>
+            <h2>Iedereen mag nee zeggen</h2>
+            <p>Spreek vooraf af hoe jullie spelen. Een “slok” in het spel is geen
+              verplichting om te drinken en schrijft geen hoeveelheid alcohol voor.
+              Vervang drinkopdrachten door punten of andere vrijwillige opdrachten.
+              Ook alcoholvrije drank hoef je niet op tempo of in grote hoeveelheden te drinken.</p>
+            <p>Laat niemand drinken om bij de groep te horen. Iedere speler mag een
+              opdracht weigeren, pauzeren of stoppen, zonder uitleg en zonder straf.
+              Respecteer dat ook wanneer de spelregels iets anders suggereren.</p>
+          </div>
+        </section>
+        <section className="bb-rule-section">
+          <div className="bb-rule-section-number">2</div>
+          <div className="bb-rule-section-content">
+            <span>ALCOHOL EN VEILIGHEID</span>
+            <h2>Het spel bepaalt niet wat je drinkt</h2>
+            <p>De veiligste keuze is spelen zonder alcohol. Gebruik het spel niet
+              als reden om meer of sneller te drinken. Stop als iemand zich niet prettig voelt.</p>
+            <p>Drink geen alcohol onder de lokaal geldende wettelijke leeftijd en
+              houd rekening met de regels voor het kopen, verstrekken en gebruiken van alcohol.
+              Rijd niet na alcoholgebruik en regel vooraf veilig vervoer.</p>
+            <p>BusBende geeft geen persoonlijk medisch advies. Bij twijfel over alcohol
+              in combinatie met je gezondheid of medicijnen kun je een arts of apotheker raadplegen.
+              Bij direct gevaar: stop het spel en bel de lokale hulpdiensten.</p>
+          </div>
+        </section>
+        <section className="bb-rule-section">
+          <div className="bb-rule-section-number">3</div>
+          <div className="bb-rule-section-content">
+            <span>EIGEN KEUZES EN VERANTWOORDELIJKHEID</span>
+            <h2>Een zorgvuldige disclaimer</h2>
+            <p>BusBende biedt digitale spelregels en spelondersteuning. Spelers beslissen
+              zelf of en hoe zij deelnemen, welke opdrachten zij uitvoeren en of zij alcohol
+              gebruiken. Iedere speler is verantwoordelijk voor die eigen keuzes en voor
+              naleving van de wetgeving die op de eigen locatie geldt. De host en de groep
+              horen de grenzen van andere deelnemers te respecteren.</p>
+            <p>Spelopdrachten zijn geen advies of aansporing om alcohol te gebruiken,
+              grenzen te overschrijden of de wet te overtreden. De aanbieder kan keuzes
+              van deelnemers buiten de app niet controleren.</p>
+            <p>Deze informatie sluit niet alle aansprakelijkheid van de aanbieder uit.
+              Wettelijke rechten van gebruikers en verplichtingen van de aanbieder blijven
+              gelden. Of er in een concreet geval aansprakelijkheid bestaat, hangt af van
+              het toepasselijke recht en de omstandigheden.</p>
+            <p>Een vraag of onveilige situatie melden? Neem contact op via
+              {" "}<a className="bb-site-text-link" href="mailto:info@busbende.nl">info@busbende.nl</a>.</p>
+          </div>
+        </section>
+        <section className="bb-site-responsible bb-rules-responsible">
+          <div><span className="bb-site-kicker">JULLIE SPEL</span><h2>Punten tellen ook.</h2></div>
+          <p>De kaarten en het samenspelen maken BusBende leuk. Maak er een avond van
+            waar iedereen zich prettig bij voelt, met of zonder drankje.</p>
+        </section>
+      </main>
+      <SiteFooter />
+    </div>
+  );
+}
+
 function PublicSite({ children }: PublicSiteProps) {
   /*
    * De native Capacitor-app blijft exact de bestaande game openen.
@@ -548,6 +622,10 @@ function PublicSite({ children }: PublicSiteProps) {
 
   if (path === "/") {
     return <HomePage />;
+  }
+
+  if (path === "/verantwoord-spelen") {
+    return <ResponsiblePlayPage />;
   }
 
   if (path === "/spelregels") {

@@ -7,7 +7,7 @@ import {
 
 import { Capacitor } from "@capacitor/core";
 
-// Keep the native UMP button bridge and endgame AdMob watcher installed.
+// Install the native UMP privacy button bridge.
 import "./ads/AdManager";
 
 

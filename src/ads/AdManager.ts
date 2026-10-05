@@ -10,7 +10,6 @@ import {
 import {
   type PrivacyConsent,
   getAdConsentMode,
-  readPrivacyConsent,
 } from "../privacy/ConsentManager";
 
 
@@ -114,22 +113,9 @@ export function createAdRuntime({
 
     canRequestAds,
 
-    /*
-     * Alleen web krijgt de
-     * vaste advertentiebanner.
-     */
-    bannerEnabled:
-      !isNative,
-
-    /*
-     * Web gebruikt de bestaande
-     * BusBende eindadvertentie.
-     *
-     * Native wordt hieronder
-     * door de AdMob watcher geregeld.
-     */
-    interstitialEnabled:
-      !isNative,
+    // Game, join and lobby never load web ads. Native endgame UI uses AdMob directly.
+    bannerEnabled: false,
+    interstitialEnabled: false,
 
     personalizedAds:
       mode ===
@@ -264,6 +250,9 @@ export async function showPrivacyOptions() {
   privacyFormBusy =
     true;
 
+  preparedAt = 0;
+  preparationVersion += 1;
+
   try {
     const ready =
       await initializeNativeAds();
@@ -311,89 +300,57 @@ export async function showPrivacyOptions() {
  * =========================
  */
 
-export async function showNativeInterstitial({
-  personalized,
-}: {
-  personalized:
-    boolean;
-}) {
-  if (
-    !Capacitor.isNativePlatform() ||
-    interstitialBusy
-  ) {
-    return false;
-  }
+let preparationVersion = 0;
+let preparedAt = 0;
+let preparedPersonalized = false;
+let preparing: Promise<boolean> | null = null;
 
-  interstitialBusy =
-    true;
-
-  try {
-    const consentInfo =
-      await requestNativeConsent();
-
-    /*
-     * Google UMP is uiteindelijk
-     * beslissend of een advertentie
-     * geladen mag worden.
-     */
-    if (
-      !consentInfo.canRequestAds
-    ) {
+// Load only at the end screen. Never wait for a network request on an ad click.
+export function prepareNativeInterstitial(): Promise<boolean> {
+  if (!Capacitor.isNativePlatform() || interstitialBusy) return Promise.resolve(false);
+  if (preparing) return preparing;
+  const version = preparationVersion;
+  preparing = (async () => {
+    preparedAt = 0;
+    try {
+      const consent = await requestNativeConsent();
+      if (!consent.canRequestAds) return false;
+      // Conservative default: UMP still determines whether requests are permitted.
+      preparedPersonalized = false;
+      await AdMob.prepareInterstitial({
+        adId: Capacitor.getPlatform() === "ios"
+          ? IOS_TEST_INTERSTITIAL : ANDROID_TEST_INTERSTITIAL,
+        isTesting: true,
+        npa: true,
+      });
+      if (version !== preparationVersion) return false;
+      preparedAt = Date.now();
+      return true;
+    } catch (error) {
+      console.error("Interstitial laden mislukt:", error);
       return false;
     }
-
-    const platform =
-      Capacitor.getPlatform();
-
-    const adId =
-      platform ===
-        "ios"
-        ? IOS_TEST_INTERSTITIAL
-        : ANDROID_TEST_INTERSTITIAL;
-
-    await AdMob
-      .prepareInterstitial({
-        adId,
-
-        /*
-         * Tijdens ontwikkeling ALTIJD
-         * Google's testadvertenties.
-         */
-        isTesting:
-          true,
-
-        /*
-         * npa:
-         *
-         * true
-         * = non-personalized
-         *
-         * false
-         * = personalized toegestaan
-         */
-        npa:
-          !personalized,
-      });
-
-    await AdMob
-      .showInterstitial();
-
-    return true;
-  } catch (
-    error
-  ) {
-    console.error(
-      "Interstitial tonen mislukt:",
-      error
-    );
-
-    return false;
-  } finally {
-    interstitialBusy =
-      false;
-  }
+  })().finally(() => { preparing = null; });
+  return preparing;
 }
 
+export async function showNativeInterstitial({ personalized }: { personalized: boolean }) {
+  if (!Capacitor.isNativePlatform() || interstitialBusy || !preparedAt ||
+      Date.now() - preparedAt > 55 * 60 * 1000 ||
+      personalized !== preparedPersonalized || document.visibilityState !== "visible") return false;
+  // Consume before showing: repeated taps cannot show a second ad.
+  preparedAt = 0;
+  interstitialBusy = true;
+  try {
+    await AdMob.showInterstitial();
+    return true;
+  } catch (error) {
+    console.error("Interstitial tonen mislukt:", error);
+    return false;
+  } finally {
+    interstitialBusy = false;
+  }
+}
 
 /*
  * =========================
@@ -492,198 +449,8 @@ function installNativePrivacyButtonBridge() {
 }
 
 
-/*
- * =========================
- * NATIVE ENDGAME WATCHER
- * =========================
- *
- * Bus klaar:
- *
- * 1. normaal BusBende eindscherm
- * 2. drie seconden wachten
- * 3. Google AdMob test-interstitial
- */
-
-function installNativeEndgameWatcher() {
-  if (
-    !Capacitor.isNativePlatform()
-  ) {
-    return;
-  }
-
-  const globalWindow =
-    window as typeof window & {
-      __busbendeAdWatcherInstalled?:
-        boolean;
-  };
-
-  if (
-    globalWindow
-      .__busbendeAdWatcherInstalled
-  ) {
-    return;
-  }
-
-  globalWindow
-    .__busbendeAdWatcherInstalled =
-      true;
-
-
-  let gameWasFinished =
-    false;
-
-  let finishTimer:
-    number | null =
-      null;
-
-
-  function checkFinishedGame() {
-    const gameFinished =
-      Boolean(
-        document.querySelector(
-          ".bus-finished-panel"
-        )
-      );
-
-
-    /*
-     * Nieuwe game-finish gevonden.
-     */
-    if (
-      gameFinished &&
-      !gameWasFinished
-    ) {
-      if (
-        finishTimer !==
-        null
-      ) {
-        window.clearTimeout(
-          finishTimer
-        );
-      }
-
-
-      finishTimer =
-        window.setTimeout(
-          () => {
-            const privacy =
-              readPrivacyConsent();
-
-            const mode =
-              getAdConsentMode(
-                privacy
-              );
-
-
-            /*
-             * BusBende zelf heeft nog
-             * geen keuze opgeslagen.
-             *
-             * Dan laden we hier nog niets.
-             */
-            if (
-              mode ===
-                "blocked"
-            ) {
-              finishTimer =
-                null;
-
-              return;
-            }
-
-
-            void showNativeInterstitial({
-              personalized:
-                mode ===
-                  "personalized",
-            });
-
-
-            finishTimer =
-              null;
-          },
-          3000
-        );
-    }
-
-
-    /*
-     * Eindscherm is verdwenen voordat
-     * de advertentietimer klaar was.
-     */
-    if (
-      !gameFinished &&
-      finishTimer !==
-        null
-    ) {
-      window.clearTimeout(
-        finishTimer
-      );
-
-      finishTimer =
-        null;
-    }
-
-
-    gameWasFinished =
-      gameFinished;
-  }
-
-
-  function startObserver() {
-    const root =
-      document.getElementById(
-        "root"
-      );
-
-    if (
-      !root
-    ) {
-      window.setTimeout(
-        startObserver,
-        250
-      );
-
-      return;
-    }
-
-
-    const observer =
-      new MutationObserver(
-        checkFinishedGame
-      );
-
-
-    observer.observe(
-      root,
-      {
-        childList:
-          true,
-
-        subtree:
-          true,
-      }
-    );
-
-
-    checkFinishedGame();
-  }
-
-
-  startObserver();
-}
-
-
-/*
- * =========================
- * START NATIVE BRIDGES
- * =========================
- */
-
+// CommerceShell installs the native privacy bridge. Endgame ads are explicit React UI.
 installNativePrivacyButtonBridge();
-
-installNativeEndgameWatcher();
-
 
 /*
  * =========================

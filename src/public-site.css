@@ -797,3 +797,10 @@ body:has(.bb-site) #root {
     position: static;
   }
 }
+
+/* Keep the public information links accessible on small screens. */
+@media (max-width: 680px) {
+  .bb-site-header { flex-wrap: wrap; padding: 16px 0; gap: 16px; }
+  .bb-site-nav { width: 100%; flex-wrap: wrap; justify-content: flex-start; gap: 14px; }
+  .bb-site-nav > a:not(.bb-site-nav-play) { display: inline-flex; }
+}
