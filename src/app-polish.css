@@ -1,0 +1,310 @@
+/*
+ * =========================================================
+ * BUSBENDE — GAME POLISH
+ * =========================================================
+ * Laat gameplay/logica ongemoeid.
+ * Dit bestand wordt NA app-branding.css geladen.
+ */
+
+/* ---------------------------------------------------------
+   1. ACHTERGROND
+   --------------------------------------------------------- */
+
+.app {
+  position: relative;
+  isolation: isolate;
+  overflow-x: hidden;
+  background:
+    radial-gradient(
+      circle at 50% -120px,
+      color-mix(in srgb, var(--bb-accent) 18%, transparent),
+      transparent 430px
+    ),
+    radial-gradient(
+      circle at 12% 78%,
+      color-mix(in srgb, var(--bb-accent) 8%, transparent),
+      transparent 320px
+    ),
+    var(--bb-background) !important;
+}
+
+body[data-bb-color-mode="dark"] .app {
+  background:
+    radial-gradient(
+      circle at 50% -100px,
+      rgba(246, 201, 69, 0.15),
+      transparent 440px
+    ),
+    radial-gradient(
+      circle at 8% 72%,
+      rgba(246, 201, 69, 0.055),
+      transparent 340px
+    ),
+    radial-gradient(
+      circle at 92% 38%,
+      rgba(246, 201, 69, 0.045),
+      transparent 300px
+    ),
+    linear-gradient(
+      180deg,
+      #101612 0%,
+      #0c120f 54%,
+      #080d0b 100%
+    ) !important;
+}
+
+/* ---------------------------------------------------------
+   2. ZWEVENDE KAARTEN
+   --------------------------------------------------------- */
+
+.app::before,
+.app::after {
+  content: "";
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  width: 62px;
+  height: 88px;
+  border-radius: 10px;
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--bb-text) 13%,
+      transparent
+    );
+  opacity: 0.20;
+  will-change: transform;
+}
+
+.app::before {
+  left: 5vw;
+  top: 16vh;
+  background:
+    linear-gradient(
+      45deg,
+      transparent 46%,
+      rgba(255, 255, 255, 0.13) 46% 54%,
+      transparent 54%
+    ),
+    linear-gradient(
+      -45deg,
+      transparent 46%,
+      rgba(255, 255, 255, 0.09) 46% 54%,
+      transparent 54%
+    ),
+    linear-gradient(
+      145deg,
+      var(--bb-accent),
+      var(--bb-accent-strong)
+    );
+
+  box-shadow:
+    84vw 8vh 0 -5px
+      color-mix(in srgb, var(--bb-accent) 72%, transparent),
+    9vw 64vh 0 -9px
+      color-mix(in srgb, var(--bb-accent) 52%, transparent),
+    75vw 68vh 0 -12px
+      color-mix(in srgb, var(--bb-accent) 45%, transparent);
+
+  transform: rotate(-16deg);
+  animation: bb-card-float-a 15s ease-in-out infinite;
+}
+
+.app::after {
+  right: 6vw;
+  top: 31vh;
+  background:
+    radial-gradient(
+      circle at 18px 18px,
+      rgba(186, 45, 45, 0.55) 0 4px,
+      transparent 5px
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 250, 240, 0.96),
+      rgba(239, 230, 201, 0.92)
+    );
+
+  box-shadow:
+    -82vw 13vh 0 -7px rgba(255, 250, 240, 0.13),
+    -10vw 48vh 0 -10px rgba(255, 250, 240, 0.12),
+    -72vw 62vh 0 -13px rgba(255, 250, 240, 0.10);
+
+  transform: rotate(13deg);
+  animation: bb-card-float-b 18s ease-in-out infinite;
+}
+
+@keyframes bb-card-float-a {
+  0%,
+  100% {
+    transform:
+      translate3d(0, 0, 0)
+      rotate(-16deg);
+  }
+
+  50% {
+    transform:
+      translate3d(8px, -18px, 0)
+      rotate(-10deg);
+  }
+}
+
+@keyframes bb-card-float-b {
+  0%,
+  100% {
+    transform:
+      translate3d(0, 0, 0)
+      rotate(13deg);
+  }
+
+  50% {
+    transform:
+      translate3d(-9px, 16px, 0)
+      rotate(8deg);
+  }
+}
+
+.app > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------------------------------------------------------
+   3. HOOFDPANEEL IETS MINDER "LOS"
+   --------------------------------------------------------- */
+
+.app .card {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+body[data-bb-color-mode="dark"] .app .card {
+  background:
+    color-mix(
+      in srgb,
+      var(--bb-surface) 94%,
+      transparent
+    ) !important;
+
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.24) !important;
+}
+
+/* ---------------------------------------------------------
+   4. BUSBENDE-BRANDING IN DE GAMEHEADER
+   --------------------------------------------------------- */
+
+.app .game-top {
+  position: relative;
+  align-items: center;
+}
+
+.app .game-top .logo,
+.app .game-top .small-logo {
+  width: 48px !important;
+  min-width: 48px !important;
+  height: 48px !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 13px !important;
+  background: var(--bb-accent) !important;
+  color: #171915 !important;
+  font-size: 23px !important;
+}
+
+.app .game-top .logo::after,
+.app .game-top .small-logo::after {
+  content: none !important;
+}
+
+.app .game-top > div:last-child::before {
+  content: "BUSBENDE";
+  display: block;
+  margin-bottom: 3px;
+  color: var(--bb-accent-strong);
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+}
+
+.app .game-top h1 {
+  margin-top: 0;
+}
+
+/* ---------------------------------------------------------
+   5. PANELS / STATUS IETS RUSTIGER
+   --------------------------------------------------------- */
+
+.app .tree-message,
+.app .tree-distribute-panel,
+.app .tree-active-panel,
+.app .checkpoint-panel,
+.app .bus-ready-panel,
+.app .bus-draw-panel,
+.app .double-panel,
+.app .bus-riders,
+.app .bus-driver-banner,
+.app .bus-status-row,
+.app .remaining-drinks,
+.app .tree-progress {
+  background:
+    color-mix(
+      in srgb,
+      var(--bb-surface-soft) 88%,
+      transparent
+    ) !important;
+}
+
+/* ---------------------------------------------------------
+   6. MOBIEL
+   --------------------------------------------------------- */
+
+@media (max-width: 680px) {
+  .app::before {
+    width: 46px;
+    height: 66px;
+    left: 3vw;
+    top: 13vh;
+
+    box-shadow:
+      82vw 7vh 0 -6px
+        color-mix(in srgb, var(--bb-accent) 60%, transparent),
+      8vw 69vh 0 -9px
+        color-mix(in srgb, var(--bb-accent) 40%, transparent),
+      73vw 73vh 0 -11px
+        color-mix(in srgb, var(--bb-accent) 36%, transparent);
+  }
+
+  .app::after {
+    width: 43px;
+    height: 62px;
+    right: 3vw;
+    top: 30vh;
+
+    box-shadow:
+      -80vw 12vh 0 -7px rgba(255, 250, 240, 0.11),
+      -7vw 50vh 0 -9px rgba(255, 250, 240, 0.10),
+      -70vw 67vh 0 -11px rgba(255, 250, 240, 0.08);
+  }
+
+  .app .game-top .logo,
+  .app .game-top .small-logo {
+    width: 43px !important;
+    min-width: 43px !important;
+    height: 43px !important;
+    font-size: 21px !important;
+  }
+
+  .app .game-top > div:last-child::before {
+    font-size: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app::before,
+  .app::after {
+    animation: none !important;
+  }
+}

@@ -12,6 +12,7 @@ import WebJoinGate from "./WebJoinGate";
 
 import "./public-site.css";
 import "./app-branding.css";
+import "./app-polish.css";
 
 createRoot(
   document.getElementById("root")!
