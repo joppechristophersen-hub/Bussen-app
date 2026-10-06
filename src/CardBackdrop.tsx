@@ -14,6 +14,11 @@ const cards = [
 export default function CardBackdrop() {
   return (
     <div className="bb-card-backdrop" aria-hidden="true">
+      {["♥", "♣", "♠", "♦"].map((symbol, index) => (
+        <span className={`bb-floating-suit bb-floating-suit-${index + 1}`} key={symbol}>
+          <span>{symbol}</span>
+        </span>
+      ))}
       {cards.map((card, index) => (
         <div className={`bb-backdrop-slot bb-backdrop-slot-${index + 1}`} key={`${card.rank}${card.symbol}`}>
           <div className={`playing-card bb-backdrop-card ${card.color}`}>

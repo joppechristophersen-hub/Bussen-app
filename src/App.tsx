@@ -21,6 +21,7 @@ import {
 } from "@capacitor/app";
 
 import BrandLogo from "./BrandLogo";
+import AppMenuLinks from "./AppMenuLinks";
 import CardBackdrop from "./CardBackdrop";
 import PlayingCardFace from "./PlayingCardFace";
 import NativeEndgameAd from "./ads/NativeEndgameAd";
@@ -7052,6 +7053,7 @@ function App() {
         >
           📖 Spelregels
         </button>
+        <AppMenuLinks />
       </section>
     </main>
   );

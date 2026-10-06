@@ -5,7 +5,7 @@ import {
   useState,
 } from "react";
 
-import { Capacitor } from "@capacitor/core";
+import AppMenuLinks from "./AppMenuLinks";
 
 // Install the native UMP privacy button bridge.
 import "./ads/AdManager";
@@ -415,8 +415,6 @@ function readManualAppearanceMode():
 function CommerceShell({
   children,
 }: CommerceShellProps) {
-  const isNativeApp =
-    Capacitor.isNativePlatform();
 
 const [
     shopOpen,
@@ -498,36 +496,6 @@ const [
    * De oude lokale BusBende-testpopup wordt niet meer
    * gebruikt als toestemmingsmechanisme.
    */
-
-function openPrivacySettings() {
-    /*
-     * Native wordt door AdManager afgehandeld via de
-     * bestaande .bb-privacy-launcher capture-bridge.
-     */
-    if (isNativeApp) {
-      return;
-    }
-
-    /*
-     * Web:
-     * zolang AdSense busbende.nl nog beoordeelt, openen we
-     * altijd het publieke privacybeleid in een nieuw tabblad.
-     *
-     * Dit werkt ook tijdens lokaal testen op localhost en
-     * voorkomt dat Vite / de SPA alleen dezelfde pagina
-     * opnieuw laadt via /privacy/.
-     *
-     * Na AdSense-goedkeuring voegt Google bij een actief
-     * Europees Privacy & messaging-bericht zelf de vereiste
-     * consent-revocationlink toe. Daarom hoeft deze BusBende-
-     * knop de Google CMP nu niet zelf te forceren.
-     */
-    window.open(
-      "https://busbende.nl/privacy/",
-      "_blank",
-      "noopener,noreferrer"
-    );
-  }
 
 
   /*
@@ -1343,22 +1311,7 @@ function openPrivacySettings() {
         </button>
       )}
 
-      <button
-        type="button"
-        className="bb-privacy-launcher"
-        onClick={
-          openPrivacySettings
-        }
-        aria-label="Privacy-instellingen openen"
-      >
-        <span>
-          🔒
-        </span>
 
-        <strong>
-          Privacy
-        </strong>
-      </button>
 
       {shopOpen && (
         <div className="bb-market-layer">
@@ -1660,6 +1613,7 @@ function openPrivacySettings() {
                 Licht en donker zijn altijd onderdeel van BusBende. Alleen extra stijlen en cosmetische items kunnen premium zijn.
               </p>
             </footer>
+            <AppMenuLinks />
           </div>
         </div>
       )}

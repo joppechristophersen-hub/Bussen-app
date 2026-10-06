@@ -57,82 +57,11 @@ body[data-bb-color-mode="dark"] .app {
    2. ZWEVENDE KAARTEN
    --------------------------------------------------------- */
 
-.app::before,
-.app::after {
-  content: "";
-  position: fixed;
-  z-index: 0;
-  pointer-events: none;
-  width: 62px;
-  height: 88px;
-  border-radius: 10px;
-  border: 1px solid
-    color-mix(
-      in srgb,
-      var(--bb-text) 13%,
-      transparent
-    );
-  opacity: 0.20;
-  will-change: transform;
-}
 
-.app::before {
-  left: 5vw;
-  top: 16vh;
-  background:
-    linear-gradient(
-      45deg,
-      transparent 46%,
-      rgba(255, 255, 255, 0.13) 46% 54%,
-      transparent 54%
-    ),
-    linear-gradient(
-      -45deg,
-      transparent 46%,
-      rgba(255, 255, 255, 0.09) 46% 54%,
-      transparent 54%
-    ),
-    linear-gradient(
-      145deg,
-      var(--bb-accent),
-      var(--bb-accent-strong)
-    );
 
-  box-shadow:
-    84vw 8vh 0 -5px
-      color-mix(in srgb, var(--bb-accent) 72%, transparent),
-    9vw 64vh 0 -9px
-      color-mix(in srgb, var(--bb-accent) 52%, transparent),
-    75vw 68vh 0 -12px
-      color-mix(in srgb, var(--bb-accent) 45%, transparent);
 
-  transform: rotate(-16deg);
-  animation: bb-card-float-a 15s ease-in-out infinite;
-}
 
-.app::after {
-  right: 6vw;
-  top: 31vh;
-  background:
-    radial-gradient(
-      circle at 18px 18px,
-      rgba(186, 45, 45, 0.55) 0 4px,
-      transparent 5px
-    ),
-    linear-gradient(
-      180deg,
-      rgba(255, 250, 240, 0.96),
-      rgba(239, 230, 201, 0.92)
-    );
 
-  box-shadow:
-    -82vw 13vh 0 -7px rgba(255, 250, 240, 0.13),
-    -10vw 48vh 0 -10px rgba(255, 250, 240, 0.12),
-    -72vw 62vh 0 -13px rgba(255, 250, 240, 0.10);
-
-  transform: rotate(13deg);
-  animation: bb-card-float-b 18s ease-in-out infinite;
-}
 
 @keyframes bb-card-float-a {
   0%,
@@ -262,32 +191,9 @@ body[data-bb-color-mode="dark"] .app .card {
    --------------------------------------------------------- */
 
 @media (max-width: 680px) {
-  .app::before {
-    width: 46px;
-    height: 66px;
-    left: 3vw;
-    top: 13vh;
 
-    box-shadow:
-      82vw 7vh 0 -6px
-        color-mix(in srgb, var(--bb-accent) 60%, transparent),
-      8vw 69vh 0 -9px
-        color-mix(in srgb, var(--bb-accent) 40%, transparent),
-      73vw 73vh 0 -11px
-        color-mix(in srgb, var(--bb-accent) 36%, transparent);
-  }
 
-  .app::after {
-    width: 43px;
-    height: 62px;
-    right: 3vw;
-    top: 30vh;
 
-    box-shadow:
-      -80vw 12vh 0 -7px rgba(255, 250, 240, 0.11),
-      -7vw 50vh 0 -9px rgba(255, 250, 240, 0.10),
-      -70vw 67vh 0 -11px rgba(255, 250, 240, 0.08);
-  }
 
   .app .game-top .logo,
   .app .game-top .small-logo {
@@ -303,8 +209,49 @@ body[data-bb-color-mode="dark"] .app .card {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .app::before,
-  .app::after {
-    animation: none !important;
-  }
+
 }
+
+/* Decorative suits replace the old floating rectangle silhouettes. */
+.app::before, .app::after { content: none; display: none; }
+.bb-floating-suit {
+  position: absolute;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(38px, 4.5vw, 70px);
+  line-height: 1;
+  opacity: 0.13;
+  color: var(--bb-text);
+}
+.bb-floating-suit > span { display: block; animation: bb-suit-drift 22s ease-in-out infinite; }
+.bb-floating-suit-1 { left: 22%; top: 10%; color: #c8182b; transform: rotate(-14deg); }
+.bb-floating-suit-2 { right: 23%; top: 17%; transform: rotate(12deg); }
+.bb-floating-suit-3 { left: 8%; bottom: 32%; transform: rotate(-10deg); }
+.bb-floating-suit-4 { right: 7%; bottom: 13%; color: #c8182b; transform: rotate(15deg); }
+.bb-floating-suit-2 > span, .bb-floating-suit-4 > span { animation-delay: -11s; }
+body[data-bb-color-mode="dark"] .bb-floating-suit { opacity: 0.20; }
+@keyframes bb-suit-drift {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-18px) rotate(8deg); }
+}
+@media (max-width: 680px) {
+  .bb-floating-suit { font-size: 34px; opacity: 0.10; }
+  .bb-floating-suit-1 { left: 12%; top: 6%; }
+  .bb-floating-suit-2 { right: 10%; top: 11%; }
+}
+@media (prefers-reduced-motion: reduce) { .bb-floating-suit > span { animation: none; } }
+
+.bb-menu-links-wrap { margin-top: 20px; text-align: center; }
+.bb-menu-links { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
+.bb-menu-links a, .app .bb-menu-links .bb-menu-privacy, .bb-menu-links .bb-menu-privacy {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: auto; min-height: 44px; margin: 0; padding: 6px 8px;
+  border: 0 !important; background: transparent !important; box-shadow: none !important;
+  color: var(--bb-muted) !important; font: inherit; font-size: 13px; font-weight: 600;
+  text-decoration: none; cursor: pointer;
+}
+.app .bb-menu-links .bb-menu-privacy { min-height: 44px !important; }
+.bb-menu-links a:hover, .bb-menu-links .bb-menu-privacy:hover { text-decoration: underline; }
+.bb-menu-links a:focus-visible, .bb-menu-links button:focus-visible { outline: 2px solid var(--bb-accent-strong); outline-offset: 3px; }
+.bb-menu-links > span { color: var(--bb-muted); }
+.bb-menu-link-status { font-size: 12px; color: var(--bb-muted); }
+.bb-market > .bb-menu-links-wrap { padding: 0 16px 16px; margin-top: 0; }
