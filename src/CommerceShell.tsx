@@ -1133,6 +1133,7 @@ const [
   function equipItem(
     item: ShopItem
   ) {
+    if (!item.free) return;
     if (
       !isOwned(
         item
@@ -1525,7 +1526,7 @@ const [
                           item.id
                         }
                       >
-                        {item.featured && (
+                        {item.featured && item.free && (
                           <span className="bb-market-featured">
                             GRATIS
                           </span>
@@ -1562,6 +1563,7 @@ const [
 
                           <button
                             type="button"
+                            disabled={!item.free}
                             className={[
                               "bb-market-product-button",
 
@@ -1585,7 +1587,9 @@ const [
                               )
                             }
                           >
-                            {equipped
+                            {!item.free
+                              ? "Binnenkort beschikbaar"
+                              : equipped
                               ? "✓ Actief"
                               : owned
                                 ? "Gebruiken"

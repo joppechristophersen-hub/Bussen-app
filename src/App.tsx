@@ -9,6 +9,10 @@ import {
 } from "qrcode.react";
 import CardBack from "./CardBack";
 
+function capitalizePlayerName(name: string) {
+  return name.replace(/\S/u, letter => letter.toLocaleUpperCase("nl-NL"));
+}
+
 import {
   io,
 } from "socket.io-client";
@@ -6145,7 +6149,7 @@ function App() {
                 event
               ) =>
                 setPlayerName(
-                  event.target.value
+                  capitalizePlayerName(event.target.value)
                 )
               }
               maxLength={
@@ -6832,7 +6836,7 @@ function App() {
                 event
               ) =>
                 setHostName(
-                  event.target.value
+                  capitalizePlayerName(event.target.value)
                 )
               }
               maxLength={
