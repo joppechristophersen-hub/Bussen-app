@@ -8,6 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint src server.cjs vite.config.ts capacitor.config.ts",
     "test:effects": "node scripts/verify-effects.cjs",
+    "android:test": "powershell -NoProfile -File scripts/build-android.ps1 -Variant Debug",
+    "android:release": "powershell -NoProfile -File scripts/build-android.ps1 -Variant Release",
     "preview": "vite preview"
   },
   "dependencies": {

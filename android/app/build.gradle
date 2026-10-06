@@ -1,5 +1,11 @@
 apply plugin: 'com.android.application'
 
+def uploadStorePath = System.getenv('BUSBENDE_KEYSTORE_PATH')
+def uploadStorePassword = System.getenv('BUSBENDE_KEYSTORE_PASSWORD')
+def uploadKeyAlias = System.getenv('BUSBENDE_KEY_ALIAS')
+def uploadKeyPassword = System.getenv('BUSBENDE_KEY_PASSWORD')
+def uploadSigningReady = uploadStorePath && uploadStorePassword && uploadKeyAlias && uploadKeyPassword
+
 android {
     namespace = "com.busbende.game"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,11 +22,30 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (uploadSigningReady) {
+            upload {
+                storeFile file(uploadStorePath)
+                storePassword uploadStorePassword
+                keyAlias uploadKeyAlias
+                keyPassword uploadKeyPassword
+            }
+        }
+    }
     buildTypes {
         release {
+            if (uploadSigningReady) signingConfig signingConfigs.upload
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+}
+
+gradle.taskGraph.whenReady { graph ->
+    if (!uploadSigningReady && graph.allTasks.any {
+        it.project == project && it.name in ['assembleRelease', 'bundleRelease', 'packageRelease', 'signReleaseBundle']
+    }) {
+        throw new GradleException('Uploadkey ontbreekt. Gebruik scripts/build-android.ps1 -Variant Release of stel de BUSBENDE_KEYSTORE_* en BUSBENDE_KEY_* variabelen in.')
     }
 }
 

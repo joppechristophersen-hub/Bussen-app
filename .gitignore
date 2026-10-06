@@ -21,9 +21,14 @@ ios/**/DerivedData/
 ios/**/xcuserdata/
 *.jks
 *.keystore
+*.p12
+*.pfx
+android/key.properties
 .env
 .env.*
 !.env.example
+/.release-signing/
+/release-artifacts/
 
 # Editor directories and files
 .vscode/*
