@@ -7,32 +7,68 @@ export default function NativeEndgameAd({ children }: { children: ReactNode }) {
   const native = Capacitor.isNativePlatform();
   const [complete, setComplete] = useState(!native);
   const [showing, setShowing] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
   const started = useRef(false);
 
   useEffect(() => {
     if (!native) return;
     let active = true;
-    // Fallback preload. If it finishes after the deadline, no delayed ad appears.
-    void prepareNativeInterstitial();
-    const timer = window.setTimeout(() => {
-      if (started.current || !active) return;
+    let expired = false;
+    let minimumTimer: ReturnType<typeof setTimeout>;
+    // Give slow connections time to finish preloading instead of discarding the
+    // ad at exactly three seconds. Never leave the end buttons blocked forever.
+    const maximumTimer = setTimeout(() => {
+      expired = true;
+      if (active && !started.current) {
+        setUnavailable(true);
+        setComplete(true);
+      }
+    }, 12000);
+    const minimumDelay = new Promise<void>(resolve => {
+      minimumTimer = setTimeout(resolve, 3000);
+    });
+    const preparation = prepareNativeInterstitial().then(ready => {
+      if (!ready && active && !expired) {
+        clearTimeout(maximumTimer);
+        setUnavailable(true);
+        setComplete(true);
+      }
+      return ready;
+    });
+    void Promise.all([preparation, minimumDelay]).then(async ([ready]) => {
+      if (!active || expired || started.current) return;
+      clearTimeout(maximumTimer);
+      if (!ready) {
+        setUnavailable(true);
+        setComplete(true);
+        return;
+      }
       started.current = true;
       setShowing(true);
-      void showNativeInterstitial({ personalized: false }).finally(() => {
+      try {
+        const shown = await showNativeInterstitial({ personalized: false });
+        if (active) setUnavailable(!shown);
+      } finally {
         if (active) {
           setShowing(false);
           setComplete(true);
         }
-      });
-    }, 3000);
-    return () => { active = false; window.clearTimeout(timer); };
+      }
+    }).catch(() => {
+      clearTimeout(maximumTimer);
+      if (active) { setUnavailable(true); setComplete(true); }
+    });
+    return () => { active = false; clearTimeout(minimumTimer); clearTimeout(maximumTimer); };
   }, [native]);
 
-  if (complete) return <>{children}</>;
+  if (complete) return <>
+    {unavailable && <p className="bb-endgame-ad" role="status">Er is nu geen advertentie beschikbaar. Je kunt verder spelen.</p>}
+    {children}
+  </>;
   return (
     <div className="bb-endgame-ad" role="status" aria-live="polite">
       <p>{showing ? "Advertentiepauze. Daarna kun je verder." :
-        "Het potje is afgelopen. Over 3 seconden volgt een advertentiepauze; daarna verschijnen de eindknoppen."}</p>
+        "Advertentie laden… Daarna kun je een nieuw potje starten."}</p>
     </div>
   );
 }

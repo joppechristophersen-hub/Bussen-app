@@ -807,7 +807,7 @@ body:has(
 )
 .confetti-piece {
   animation-iteration-count:
-    infinite !important;
+    3 !important;
 }
 
 /*
@@ -961,4 +961,43 @@ and (
     animation-iteration-count:
       1 !important;
   }
+}
+
+/* Short compositor animations; do not change gameplay timing. */
+.tree-card-face, .bus-card-face, .setup-card:not(.placeholder), .tree-active-card {
+  animation: bbCardReveal 240ms ease-out both;
+  backface-visibility: hidden;
+}
+.app > .card { animation: bbPanelEnter 180ms ease-out both; }
+.app button { transition: transform 120ms ease, background-color 120ms ease; touch-action: manipulation; }
+.app button:active:not(:disabled) { transform: scale(0.97); }
+.experience-sound-button:focus-visible, .app button:focus-visible {
+  outline: 3px solid var(--bb-accent, #08745b); outline-offset: 3px;
+}
+html[data-game-feedback="correct"] .bus-card-slot.active { animation: bbSuccess 500ms ease-out; }
+html[data-game-feedback="wrong"] .bus-card-slot.active { animation: bbWrong 280ms ease-out; }
+@keyframes bbCardReveal {
+  from { opacity: 0; transform: perspective(600px) rotateY(-75deg) scale(0.96); }
+  to { opacity: 1; transform: perspective(600px) rotateY(0) scale(1); }
+}
+@keyframes bbPanelEnter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes bbSuccess {
+  40% { box-shadow: 0 0 0 3px var(--bb-accent, #08745b); }
+}
+@keyframes bbWrong {
+  25%, 75% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app *, .app *::before, .app *::after,
+  .experience-transition-layer *, .experience-sound-button {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .confetti-layer { display: none !important; }
 }

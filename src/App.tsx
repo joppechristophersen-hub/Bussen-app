@@ -7,6 +7,7 @@ import {
 import {
   QRCodeSVG,
 } from "qrcode.react";
+import CardBack from "./CardBack";
 
 import {
   io,
@@ -124,6 +125,7 @@ type TreeLastAction = {
 };
 
 type TreeResolutionSummary = {
+  distributions?: TreeLastAction[];
   receivers:
     TreeReceiver[];
 
@@ -596,6 +598,35 @@ function App() {
         [],
     });
 
+  const previousExperiencePhase = useRef<string | null>(null);
+  useEffect(() => {
+    if (screen !== "game" || gameState?.phase !== "bus") return;
+    const track = document.querySelector<HTMLElement>(".bus-track");
+    const activeCard = track?.querySelector<HTMLElement>(".bus-card-slot.current");
+    if (!track || !activeCard) return;
+    const left = track.scrollLeft + activeCard.getBoundingClientRect().left -
+      track.getBoundingClientRect().left - (track.clientWidth - activeCard.clientWidth) / 2;
+    track.scrollTo({
+      left: Math.max(0, left),
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    });
+  }, [screen, gameState?.phase, gameState?.bus?.currentIndex]);
+  useEffect(() => {
+    if (discoCelebration) window.dispatchEvent(new Event("busbaas-disco"));
+  }, [discoCelebration]);
+  useEffect(() => {
+    document.documentElement.dataset.appScreen = screen;
+    window.dispatchEvent(new CustomEvent("busbaas-screen", { detail: screen }));
+    return () => { delete document.documentElement.dataset.appScreen; };
+  }, [screen]);
+  useEffect(() => {
+    const phase = screen === "game" ? gameState?.phase === "cards"
+      ? `cards-${gameState.currentStep}` : gameState?.phase ?? null : null;
+    if (phase && phase !== previousExperiencePhase.current) {
+      window.dispatchEvent(new CustomEvent("busbaas-phase", { detail: phase }));
+    }
+    previousExperiencePhase.current = phase;
+  }, [screen, gameState?.phase, gameState?.currentStep]);
   const soundClockOffsetRef =
     useRef(0);
 
@@ -610,11 +641,14 @@ function App() {
 
   useEffect(() => {
     let cancelled = false;
+    let measuringClock = false;
 
     async function measureSoundClock() {
-      if (!socket.connected) {
+      if (!socket.connected || measuringClock || cancelled) {
         return;
       }
+
+      measuringClock = true;
 
       const samples: Array<{
         rtt: number;
@@ -682,6 +716,7 @@ function App() {
         cancelled ||
         samples.length === 0
       ) {
+        measuringClock = false;
         return;
       }
 
@@ -694,10 +729,17 @@ function App() {
 
       soundClockReadyRef.current =
         true;
+      measuringClock = false;
+      window.dispatchEvent(new CustomEvent("busbaas-music-clock", {
+        detail: soundClockOffsetRef.current,
+      }));
     }
 
     function handleConnect() {
       void measureSoundClock();
+    }
+    function handleMusicVisibility() {
+      if (!document.hidden) void measureSoundClock();
     }
 
     function handleSoundEffect(
@@ -744,10 +786,14 @@ function App() {
 
     if (socket.connected) {
       void measureSoundClock();
-    }
+    } else socket.connect();
+    const musicClockTimer = window.setInterval(() => void measureSoundClock(), 30000);
+    document.addEventListener("visibilitychange", handleMusicVisibility);
 
     return () => {
       cancelled = true;
+      window.clearInterval(musicClockTimer);
+      document.removeEventListener("visibilitychange", handleMusicVisibility);
 
       socket.off(
         "connect",
@@ -1791,6 +1837,7 @@ function App() {
                   key={
                     receiver.playerId
                   }
+                  className="bb-drink-summary-row"
                   style={{
                     display:
                       "flex",
@@ -1820,6 +1867,13 @@ function App() {
                     }
                   </strong>
 
+                  <small className="bb-drink-sources">
+                    {tree.resolutionSummary?.distributions?.flatMap(action =>
+                      action.receivers.filter(item => item.playerId === receiver.playerId)
+                        .map(item => `${item.count} van ${action.giverName}`)
+                    ).join(" · ")}
+                  </small>
+
                   <span>
                     🥃{" "}
                     {
@@ -1843,44 +1897,22 @@ function App() {
     );
   }
 
-  function renderBusFullPopup(
-    bus:
-      BusState
-  ) {
-    if (
-      !bus.result
-        ?.busFull
-    ) {
-      return null;
-    }
-
+  function renderBusDrinkPopup(bus: BusState) {
+    if (bus.status !== "result" || !bus.result || bus.result.correct || bus.result.drinks <= 0) return null;
+    const driver = playerNames.find(player => player.id === bus.activeDriverId);
     return (
-      <div className="announcement-layer">
+      <div className="announcement-layer" role="status" aria-live="polite">
         <div className="game-announcement">
-          <div className="announcement-icon">
-            🚌
-          </div>
-
-          <span className="announcement-label">
-            IEDEREEN AAN BOORD
-          </span>
-
-          <h2>
-            De bus zit vol!
-          </h2>
-
-          <strong className="announcement-name">
-            Geen plek meer
-          </strong>
-
-          <p>
-            Iedereen zit al in de bus. We gaan automatisch verder.
-          </p>
+          <div className="announcement-icon">{bus.result.busFull ? "🚌" : "🥃"}</div>
+          <span className="announcement-label">{bus.result.busFull ? "IEDEREEN AAN BOORD" : "SLOKKEN IN DE BUS"}</span>
+          <h2>{bus.result.busFull ? "De bus zit vol!" : "Dat zijn slokken!"}</h2>
+          <strong className="announcement-name">{driver?.name ?? "De chauffeur"}</strong>
+          <p><strong>{bus.result.drinks} {bus.result.drinks === 1 ? "slok" : "slokken"}</strong></p>
+          <p>{bus.result.secondChance ? "Je krijgt een tweede kans." : "Even slikken… de bus rijdt zo verder!"}</p>
         </div>
       </div>
     );
   }
-
   function renderConfetti() {
     return (
       <div className="confetti-layer">
@@ -3616,9 +3648,7 @@ function App() {
                             )}
                           </div>
                         ) : (
-                          <div className="bus-card-back">
-                            🚌
-                          </div>
+                          <div className="bus-card-back"><CardBack /></div>
                         )}
 
                         {pile.isCheckpoint && (
@@ -3842,7 +3872,7 @@ function App() {
 
         {renderStockShufflePopup()}
 
-        {renderBusFullPopup(
+        {renderBusDrinkPopup(
           bus
         )}
 
@@ -3987,9 +4017,7 @@ function App() {
                       )}
                     </div>
                   ) : (
-                    <div className="bus-card-back">
-                      🚌
-                    </div>
+                    <div className="bus-card-back"><CardBack /></div>
                   )}
 
                   {pile.isActiveCheckpoint ? (
@@ -4292,20 +4320,7 @@ function App() {
                     <div
                       className={`mini-playing-card ${bus.result.fromCard.color}`}
                     >
-                      <strong>
-                        {getCardRank(
-                          bus.result
-                            .fromCard
-                        )}
-                      </strong>
-
-                      <span>
-                        {
-                          bus.result
-                            .fromCard
-                            .symbol
-                        }
-                      </span>
+                      {renderPlayingCard(bus.result.fromCard)}
                     </div>
                   </div>
 
@@ -4321,20 +4336,7 @@ function App() {
                     <div
                       className={`mini-playing-card ${bus.result.newCard.color}`}
                     >
-                      <strong>
-                        {getCardRank(
-                          bus.result
-                            .newCard
-                        )}
-                      </strong>
-
-                      <span>
-                        {
-                          bus.result
-                            .newCard
-                            .symbol
-                        }
-                      </span>
+                      {renderPlayingCard(bus.result.newCard)}
                     </div>
                   </div>
                 </div>
@@ -4409,20 +4411,7 @@ function App() {
                   <div
                     className={`mini-playing-card ${bus.result.fromCard.color}`}
                   >
-                    <strong>
-                      {getCardRank(
-                        bus.result
-                          .fromCard
-                      )}
-                    </strong>
-
-                    <span>
-                      {
-                        bus.result
-                          .fromCard
-                          .symbol
-                      }
-                    </span>
+                      {renderPlayingCard(bus.result.fromCard)}
                   </div>
 
                   <strong>
@@ -4432,20 +4421,7 @@ function App() {
                   <div
                     className={`mini-playing-card ${bus.result.newCard.color}`}
                   >
-                    <strong>
-                      {getCardRank(
-                        bus.result
-                          .newCard
-                      )}
-                    </strong>
-
-                    <span>
-                      {
-                        bus.result
-                          .newCard
-                          .symbol
-                      }
-                    </span>
+                      {renderPlayingCard(bus.result.newCard)}
                   </div>
                 </div>
 
@@ -4751,18 +4727,7 @@ function App() {
                             <div
                               className={`mini-playing-card ${draw.card.color}`}
                             >
-                              <strong>
-                                {getCardRank(
-                                  draw.card
-                                )}
-                              </strong>
-
-                              <span>
-                                {
-                                  draw.card
-                                    .symbol
-                                }
-                              </span>
+                      {renderPlayingCard(draw.card)}
                             </div>
                           ) : (
                             <div className="mini-playing-card">
@@ -4905,10 +4870,7 @@ function App() {
                                   )}
                                 </div>
                               ) : (
-                                <div className="tree-card-back">
-                                  <span>
-                                    🚌
-                                  </span>
+                                <div className="tree-card-back"><CardBack />
 
                                   {treeCard.isDouble && (
                                     <strong>
@@ -4949,10 +4911,7 @@ function App() {
                             )}
                           </div>
                         ) : (
-                          <div className="tree-card-back">
-                            <span>
-                              🍺
-                            </span>
+                          <div className="tree-card-back"><CardBack />
                           </div>
                         )}
                       </div>
@@ -6173,6 +6132,11 @@ function App() {
 
             <input
               type="text"
+              inputMode="text"
+              autoComplete="nickname"
+              autoCapitalize="words"
+              enterKeyHint="next"
+              aria-label="Jouw naam"
               value={
                 playerName
               }
@@ -6197,6 +6161,12 @@ function App() {
 
             <input
               type="text"
+              inputMode="text"
+              autoComplete="off"
+              autoCapitalize="characters"
+              spellCheck={false}
+              enterKeyHint="go"
+              aria-label="Kamercode"
               value={
                 joinCode
               }
@@ -6849,6 +6819,11 @@ function App() {
 
             <input
               type="text"
+              inputMode="text"
+              autoComplete="nickname"
+              autoCapitalize="words"
+              enterKeyHint="next"
+              aria-label="Jouw naam"
               value={
                 hostName
               }

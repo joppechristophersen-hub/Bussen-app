@@ -6,6 +6,32 @@
  * Dit bestand wordt NA app-branding.css geladen.
  */
 
+/* Playing-card ink must stay independent of the app's dark/light text color. */
+.app :is(.playing-card, .revealed-card, .tree-card-face, .tree-active-card,
+  .bus-card-face, .bus-reference-card, .mini-playing-card, .setup-card:not(.placeholder)) {
+  color: #101010 !important;
+}
+.app :is(.playing-card, .revealed-card, .tree-card-face, .tree-active-card,
+  .bus-card-face, .bus-reference-card, .mini-playing-card, .setup-card).rood {
+  color: #c8182b !important;
+}
+.app :is(.playing-card, .revealed-card, .tree-card-face, .tree-active-card,
+  .bus-card-face, .bus-reference-card, .mini-playing-card, .setup-card) :is(strong, span) {
+  color: inherit !important;
+}
+
+/* Override .app > *: the celebration is a viewport overlay, above the cards. */
+.app > .confetti-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+
+.app .mini-playing-card .card-corner { font-size: 10px; }
+.app .mini-playing-card .card-corner-top { top: 4px !important; left: 4px !important; }
+.app .mini-playing-card .card-corner-bottom { bottom: 4px !important; right: 4px !important; }
+.app .mini-playing-card .card-center-symbol { font-size: 23px; }
+
 /* ---------------------------------------------------------
    1. ACHTERGROND
    --------------------------------------------------------- */

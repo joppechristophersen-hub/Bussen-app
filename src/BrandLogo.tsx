@@ -1,6 +1,6 @@
 type BrandLogoProps = { small?: boolean; icon?: string };
 
-function BusEmblem() {
+export function BusEmblem() {
   return (
     <svg className="bb-bus-emblem" viewBox="0 0 100 100" fill="none" aria-hidden="true">
       {/* A pair of playing cards riding behind a cheerful little bus. */}

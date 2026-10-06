@@ -559,9 +559,6 @@ const [
       );
     }
 
-    setSystemDark(
-      media.matches
-    );
 
     media.addEventListener(
       "change",
@@ -853,8 +850,7 @@ const [
         .effect
         ?.palettes ||
       FALLBACK_CLASSIC_THEME
-        .effect
-        ?.palettes!;
+        .effect!.palettes!;
 
     const palette =
       palettes[
@@ -1174,8 +1170,7 @@ const [
       item.effect
         ?.palettes ||
       FALLBACK_CLASSIC_THEME
-        .effect
-        ?.palettes!;
+        .effect!.palettes!;
 
     return (
       <div className="bb-market-theme-preview bb-market-theme-preview-dual">

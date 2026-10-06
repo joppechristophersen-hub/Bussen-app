@@ -4,10 +4,11 @@ const PORT = process.env.PORT || 3001;
 
 const RESULT_DELAY = 3000;
 const TREE_NEXT_DELAY = 1800;
-const TREE_RESOLUTION_DELAY = 2600;
+const TREE_RESOLUTION_DELAY = 8000;
 const TREE_START_DELAY = 3600;
 const TIE_BREAK_RESULT_DELAY = 2500;
 const BUS_RESULT_DELAY = 2000;
+const BUS_DRINK_DELAY = 6500;
 const SOUND_SYNC_LEAD_MS = 450;
 
 const SERVER_VERSION = "BUS_V15_HORN_ON_DRIVER";
@@ -305,6 +306,7 @@ function createTreeResolutionSummary(tree) {
   return {
     receivers,
     total,
+    distributions: tree.currentCardActions.filter(action => action.receivers.length > 0),
   };
 }
 
@@ -2403,7 +2405,7 @@ function continueBusAfterResult(
           roomCode
         );
       },
-      BUS_RESULT_DELAY
+      correct ? BUS_RESULT_DELAY : BUS_DRINK_DELAY
     );
 }
 
@@ -2499,7 +2501,7 @@ function continueBusAfterDouble(
           roomCode
         );
       },
-      BUS_RESULT_DELAY
+      bus.result?.drinks > 0 ? BUS_DRINK_DELAY : BUS_RESULT_DELAY
     );
 }
 

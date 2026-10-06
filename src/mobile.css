@@ -1,0 +1,232 @@
+/* Loaded last: phone behavior takes precedence over branding overrides. */
+.app > .announcement-layer {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  z-index: 1500;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 9, 8, 0.48);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  padding: max(18px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(18px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+.app .announcement-layer .game-announcement { text-align: center; max-height: 85dvh; overflow-y: auto; }
+.experience-transition-layer { pointer-events: auto; animation: bbTransitionTimeline 4.8s ease both; }
+.experience-transition-tree .experience-transition-icon { animation-duration: 1.8s; }
+.experience-tree-cards span { animation-duration: 1.7s; font-size: 3rem; }
+.experience-transition-bus .experience-transition-icon { animation-duration: 1.3s; }
+.experience-transition-cards .experience-transition-icon { animation: bbCardStepReveal 1.3s ease both; }
+@keyframes bbCardStepReveal {
+  0% { opacity: 0; transform: rotate(-18deg) scale(0.3); }
+  55% { opacity: 1; transform: rotate(8deg) scale(1.15); }
+  100% { opacity: 1; transform: rotate(0) scale(1); }
+}
+.experience-transition-skip {
+  margin-top: 22px;
+  min-height: 44px;
+  padding: 10px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font: inherit;
+  cursor: pointer;
+}
+@keyframes bbTransitionTimeline {
+  0% { opacity: 0; }
+  12%, 86% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.app .game-top {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) 76px;
+  text-align: center;
+}
+.app .game-top > div:last-child { grid-column: 2; width: 100%; }
+.app .lobby-card .player {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 56px;
+  align-items: center;
+}
+.app .lobby-card .player-avatar { justify-self: start; }
+.app .lobby-card .player > span:nth-child(2) { text-align: center; min-width: 0; overflow-wrap: anywhere; }
+.app .lobby-card :is(.host-label, .remove-player) { justify-self: end; margin-left: 0; }
+.app {
+  padding-top: max(28px, env(safe-area-inset-top));
+  padding-right: max(16px, env(safe-area-inset-right));
+  padding-bottom: max(42px, env(safe-area-inset-bottom));
+  padding-left: max(16px, env(safe-area-inset-left));
+}
+
+@media (max-width: 680px), (pointer: coarse) {
+  .app .game-top { grid-template-columns: 64px minmax(0, 1fr) 64px; gap: 8px; }
+  .app {
+    align-items: flex-start;
+    /* Keep the floating sound button out of the header and respect notches. */
+    padding: calc(env(safe-area-inset-top) + 64px)
+      max(10px, env(safe-area-inset-right))
+      calc(env(safe-area-inset-bottom) + 76px)
+      max(10px, env(safe-area-inset-left));
+  }
+  .app > .card:not(.game-card) { padding: 22px 16px; }
+  .app .game-card { padding: 16px 12px !important; }
+  .app .card { min-width: 0; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .app button, .app .remove-player, .app .drink-counter button,
+  .app .checkpoint-grid button, .app .bb-menu-links a, .app .bb-menu-links button {
+    min-width: 44px;
+    min-height: 44px !important;
+  }
+  .app .checkpoint-grid { grid-template-columns: repeat(auto-fit, minmax(44px, 1fr)); }
+  .app input, .app select, .app textarea {
+    min-height: 48px;
+    font-size: 16px !important;
+    scroll-margin-block: 80px;
+  }
+  .app .setting label { display: block; font-size: 14px; line-height: 1.4; }
+  .app .subtitle, .app .game-top .subtitle,
+  .app .checkpoint-panel > p, .app .bus-draw-panel > p,
+  .app .bus-ready-panel > p, .app .bus-choice-panel > p,
+  .app .double-panel > p, .app .bus-finished-panel p {
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .app .game-top > div { min-width: 0; }
+  .app .player-name, .app .room-code { overflow-wrap: anywhere; }
+  .app .tree-row-cards {
+    justify-content: flex-start;
+    justify-content: safe center;
+  }
+  .app .tree-row-info strong, .app .tree-row-info span,
+  .app .bus-card-number, .app .step small { font-size: 11px; }
+  .app .tree-card-face .card-corner, .app .bus-card-face .card-corner { font-size: 9px; }
+  .app .bus-card-slot > small { font-size: 9px; }
+  .app .bus-track, .app .tree-row-cards { scroll-padding-inline: 12px; }
+  .app .bb-menu-links { flex-wrap: wrap; }
+  .app .bb-menu-links a { display: inline-flex; align-items: center; }
+  .app .bb-backdrop-slot:nth-of-type(n + 5) { display: none; }
+  .bb-market-panel, .bb-privacy-panel { scroll-padding-block: 16px; }
+  .experience-sound-button { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
+}
+
+@media (hover: none) {
+  .app button:hover:not(:disabled) { transform: none; }
+  .app button:active:not(:disabled) { transform: scale(0.97); }
+}
+
+@media (max-width: 360px) {
+  .app .game-card { padding: 14px 10px !important; }
+  .app .tree-row { grid-template-columns: 42px minmax(0, 1fr); gap: 4px; padding-inline: 4px; }
+}
+
+@media (max-width: 430px) {
+  .app .game-top { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  .app .game-top > div:last-child { grid-column: 1; }
+}
+
+/* Keep the playing surface steady; motion belongs to the current action. */
+.app .bb-backdrop-slot, .app .bb-backdrop-card, .app .bb-floating-suit,
+.app .bb-floating-suit > span {
+  animation: none;
+}
+.app .game-card { box-shadow: 0 16px 48px rgb(0 0 0 / 18%); }
+.app .game-top h1 { letter-spacing: -0.035em; line-height: 1.12; }
+.app .game-top .subtitle { margin-top: 6px; }
+.app button { border-radius: 12px; }
+.app .step { transition: background-color 180ms ease, color 180ms ease; }
+.app .player-name { line-height: 1.4; }
+
+/* A new guessing step announces itself without covering or blocking the game. */
+.experience-transition-layer.experience-transition-cards {
+  inset: calc(env(safe-area-inset-top) + 12px) 16px auto;
+  width: min(460px, calc(100% - 32px));
+  margin-inline: auto;
+  padding: 16px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 18px;
+  background: #15241c;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 24%);
+  pointer-events: none;
+  animation: bbStepNotice 4200ms ease both;
+}
+.experience-transition-cards .experience-transition-background,
+.experience-transition-cards .experience-tree-cards,
+.experience-transition-cards .experience-transition-skip { display: none; }
+.experience-transition-cards .experience-transition-content {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  column-gap: 12px;
+  width: 100%;
+  text-align: left;
+  animation: none;
+}
+.experience-transition-cards .experience-transition-icon {
+  grid-row: 1 / 3;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  border-radius: 10px;
+  font-size: 22px;
+  box-shadow: none;
+  animation: none;
+}
+.experience-transition-cards .experience-transition-content h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.experience-transition-cards .experience-transition-content p {
+  margin: 0;
+  max-width: none;
+  font-size: 13px;
+}
+body:has(.experience-transition-cards) .experience-sound-button {
+  opacity: 1;
+  pointer-events: auto;
+}
+@keyframes bbStepNotice {
+  0% { opacity: 0; transform: translateY(-8px); }
+  9%, 83% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-4px); }
+}
+
+/* A shared, code-native back stays crisp at every card size. */
+.app .tree-card-back, .app .bus-card-back {
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  background: #f6c945 !important;
+  border: 1px solid #dfb337 !important;
+  color: #193f36 !important;
+}
+.bb-card-back-design {
+  width: 100%; height: 100%; min-height: 0;
+  position: relative; display: grid; place-items: center;
+  box-sizing: border-box;
+}
+.bb-card-back-design .bb-bus-emblem { width: 70%; height: auto; max-height: 65%; }
+.app .bb-card-back-corner {
+  position: absolute; font-family: Georgia, serif; font-size: 12px;
+  line-height: 1; color: #193f36;
+}
+.bb-card-back-corner.top-left { top: 6px; left: 6px; }
+.bb-card-back-corner.top-right { top: 6px; right: 6px; }
+.bb-card-back-corner.bottom-left { bottom: 6px; left: 6px; transform: rotate(180deg); }
+.bb-card-back-corner.bottom-right { bottom: 6px; right: 6px; transform: rotate(180deg); }
+.app .tree-card-back > strong {
+  position: absolute; bottom: 5px; left: 50%; top: auto; right: auto;
+  transform: translateX(-50%); z-index: 1;
+  color: #193f36; font-size: 11px; line-height: 1;
+}
+.app .game-announcement { max-height: calc(100dvh - 64px); overflow-y: auto; overscroll-behavior: contain; }
+.app .bb-drink-summary-row {
+  display: grid !important; grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 12px !important; text-align: left;
+}
+.bb-drink-summary-row > strong { overflow-wrap: anywhere; }
+.bb-drink-summary-row > span { grid-column: 2; grid-row: 1; white-space: nowrap; }
+.bb-drink-summary-row .bb-drink-sources { grid-column: 1 / -1; font-size: 13px; line-height: 1.5; opacity: .8; }

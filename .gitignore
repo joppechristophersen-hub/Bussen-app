@@ -12,6 +12,19 @@ dist
 dist-ssr
 *.local
 
+# Native build output and machine-specific configuration
+android/.gradle/
+android/.kotlin/
+android/**/build/
+android/local.properties
+ios/**/DerivedData/
+ios/**/xcuserdata/
+*.jks
+*.keystore
+.env
+.env.*
+!.env.example
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
