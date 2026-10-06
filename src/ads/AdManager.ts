@@ -63,6 +63,9 @@ const ANDROID_TEST_INTERSTITIAL =
 const IOS_TEST_INTERSTITIAL =
   "ca-app-pub-3940256099942544/4411468910";
 
+const ANDROID_INTERSTITIAL = "ca-app-pub-4480846179004064/7816683285";
+const IOS_INTERSTITIAL = "ca-app-pub-4480846179004064/5794164338";
+
 
 let initialized =
   false;
@@ -319,10 +322,14 @@ export function prepareNativeInterstitial(): Promise<boolean> {
       if (!consent.canRequestAds) return false;
       // Conservative default: UMP still determines whether requests are permitted.
       preparedPersonalized = false;
+      // Capacitor injects DEBUG from the native build on Android and iOS.
+      // Unknown build mode stays in test mode as a safe fallback.
+      const testing = Capacitor.DEBUG !== false;
       await AdMob.prepareInterstitial({
         adId: Capacitor.getPlatform() === "ios"
-          ? IOS_TEST_INTERSTITIAL : ANDROID_TEST_INTERSTITIAL,
-        isTesting: true,
+          ? (testing ? IOS_TEST_INTERSTITIAL : IOS_INTERSTITIAL)
+          : (testing ? ANDROID_TEST_INTERSTITIAL : ANDROID_INTERSTITIAL),
+        isTesting: testing,
         npa: true,
       });
       if (version !== preparationVersion) return false;

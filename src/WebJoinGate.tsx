@@ -853,7 +853,7 @@ function WebJoinGate({
 
 
           <p className="web-join-browser-note">
-            De webversie is advertentievrij.
+            In de webversie kan na het potje een advertentie verschijnen.
             In de app blijft het speelscherm vrij
             van een vaste advertentiebalk.
           </p>

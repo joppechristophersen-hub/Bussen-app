@@ -30,6 +30,7 @@ import AppMenuLinks from "./AppMenuLinks";
 import CardBackdrop from "./CardBackdrop";
 import PlayingCardFace from "./PlayingCardFace";
 import NativeEndgameAd from "./ads/NativeEndgameAd";
+import WebEndgameAd from "./ads/WebEndgameAd";
 import { prepareNativeInterstitial } from "./ads/AdManager";
 
 type Screen =
@@ -4097,6 +4098,7 @@ function App() {
                 De hele bus is goed gespeeld.
               </p>
 
+              <WebEndgameAd />
               <NativeEndgameAd>
               {isHost ? (
                 <>

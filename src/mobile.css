@@ -230,3 +230,9 @@ body:has(.experience-transition-cards) .experience-sound-button {
 .bb-drink-summary-row > strong { overflow-wrap: anywhere; }
 .bb-drink-summary-row > span { grid-column: 2; grid-row: 1; white-space: nowrap; }
 .bb-drink-summary-row .bb-drink-sources { grid-column: 1 / -1; font-size: 13px; line-height: 1.5; opacity: .8; }
+
+.bb-web-endgame-ad { width: 100%; min-width: 0; margin: 24px 0; text-align: center; }
+.bb-web-endgame-ad > small { display: block; margin-bottom: 8px; font-size: 11px; color: var(--bb-muted); }
+.bb-web-endgame-ad > .adsbygoogle { min-height: 100px; }
+.bb-web-endgame-ad[hidden],
+.bb-web-endgame-ad:has(.adsbygoogle[data-ad-status="unfilled"]) { display: none; }

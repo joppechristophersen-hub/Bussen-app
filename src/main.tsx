@@ -16,6 +16,9 @@ import "./public-site.css";
 import "./app-branding.css";
 import "./app-polish.css";
 import "./mobile.css";
+import { initializeWebAdSense } from "./ads/WebAdSense";
+
+initializeWebAdSense();
 
 createRoot(
   document.getElementById("root")!
