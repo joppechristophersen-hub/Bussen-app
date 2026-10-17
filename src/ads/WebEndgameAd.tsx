@@ -7,7 +7,9 @@ const publisher = "ca-pub-4480846179004064";
 
 export default function WebEndgameAd() {
   const slotRef = useRef<HTMLModElement>(null);
-  const eligible = !Capacitor.isNativePlatform() &&
+  // Disabled during the site review: a brief game-over message is not enough
+  // publisher content for a display-ad placement. Reassess before enabling.
+  const eligible = import.meta.env.VITE_WEB_ENDGAME_ADS === "true" && !Capacitor.isNativePlatform() &&
     ["busbende.nl", "www.busbende.nl"].includes(window.location.hostname);
 
   useEffect(() => {

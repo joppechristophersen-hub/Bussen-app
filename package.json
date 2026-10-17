@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/prerender-public.mjs",
     "lint": "oxlint src server.cjs vite.config.ts capacitor.config.ts",
     "test:effects": "node scripts/verify-effects.cjs",
+    "test:public": "node scripts/verify-public-pages.mjs",
     "android:test": "powershell -NoProfile -File scripts/build-android.ps1 -Variant Debug",
     "android:release": "powershell -NoProfile -File scripts/build-android.ps1 -Variant Release",
     "preview": "vite preview"

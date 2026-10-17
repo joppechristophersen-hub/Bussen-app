@@ -1,26 +1,10 @@
-import type { ReactNode } from "react";
-import { Capacitor } from "@capacitor/core";
-
-
-type PublicSiteProps = {
-  children: ReactNode;
-};
-
-function normalizePath(pathname: string) {
-  if (!pathname) {
-    return "/";
-  }
-
-  const cleaned = pathname.replace(/\/+$/, "");
-
-  return cleaned || "/";
-}
+import { normalizePublicPath } from "./publicPages";
 
 function SiteHeader() {
   return (
     <header className="bb-site-header">
       <a className="bb-site-brand" href="/" aria-label="BusBende homepage">
-        <span className="bb-site-brand-icon">🚌</span>
+        <img className="bb-site-brand-icon" src="/favicon.svg" alt="" width="40" height="40" />
 
         <span>
           <strong>BusBende</strong>
@@ -31,6 +15,8 @@ function SiteHeader() {
       <nav className="bb-site-nav" aria-label="Hoofdnavigatie">
         <a href="/">Home</a>
         <a href="/spelregels/">Spelregels</a>
+        <a href="/veelgestelde-vragen/">Hulp</a>
+        <a href="/over-busbende/">Over & contact</a>
         <a href="/verantwoord-spelen/">Verantwoord spelen</a>
         <a className="bb-site-nav-play" href="/spelen/">
           Spelen
@@ -55,7 +41,8 @@ function SiteFooter() {
         <a href="/spelregels/">Spelregels</a>
         <a href="/verantwoord-spelen/">Verantwoord spelen</a>
         <a href="/privacy/">Privacy</a>
-        <a href="mailto:info@busbende.nl">Contact</a>
+        <a href="/veelgestelde-vragen/">Veelgestelde vragen</a>
+        <a href="/over-busbende/">Over & contact</a>
       </nav>
 
       <small>© {new Date().getFullYear()} BusBende</small>
@@ -193,8 +180,9 @@ function HomePage() {
           </div>
 
           <div className="bb-site-room-card">
+            <small>VOORBEELDKAMER</small>
             <small>KAMERCODE</small>
-            <strong>B U S 3 7</strong>
+            <strong>B U S J E</strong>
 
             <div className="bb-site-players">
               <span>J</span>
@@ -250,6 +238,21 @@ function HomePage() {
               </p>
             </article>
           </div>
+        </section>
+
+        <section className="bb-site-section">
+          <div className="bb-site-section-heading">
+            <span>VOOR JE BEGINT</span>
+            <h2>Een eerste potje, stap voor stap</h2>
+          </div>
+          <ol className="bb-site-start-list">
+            <li><strong>Kies een host.</strong> Die opent Spelen, kiest Nieuw spel en vult een naam in. De host stelt de regels voor de kamer in.</li>
+            <li><strong>Sluit aan op je eigen telefoon.</strong> Kies Meedoen met spel en vul de kamercode en je naam in, of scan de QR-code van de host. Iedereen heeft internet nodig.</li>
+            <li><strong>Controleer de lobby.</strong> Wacht tot alle namen zichtbaar zijn voordat de host begint. Houd de host verbonden: als die de verbinding verbreekt, sluit de kamer.</li>
+            <li><strong>Spreek samen de opdrachten af.</strong> De app noemt aantallen slokken; jullie kunnen daar punten van maken. Dat is een afspraak binnen de groep, geen aparte appmodus.</li>
+          </ol>
+          <p>Een eigen account aanmaken is niet nodig. De kamercode hoort bij het huidige potje en is geen wachtwoord: deel hem alleen met mensen die mogen meedoen.</p>
+          <a className="bb-site-text-link" href="/veelgestelde-vragen/">Problemen met meedoen of geluid? Bekijk de hulp →</a>
         </section>
 
         <section className="bb-site-responsible">
@@ -308,6 +311,11 @@ function RulesPage() {
           </div>
         </section>
 
+        <nav className="bb-guide-index" aria-label="Op deze pagina">
+          <a href="#vier-kaarten">Vier kaarten</a><a href="#boom">De boom</a>
+          <a href="#bus">De bus</a><a href="#voorbeelden">Kaartvoorbeelden</a>
+          <a href="#instellingen">Instellingen</a>
+        </nav>
         <section id="vier-kaarten" className="bb-rule-section">
           <div className="bb-rule-section-number">1</div>
 
@@ -372,7 +380,7 @@ function RulesPage() {
           </div>
         </section>
 
-        <section className="bb-rule-section">
+        <section id="boom" className="bb-rule-section">
           <div className="bb-rule-section-number">2</div>
 
           <div className="bb-rule-section-content">
@@ -433,7 +441,7 @@ function RulesPage() {
           </div>
         </section>
 
-        <section className="bb-rule-section">
+        <section id="bus" className="bb-rule-section">
           <div className="bb-rule-section-number">3</div>
 
           <div className="bb-rule-section-content">
@@ -472,8 +480,9 @@ function RulesPage() {
               <article>
                 <strong>Gelijke kaart</strong>
                 <p>
-                  Een gelijke waarde telt als fout en telt dubbel volgens de
-                  BusBende-regels.
+                  De groep kiest vooraf de dubbelregel: Bus doorgeven of Iemand meenemen.
+                  Controleer de ingestelde regel in jullie kamer; gelijk is hier
+                  dus niet altijd hetzelfde als een gewone foute voorspelling.
                 </p>
               </article>
             </div>
@@ -491,7 +500,27 @@ function RulesPage() {
           </div>
         </section>
 
-        <section className="bb-rule-section compact">
+        <section id="voorbeelden" className="bb-rule-section">
+          <div className="bb-rule-section-number">4</div>
+          <div className="bb-rule-section-content">
+            <span>KAARTEN OP TAFEL</span>
+            <h2>Wat gebeurt er bij deze kaarten?</h2>
+            <p>Hieronder staan voorbeeldsituaties uit de vier gokstappen en de boom. De kaartwaarde bepaalt de vergelijking; het figuur bepaalt of een kaart harten, ruiten, klaveren of schoppen is.</p>
+            <div className="bb-rule-card-grid">
+              <article><small>HOGER OF LAGER</small><strong>Je eerste kaart is een 8</strong>
+                <p>Je kiest Hoger. Een 10 is goed; een 5 is fout. Nog een 8 is ook fout in deze voorronde, omdat de tweede kaart echt hoger of lager moet zijn.</p></article>
+              <article><small>BINNEN OF BUITEN</small><strong>Je hebt een 4 en een 10</strong>
+                <p>Een 7 ligt binnen. Een 2 ligt buiten. Een 4 of 10 ligt precies op de grens en is bij beide keuzes fout. De volgorde van je eerste twee kaarten verandert dit niet.</p></article>
+              <article><small>DISCO</small><strong>Harten, klaveren en ruiten</strong>
+                <p>Je hebt al drie verschillende figuren en kiest Disco voor kaart vier. Schoppen maakt de set compleet: vier verschillende figuren. Nog een hartenkaart maakt geen Disco.</p></article>
+              <article><small>DE BOOM</small><strong>Een 9 gaat open in rij drie</strong>
+                <p>Heb je een 9 in je hand, dan kun je die wegspelen. De drie uit te delen slokken kun je bijvoorbeeld als twee en één verdelen. Is deze boomkaart een 2×-kaart, dan zijn het zes slokken.</p></article>
+            </div>
+            <p className="bb-rule-note">Voorbeeld van een gelijkstand: Sam en Noor houden ieder twee kaarten over. Beiden trekken zelf een kaart. Sam trekt een 5 en Noor een vrouw: de laagste kaart verliest, dus Sam wordt chauffeur. Bij opnieuw gelijke waarden volgt een nieuwe trekking voor de betrokken spelers.</p>
+          </div>
+        </section>
+
+        <section id="instellingen" className="bb-rule-section compact">
           <div className="bb-rule-section-number">+</div>
 
           <div className="bb-rule-section-content">
@@ -503,6 +532,13 @@ function RulesPage() {
               checkpoints en aanvullende boom- of busregels. De ingestelde
               opties in de kamer zijn leidend voor dat potje.
             </p>
+            <div className="bb-rule-list">
+              <article><strong>Dubbele kaarten in de bus</strong><p>Bij Bus doorgeven kiest de chauffeur een andere speler die de bus overneemt. Bij Iemand meenemen komt er een speler bij in de bus. Als iedereen al meerijdt, kan er niemand meer bij en volgt de afhandeling voor een foute kaart.</p></article>
+              <article><strong>Checkpoints als tussenpunt</strong><p>Met checkpoints bepaal je waar de rit na een fout verdergaat. De chauffeur kiest de checkpointkaarten tijdens het klaarzetten van de bus.</p></article>
+              <article><strong>Een tweede kans of direct terug</strong><p>Bij Tweede kans krijgt de chauffeur op de checkpointkaart één herkansing; opnieuw fout betekent terug naar kaart één. Met Direct terug gebeurt dat al bij de eerste fout op het checkpoint.</p></article>
+              <article><strong>Direct veilig</strong><p>In deze checkpointvariant is het bereiken van een checkpoint genoeg: dat wordt meteen het nieuwe beginpunt voor een volgende poging.</p></article>
+            </div>
+            <p>De chauffeur trekt eerst de buslengte en het aantal open kaarten. Gebruikte kaarten gaan naar de aflegstapel; pas als de trekstapel leeg is, worden afgelegde kaarten opnieuw geschud. Daardoor kunnen kaarten later terugkomen.</p>
           </div>
         </section>
 
@@ -609,36 +645,52 @@ function ResponsiblePlayPage() {
   );
 }
 
-function PublicSite({ children }: PublicSiteProps) {
-  /*
-   * De native Capacitor-app blijft exact de bestaande game openen.
-   * Alleen de browser krijgt de publieke contentpagina's.
-   */
-  if (Capacitor.isNativePlatform()) {
-    return <>{children}</>;
-  }
-
-  const path = normalizePath(window.location.pathname);
-
-  if (path === "/") {
-    return <HomePage />;
-  }
-
-  if (path === "/verantwoord-spelen") {
-    return <ResponsiblePlayPage />;
-  }
-
-  if (path === "/spelregels") {
-    return <RulesPage />;
-  }
-
-  /*
-   * Alles wat geen publieke contentpagina is blijft de bestaande app:
-   * - /spelen/
-   * - /join/ABCDE
-   * - eventuele toekomstige game-routes
-   */
-  return <>{children}</>;
+function HelpPage() {
+  return <div className="bb-site"><SiteHeader /><main className="bb-rules">
+    <section className="bb-rules-hero"><span className="bb-site-kicker">HULP BIJ HET SPELEN</span>
+      <h1>Van kamercode tot eerste kaart.</h1>
+      <p>Deze antwoorden gaan over de digitale versie van Bussen in BusBende. Kom je vast te zitten? Controleer eerst of je internet hebt en of de host nog in dezelfde kamer zit.</p>
+    </section>
+    <section className="bb-help-list" aria-label="Veelgestelde vragen">
+      <article><h2>Hoe start ik samen een potje?</h2><p>Eén speler kiest Nieuw spel, vult een naam in en stelt de kamer in. De anderen kiezen Meedoen met spel en voeren hun naam en de kamercode in. Je kunt ook de QR-code van de host scannen. Wacht tot alle spelers in de lobby staan voordat de host het spel start.</p></article>
+      <article><h2>Werkt BusBende zonder account of installatie?</h2><p>In de webversie hoef je geen account aan te maken of app te installeren. Open de website op je telefoon. Iedere speler gebruikt een eigen toestel en heeft een internetverbinding nodig; jullie hoeven niet op hetzelfde wifi-netwerk te zitten.</p></article>
+      <article><h2>Waarom wordt mijn kamercode niet gevonden?</h2><p>Controleer de code op het scherm van de host en neem die over zonder extra spaties. Een code van een eerder gesloten kamer werkt niet opnieuw. Als de host de verbinding heeft verbroken, sluit de kamer. Laat de host zo nodig een nieuw potje maken en deel de nieuwe code.</p></article>
+      <article><h2>Wat gebeurt er bij verversen of netwerkverlies?</h2><p>De kamer gebruikt de actieve verbindingen om spelers te herkennen. Ga er niet van uit dat een verversing je plek bewaart. Houd het tabblad open en de host verbonden. Komt de groep niet verder na netwerkverlies, maak dan een nieuwe kamer; een gesloten potje kan niet uit een opgeslagen account worden hersteld.</p></article>
+      <article><h2>Waarom hoor ik geen muziek of klikgeluid?</h2><p>Telefoonbrowsers kunnen geluid blokkeren tot je het scherm aanraakt. Tik eerst op een knop, controleer de geluidsinstelling in BusBende en het mediavolume van je toestel. De menumuziek hoort te stoppen wanneer het spel begint. Effecten volgen de spelacties; verschillen in verbinding en geluidsuitvoer kunnen hoorbaar zijn.</p></article>
+      <article><h2>Waarom kan ik niet op een kaart of keuze drukken?</h2><p>Controleer wie aan de beurt is. Alleen de actieve speler kan de betreffende keuze maken. Tijdens een kaartresultaat of slokkenverdeling wacht de app even zodat iedereen de uitkomst kan lezen. De host bedient de gezamenlijke start; in de bus kiest de actieve chauffeur.</p></article>
+      <article><h2>Waarom is een gelijke kaart soms anders?</h2><p>Bij Hoger of lager in de vierkaartvoorronde is gelijk fout. Ook een kaart op de grens bij Binnen of buiten is fout. In de bus geldt de gekozen dubbelregel: Bus doorgeven of Iemand meenemen. Bekijk de <a className="bb-site-text-link" href="/spelregels/#instellingen">instellingen in de speluitleg</a> voordat jullie beginnen.</p></article>
+      <article><h2>Moet je alcohol gebruiken?</h2><p>Nee. Je kunt de aantallen in de app als punten behandelen of alcoholvrij spelen. Er is geen aparte puntenknop: spreek als groep af wat de opdrachten betekenen. Je mag altijd een opdracht overslaan of stoppen. Lees ook <a className="bb-site-text-link" href="/verantwoord-spelen/">Verantwoord spelen</a>.</p></article>
+      <article><h2>Wat kost het en kan ik iets kopen?</h2><p>Het basisspel is gratis te spelen. In de shop staan extra’s met Binnenkort beschikbaar; die kun je nu niet kopen. De website en native app kunnen verschillende advertentievoorzieningen gebruiken. Advertentiebeschikbaarheid hangt onder meer af van de provider en toestemmingsinstellingen.</p></article>
+      <article><h2>Hoe meld ik een fout?</h2><p>Mail <a className="bb-site-text-link" href="mailto:info@busbende.nl">info@busbende.nl</a> met je toestel, browser, de spelfase en de stappen waardoor het misgaat. Een screenshot helpt. Laat namen van andere spelers en andere persoonlijke gegevens waar mogelijk weg. Deel nooit wachtwoorden of betalingsgegevens.</p></article>
+    </section>
+    <section className="bb-site-cta"><span aria-hidden="true">🚌</span><div><h2>Klaar om mee te doen?</h2><p>Open het spel en kies een nieuwe kamer of Meedoen met spel.</p></div><a className="bb-site-button primary" href="/spelen/">Naar het spel</a></section>
+  </main><SiteFooter /></div>;
 }
 
-export default PublicSite;
+function AboutPage() {
+  return <div className="bb-site"><SiteHeader /><main className="bb-rules">
+    <section className="bb-rules-hero"><span className="bb-site-kicker">OVER BUSBENDE</span><h1>Het kaartspel, op jullie eigen telefoons.</h1>
+      <p>BusBende is een digitale uitvoering van Bussen voor een groep vrienden. De app deelt de kaarten, bewaakt de beurt en laat iedereen dezelfde spelvoortgang volgen.</p></section>
+    <section className="bb-rule-section"><div className="bb-rule-section-number">1</div><div className="bb-rule-section-content"><h2>Wat maakt dit BusBende?</h2>
+      <p>Een potje heeft drie delen: vier persoonlijke voorspellingen, kaarten wegspelen in de boom en de afsluitende busrit. Je speelt met een kamercode en persoonlijke acties op je eigen toestel. De host kiest vooraf onder meer de boomregels en checkpoints.</p>
+      <p>Bij Bussen verschillen de huisregels per groep. Daarom leggen we op deze site de regels van deze app uit, inclusief gelijke kaarten en instellingen. Die uitleg gaat over BusBende en is geen algemene standaard voor iedere versie van Bussen.</p>
+      <a className="bb-site-text-link" href="/spelregels/#voorbeelden">Bekijk concrete kaartvoorbeelden →</a></div></section>
+    <section className="bb-rule-section"><div className="bb-rule-section-number">2</div><div className="bb-rule-section-content"><h2>Spelen zonder verplichtingen</h2>
+      <p>Het basisspel is gratis en vraagt geen spelersaccount. Extra’s in de shop met Binnenkort beschikbaar zijn nog niet te koop. Een spelopdracht is geen verplichting om te drinken: jullie kunnen aantallen als punten behandelen en altijd een opdracht overslaan.</p>
+      <p>De app is afhankelijk van een internetverbinding. Een kamer is geen permanente opslag van jullie potje. Houd vooral de host verbonden; bij het sluiten van die verbinding sluit de kamer.</p></div></section>
+    <section id="contact" className="bb-rule-section"><div className="bb-rule-section-number">3</div><div className="bb-rule-section-content"><h2>Vragen, fouten of ideeën?</h2>
+      <p>Neem contact op via <a className="bb-site-text-link" href="mailto:info@busbende.nl">info@busbende.nl</a>. Vermeld bij een fout je toestel en browser, welke stap je deed en wat je verwachtte. Voeg eventueel een screenshot toe zonder gevoelige gegevens.</p>
+      <p>Voor uitleg over gegevens en je privacy kun je het <a className="bb-site-text-link" href="/privacy/">privacybeleid</a> bekijken. Voor problemen met een kamer of geluid staat er praktische hulp bij de <a className="bb-site-text-link" href="/veelgestelde-vragen/">veelgestelde vragen</a>.</p></div></section>
+  </main><SiteFooter /></div>;
+}
+
+export function PublicPage({ path }: { path: string }) {
+  switch (normalizePublicPath(path)) {
+    case "/": return <HomePage />;
+    case "/spelregels": return <RulesPage />;
+    case "/verantwoord-spelen": return <ResponsiblePlayPage />;
+    case "/veelgestelde-vragen": return <HelpPage />;
+    case "/over-busbende": return <AboutPage />;
+    default: return null;
+  }
+}
