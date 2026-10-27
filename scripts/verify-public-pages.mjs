@@ -3,7 +3,7 @@ import { readFile, access } from "node:fs/promises";
 import { resolve, join } from "node:path";
 
 const dist = resolve(import.meta.dirname, "../dist");
-const paths = ["/", "/spelregels", "/veelgestelde-vragen", "/over-busbende", "/verantwoord-spelen"];
+const paths = ["/", "/demo", "/spelregels", "/veelgestelde-vragen", "/over-busbende", "/verantwoord-spelen"];
 const titles = new Set();
 let checkedLinks = 0;
 for (const path of paths) {
@@ -33,6 +33,6 @@ for (const anchor of ["vier-kaarten", "boom", "bus", "voorbeelden", "instellinge
 const game = await readFile(join(dist, "spelen/index.html"), "utf8");
 assert(game.includes('<div id="root"></div>'), "Game entry must not contain the public homepage");
 const sitemap = await readFile(join(dist, "sitemap.xml"), "utf8");
-assert.equal((sitemap.match(/<url>/g) || []).length, 6);
+assert.equal((sitemap.match(/<url>/g) || []).length, paths.length + 1);
 assert((await readFile(join(dist, "robots.txt"), "utf8")).includes("https://busbende.nl/sitemap.xml"));
-console.log(`PASS: five static pages, unique metadata, ${checkedLinks} local links/assets, rule anchors, separate game entry and sitemap.`);
+console.log(`PASS: ${paths.length} static pages, unique metadata, ${checkedLinks} local links/assets, rule anchors, separate game entry and sitemap.`);

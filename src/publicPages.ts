@@ -1,5 +1,6 @@
 export const publicPages = {
   "/": { title: "BusBende — samen online Bussen spelen", description: "Speel Bussen met vrienden op jullie eigen telefoons. Ontdek de vier gokstappen, de boom en de bus, met speluitleg en voorbeelden." },
+  "/demo": { title: "Probeer BusBende — speelbare demo zonder account", description: "Probeer zelf vier voorspellingen, een boomverdeling en een korte busrit. Leer BusBende met vaste oefenkaarten, uitleg en fictieve medespelers." },
   "/spelregels": { title: "Spelregels Bussen met voorbeelden | BusBende", description: "Zo werkt BusBende: rood of zwart, hoger of lager, binnen of buiten, Disco, de boom en de bus. Met kaartvoorbeelden en uitleg over checkpoints." },
   "/veelgestelde-vragen": { title: "Hulp bij starten, meedoen en spelen | BusBende", description: "Antwoorden over kamercodes, QR-codes, verbinding, geluid en instellingen. Praktische hulp om samen BusBende te spelen." },
   "/over-busbende": { title: "Over BusBende en contact", description: "Wat BusBende doet, hoe het digitale kaartspel werkt en hoe je vragen, fouten of feedback kunt doorgeven." },

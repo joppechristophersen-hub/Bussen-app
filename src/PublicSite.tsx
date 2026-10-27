@@ -1,4 +1,5 @@
 import { normalizePublicPath } from "./publicPages";
+import DemoRound from "./demo/DemoRound";
 
 function SiteHeader() {
   return (
@@ -15,6 +16,7 @@ function SiteHeader() {
       <nav className="bb-site-nav" aria-label="Hoofdnavigatie">
         <a href="/">Home</a>
         <a href="/spelregels/">Spelregels</a>
+        <a href="/demo/">Probeer de demo</a>
         <a href="/veelgestelde-vragen/">Hulp</a>
         <a href="/over-busbende/">Over & contact</a>
         <a href="/verantwoord-spelen/">Verantwoord spelen</a>
@@ -39,6 +41,7 @@ function SiteFooter() {
 
       <nav aria-label="Footer">
         <a href="/spelregels/">Spelregels</a>
+        <a href="/demo/">Speelbare demo</a>
         <a href="/verantwoord-spelen/">Verantwoord spelen</a>
         <a href="/privacy/">Privacy</a>
         <a href="/veelgestelde-vragen/">Veelgestelde vragen</a>
@@ -76,8 +79,8 @@ function HomePage() {
                 🚌 Start een potje
               </a>
 
-              <a className="bb-site-button secondary" href="/spelregels/">
-                Bekijk de spelregels
+              <a className="bb-site-button secondary" href="/demo/">
+                Probeer eerst zelf
               </a>
             </div>
 
@@ -111,6 +114,17 @@ function HomePage() {
               </div>
             </div>
           </div>
+        </section>
+
+        <section className="bb-site-section bb-demo-invitation">
+          <div>
+            <span className="bb-site-kicker">EVEN PROBEREN</span>
+            <h2>Ontdek het spel voordat je vrienden uitnodigt.</h2>
+            <p>Voorspel vier kaarten, speel een passende kaart weg in de boom en haal de laatste halte van de bus. Je krijgt uitleg bij iedere uitkomst en verdeelt punten over fictieve spelers.</p>
+            <p>De oefenronde werkt direct op je eigen toestel, zonder kamercode of account. Je speelt met vaste voorbeeldkaarten; het is een uitleg van het spel, geen willekeurig gedeeld multiplayerpotje.</p>
+            <a className="bb-site-button primary" href="/demo/">Speel de oefenronde →</a>
+          </div>
+          <div className="bb-demo-invitation-note"><span aria-hidden="true">♠ ♥ ♦ ♣</span><h3>Zelf kiezen. Meteen begrijpen.</h3><p>Waarom is een gelijke kaart fout? Wanneer past een handkaart op de boom? Je ziet het tijdens het spelen.</p><a className="bb-site-text-link" href="/spelregels/">Liever eerst alle spelregels lezen?</a></div>
         </section>
 
         <section className="bb-site-section">
@@ -645,6 +659,23 @@ function ResponsiblePlayPage() {
   );
 }
 
+function DemoPage() {
+  return <div className="bb-site"><SiteHeader /><main className="bb-rules">
+    <section className="bb-rules-hero bb-demo-hero"><span className="bb-site-kicker">SPEELBARE UITLEG</span>
+      <h1>Stap zelf even in.</h1>
+      <p>Leer BusBende door te kiezen, te kijken en verder te spelen. Geen kamer, account of medespeler nodig. Deze oefenronde gebruikt vaste kaarten en punten, en maakt geen verbinding met een spelkamer.</p>
+      <a className="bb-site-text-link bb-demo-jump" href="#oefenronde">Naar de eerste kaart ↓</a>
+    </section>
+    <div id="oefenronde"><DemoRound /></div>
+    <section className="bb-demo-explanation" aria-label="Uitleg van de oefenronde">
+      <article><span>01 / VIER KAARTEN</span><h2>Voorspel voordat je omdraait</h2><p>De eerste keuze is rood of zwart. Daarna vergelijk je de volgende kaarten met je hand. Een gelijke waarde is in de voorronde geen hoger, lager, binnen of buiten. Voor Disco heb je uiteindelijk vier verschillende figuren nodig.</p><a className="bb-site-text-link" href="/spelregels/#vier-kaarten">Alle vier de gokstappen</a></article>
+      <article><span>02 / DE BOOM</span><h2>De waarde moet passen</h2><p>In deze oefening gaat een 5 open in rij drie. Je klaveren 5 past ook op een harten 5: alleen de waarde telt. Je speelt de kaart weg en verdeelt drie punten. In het echte spel worden alle boomkaarten omgedraaid, niet alleen dit voorbeeld.</p><a className="bb-site-text-link" href="/spelregels/#boom">Rijen, verdelen en 2×-kaarten</a></article>
+      <article><span>03 / DE BUS</span><h2>Drie haltes achter elkaar goed</h2><p>De voorbeeldchauffeur is Sam, omdat die de meeste kaarten overhoudt. Jij bedient zijn korte oefenrit. Een fout geeft punten gelijk aan de halte en brengt je terug naar halte één. Deze demo laat dubbele kaarten en checkpoints weg; die zijn wel onderdeel van de instelbare regels van een echt potje.</p><a className="bb-site-text-link" href="/spelregels/#instellingen">Dubbelregels en checkpoints</a></article>
+    </section>
+    <section className="bb-site-responsible"><div><span className="bb-site-kicker">SAMEN VERDER</span><h2>Van oefenronde naar jullie eigen kamer.</h2></div><p>In een echt potje maakt één speler een kamer. De rest doet mee via de code of QR-code. Iedereen kiest op zijn eigen telefoon. <a className="bb-site-text-link" href="/veelgestelde-vragen/">Bekijk hoe je aansluit</a> of <a className="bb-site-text-link" href="/spelen/">open het spel</a>.</p></section>
+  </main><SiteFooter /></div>;
+}
+
 function HelpPage() {
   return <div className="bb-site"><SiteHeader /><main className="bb-rules">
     <section className="bb-rules-hero"><span className="bb-site-kicker">HULP BIJ HET SPELEN</span>
@@ -652,6 +683,7 @@ function HelpPage() {
       <p>Deze antwoorden gaan over de digitale versie van Bussen in BusBende. Kom je vast te zitten? Controleer eerst of je internet hebt en of de host nog in dezelfde kamer zit.</p>
     </section>
     <section className="bb-help-list" aria-label="Veelgestelde vragen">
+      <article><h2>Kan ik eerst alleen proberen hoe het werkt?</h2><p>Ja. De <a className="bb-site-text-link" href="/demo/">speelbare demo</a> leidt je door de vier kaarten, een boomverdeling en een korte busrit met fictieve medespelers. Hij gebruikt vaste voorbeeldkaarten en maakt geen echte kamer aan. Voor het volledige spel speel je samen met vrienden.</p></article>
       <article><h2>Hoe start ik samen een potje?</h2><p>Eén speler kiest Nieuw spel, vult een naam in en stelt de kamer in. De anderen kiezen Meedoen met spel en voeren hun naam en de kamercode in. Je kunt ook de QR-code van de host scannen. Wacht tot alle spelers in de lobby staan voordat de host het spel start.</p></article>
       <article><h2>Werkt BusBende zonder account of installatie?</h2><p>In de webversie hoef je geen account aan te maken of app te installeren. Open de website op je telefoon. Iedere speler gebruikt een eigen toestel en heeft een internetverbinding nodig; jullie hoeven niet op hetzelfde wifi-netwerk te zitten.</p></article>
       <article><h2>Waarom wordt mijn kamercode niet gevonden?</h2><p>Controleer de code op het scherm van de host en neem die over zonder extra spaties. Een code van een eerder gesloten kamer werkt niet opnieuw. Als de host de verbinding heeft verbroken, sluit de kamer. Laat de host zo nodig een nieuw potje maken en deel de nieuwe code.</p></article>
@@ -687,6 +719,7 @@ function AboutPage() {
 export function PublicPage({ path }: { path: string }) {
   switch (normalizePublicPath(path)) {
     case "/": return <HomePage />;
+    case "/demo": return <DemoPage />;
     case "/spelregels": return <RulesPage />;
     case "/verantwoord-spelen": return <ResponsiblePlayPage />;
     case "/veelgestelde-vragen": return <HelpPage />;
