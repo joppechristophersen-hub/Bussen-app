@@ -30,7 +30,6 @@ import AppMenuLinks from "./AppMenuLinks";
 import CardBackdrop from "./CardBackdrop";
 import PlayingCardFace from "./PlayingCardFace";
 import NativeEndgameAd from "./ads/NativeEndgameAd";
-import WebEndgameAd from "./ads/WebEndgameAd";
 import { prepareNativeInterstitial } from "./ads/AdManager";
 
 type Screen =
@@ -627,6 +626,7 @@ function App() {
   useEffect(() => {
     const phase = screen === "game" ? gameState?.phase === "cards"
       ? `cards-${gameState.currentStep}` : gameState?.phase ?? null : null;
+    document.documentElement.dataset.gamePhase = phase ?? "";
     if (phase && phase !== previousExperiencePhase.current) {
       window.dispatchEvent(new CustomEvent("busbaas-phase", { detail: phase }));
     }
@@ -4098,7 +4098,6 @@ function App() {
                 De hele bus is goed gespeeld.
               </p>
 
-              <WebEndgameAd />
               <NativeEndgameAd>
               {isHost ? (
                 <>

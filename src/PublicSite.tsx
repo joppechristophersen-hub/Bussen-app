@@ -1,5 +1,6 @@
 import { normalizePublicPath } from "./publicPages";
 import DemoRound from "./demo/DemoRound";
+import WebDisplayAd from "./ads/WebDisplayAd";
 
 function SiteHeader() {
   return (
@@ -239,7 +240,7 @@ function HomePage() {
               <h3>Je eigen sfeer</h3>
               <p>
                 Licht en donker blijven gratis onderdeel van BusBende.
-                Extra thema's en cosmetische stijlen kunnen later worden toegevoegd.
+                Kies de weergave die je prettig vindt; er zijn geen aankopen nodig.
               </p>
             </article>
 
@@ -254,6 +255,7 @@ function HomePage() {
           </div>
         </section>
 
+        <WebDisplayAd placement="home-explanation" />
         <section className="bb-site-section">
           <div className="bb-site-section-heading">
             <span>VOOR JE BEGINT</span>
@@ -394,6 +396,7 @@ function RulesPage() {
           </div>
         </section>
 
+        <WebDisplayAd placement="rules-between-sections" />
         <section id="boom" className="bb-rule-section">
           <div className="bb-rule-section-number">2</div>
 
@@ -689,10 +692,11 @@ function HelpPage() {
       <article><h2>Waarom wordt mijn kamercode niet gevonden?</h2><p>Controleer de code op het scherm van de host en neem die over zonder extra spaties. Een code van een eerder gesloten kamer werkt niet opnieuw. Als de host de verbinding heeft verbroken, sluit de kamer. Laat de host zo nodig een nieuw potje maken en deel de nieuwe code.</p></article>
       <article><h2>Wat gebeurt er bij verversen of netwerkverlies?</h2><p>De kamer gebruikt de actieve verbindingen om spelers te herkennen. Ga er niet van uit dat een verversing je plek bewaart. Houd het tabblad open en de host verbonden. Komt de groep niet verder na netwerkverlies, maak dan een nieuwe kamer; een gesloten potje kan niet uit een opgeslagen account worden hersteld.</p></article>
       <article><h2>Waarom hoor ik geen muziek of klikgeluid?</h2><p>Telefoonbrowsers kunnen geluid blokkeren tot je het scherm aanraakt. Tik eerst op een knop, controleer de geluidsinstelling in BusBende en het mediavolume van je toestel. De menumuziek hoort te stoppen wanneer het spel begint. Effecten volgen de spelacties; verschillen in verbinding en geluidsuitvoer kunnen hoorbaar zijn.</p></article>
+      <WebDisplayAd placement="help-between-answers" />
       <article><h2>Waarom kan ik niet op een kaart of keuze drukken?</h2><p>Controleer wie aan de beurt is. Alleen de actieve speler kan de betreffende keuze maken. Tijdens een kaartresultaat of slokkenverdeling wacht de app even zodat iedereen de uitkomst kan lezen. De host bedient de gezamenlijke start; in de bus kiest de actieve chauffeur.</p></article>
       <article><h2>Waarom is een gelijke kaart soms anders?</h2><p>Bij Hoger of lager in de vierkaartvoorronde is gelijk fout. Ook een kaart op de grens bij Binnen of buiten is fout. In de bus geldt de gekozen dubbelregel: Bus doorgeven of Iemand meenemen. Bekijk de <a className="bb-site-text-link" href="/spelregels/#instellingen">instellingen in de speluitleg</a> voordat jullie beginnen.</p></article>
       <article><h2>Moet je alcohol gebruiken?</h2><p>Nee. Je kunt de aantallen in de app als punten behandelen of alcoholvrij spelen. Er is geen aparte puntenknop: spreek als groep af wat de opdrachten betekenen. Je mag altijd een opdracht overslaan of stoppen. Lees ook <a className="bb-site-text-link" href="/verantwoord-spelen/">Verantwoord spelen</a>.</p></article>
-      <article><h2>Wat kost het en kan ik iets kopen?</h2><p>Het basisspel is gratis te spelen. In de shop staan extra’s met Binnenkort beschikbaar; die kun je nu niet kopen. De website en native app kunnen verschillende advertentievoorzieningen gebruiken. Advertentiebeschikbaarheid hangt onder meer af van de provider en toestemmingsinstellingen.</p></article>
+      <article><h2>Wat kost het en kan ik iets kopen?</h2><p>BusBende is gratis te spelen. Er is geen shop en je hoeft niets te kopen om mee te doen. De website kan advertenties tonen bij de uitleg en onder het speelvlak; de native app kan na een potje een advertentie tonen. Of er daadwerkelijk een advertentie verschijnt, hangt af van de provider en toestemmingsinstellingen.</p></article>
       <article><h2>Hoe meld ik een fout?</h2><p>Mail <a className="bb-site-text-link" href="mailto:info@busbende.nl">info@busbende.nl</a> met je toestel, browser, de spelfase en de stappen waardoor het misgaat. Een screenshot helpt. Laat namen van andere spelers en andere persoonlijke gegevens waar mogelijk weg. Deel nooit wachtwoorden of betalingsgegevens.</p></article>
     </section>
     <section className="bb-site-cta"><span aria-hidden="true">🚌</span><div><h2>Klaar om mee te doen?</h2><p>Open het spel en kies een nieuwe kamer of Meedoen met spel.</p></div><a className="bb-site-button primary" href="/spelen/">Naar het spel</a></section>
@@ -708,7 +712,7 @@ function AboutPage() {
       <p>Bij Bussen verschillen de huisregels per groep. Daarom leggen we op deze site de regels van deze app uit, inclusief gelijke kaarten en instellingen. Die uitleg gaat over BusBende en is geen algemene standaard voor iedere versie van Bussen.</p>
       <a className="bb-site-text-link" href="/spelregels/#voorbeelden">Bekijk concrete kaartvoorbeelden →</a></div></section>
     <section className="bb-rule-section"><div className="bb-rule-section-number">2</div><div className="bb-rule-section-content"><h2>Spelen zonder verplichtingen</h2>
-      <p>Het basisspel is gratis en vraagt geen spelersaccount. Extra’s in de shop met Binnenkort beschikbaar zijn nog niet te koop. Een spelopdracht is geen verplichting om te drinken: jullie kunnen aantallen als punten behandelen en altijd een opdracht overslaan.</p>
+      <p>Het spel is gratis en vraagt geen spelersaccount. Er is geen shop en er zijn geen aankopen nodig. Advertenties kunnen helpen om BusBende te financieren. Een spelopdracht is geen verplichting om te drinken: jullie kunnen aantallen als punten behandelen en altijd een opdracht overslaan.</p>
       <p>De app is afhankelijk van een internetverbinding. Een kamer is geen permanente opslag van jullie potje. Houd vooral de host verbonden; bij het sluiten van die verbinding sluit de kamer.</p></div></section>
     <section id="contact" className="bb-rule-section"><div className="bb-rule-section-number">3</div><div className="bb-rule-section-content"><h2>Vragen, fouten of ideeën?</h2>
       <p>Neem contact op via <a className="bb-site-text-link" href="mailto:info@busbende.nl">info@busbende.nl</a>. Vermeld bij een fout je toestel en browser, welke stap je deed en wat je verwachtte. Voeg eventueel een screenshot toe zonder gevoelige gegevens.</p>

@@ -4,7 +4,6 @@ import { Capacitor } from "@capacitor/core";
 
 import "./index.css";
 import "./App.css";
-import "./commerce.css";
 
 const App = lazy(() => import("./App"));
 import ExperienceShell from "./ExperienceShell";
@@ -13,6 +12,7 @@ import CommerceShell from "./CommerceShell";
 import { PublicPage } from "./PublicSite";
 import { isPublicPath, normalizePublicPath, publicPages } from "./publicPages";
 import WebJoinGate from "./WebJoinGate";
+import GamePageAd from "./ads/GamePageAd";
 
 import "./public-site.css";
 import "./app-branding.css";
@@ -34,5 +34,6 @@ if (!Capacitor.isNativePlatform() && isPublicPath(path)) {
         </Suspense>
       </WebJoinGate>
     </CommerceShell>
+    <GamePageAd />
   </StrictMode>
 );

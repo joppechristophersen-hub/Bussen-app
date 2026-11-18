@@ -1,0 +1,8 @@
+.bb-display-ad { box-sizing: border-box; margin: 64px auto; padding: 24px 0; border-block: 1px solid var(--bb-border,#d6c99f); text-align: center; max-width: 970px; width: 100%; }
+.bb-display-ad[hidden] { display: none; }
+.bb-display-ad > small { display: block; margin-bottom: 16px; color: var(--bb-muted,#6c6656); font: 12px/1.4 system-ui,sans-serif; }
+.bb-display-ad > ins { min-height: 100px; }
+.bb-display-ad-banner { margin: 160px auto 0; width: min(970px,calc(100% - 16px)); padding: 20px 0 max(20px,env(safe-area-inset-bottom)); }
+.bb-display-ad-banner > ins { width: 300px; height: 50px; min-height: 50px; }
+@media (min-width: 900px) { .bb-display-ad-banner > ins { width: 728px; height: 90px; min-height: 90px; } }
+@media (max-width: 315px) { .bb-display-ad-banner { display: none; } }
