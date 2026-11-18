@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import "./ads/AdManager";
 import "./appearance.css";
 
@@ -15,6 +15,7 @@ function readAppearance(): Appearance {
 // Keep the saved appearance preference without loading a shop or product catalog.
 export default function CommerceShell({ children }: { children: ReactNode }) {
   const [appearance, setAppearance] = useState<Appearance>(readAppearance);
+  const appearanceDialog = useRef<HTMLDialogElement>(null);
   const [systemDark, setSystemDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
   useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
@@ -34,10 +35,23 @@ export default function CommerceShell({ children }: { children: ReactNode }) {
     document.body.dataset.bbAnimation = "classic";
     try { localStorage.setItem(storageKey, appearance); } catch { /* Appearance also works without storage. */ }
   }, [appearance, systemDark]);
-  return <>{children}<div className="bb-appearance-control">
-    <label htmlFor="bb-appearance">Weergave</label>
-    <select id="bb-appearance" value={appearance} onChange={event => setAppearance(event.target.value as Appearance)}>
-      <option value="system">Automatisch</option><option value="light">Licht</option><option value="dark">Donker</option>
-    </select>
-  </div></>;
+  const modes: [Appearance, string, string][] = [["system", "Automatisch", "Volg de instelling van je toestel"], ["light", "Licht", "Lichte achtergrond met donkere tekst"], ["dark", "Donker", "Donkere achtergrond met lichte tekst"]];
+  return <>{children}
+    <button type="button" className="experience-sound-button bb-appearance-button"
+      aria-label="Weergave aanpassen" title="Weergave aanpassen" aria-haspopup="dialog" aria-controls="bb-appearance-dialog"
+      onClick={() => appearanceDialog.current?.showModal()}><span aria-hidden="true">◐</span></button>
+    <dialog ref={appearanceDialog} id="bb-appearance-dialog" className="bb-appearance-dialog" aria-labelledby="bb-appearance-title"
+      onClick={event => { if (event.target === event.currentTarget) event.currentTarget.close(); }}>
+      <div className="bb-appearance-panel">
+        <header><h2 id="bb-appearance-title">Weergave</h2><button type="button" aria-label="Weergave sluiten" onClick={() => appearanceDialog.current?.close()}>×</button></header>
+        <fieldset><legend>Kies hoe BusBende eruitziet</legend>
+          {modes.map(([mode, label, description]) => <label key={mode}>
+            <input type="radio" name="bb-appearance" value={mode} checked={appearance === mode}
+              onChange={() => { setAppearance(mode); appearanceDialog.current?.close(); }} />
+            <span><strong>{label}</strong><small>{description}</small></span>
+          </label>)}
+        </fieldset>
+      </div>
+    </dialog>
+  </>;
 }

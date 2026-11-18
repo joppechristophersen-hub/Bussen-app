@@ -1,3 +1,18 @@
-.bb-appearance-control { display: flex; gap: 12px; align-items: center; justify-content: center; margin: 20px auto 0; padding: 12px 16px max(20px,env(safe-area-inset-bottom)); color: var(--bb-muted,#6c6656); font-size: 14px; }
-.bb-appearance-control select { font: inherit; font-size: 16px; min-height: 44px; border: 1px solid var(--bb-border,#d6c99f); border-radius: 8px; color: var(--bb-text,#24251f); background: var(--bb-surface,#fffaf0); padding: 8px 12px; }
-.bb-appearance-control select:focus-visible { outline: 3px solid var(--bb-accent,#f6c945); outline-offset: 3px; }
+.experience-sound-button.bb-appearance-button { left: calc(max(14px,env(safe-area-inset-left)) + 58px); }
+.bb-appearance-button > span { font: 28px/1 system-ui,sans-serif; }
+.bb-appearance-dialog { width: min(390px,calc(100vw - 32px)); max-height: calc(100dvh - 48px); padding: 0; border: 1px solid var(--bb-border,#d6c99f); border-radius: 20px; background: var(--bb-surface,#fffaf0); color: var(--bb-text,#24251f); overflow-y: auto; }
+.bb-appearance-dialog::backdrop { background: rgb(0 0 0 / .55); backdrop-filter: blur(4px); }
+.bb-appearance-panel { padding: 20px; }
+.bb-appearance-panel header { display: flex; gap: 16px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.bb-appearance-panel h2 { margin: 0; font-size: 24px; }
+.bb-appearance-panel header button { width: 44px; height: 44px; padding: 0; font: 28px/1 system-ui,sans-serif; border: 1px solid var(--bb-border,#d6c99f); border-radius: 10px; background: transparent; color: inherit; cursor: pointer; }
+.bb-appearance-panel fieldset { border: 0; padding: 0; margin: 0; }
+.bb-appearance-panel legend { font-size: 14px; margin-bottom: 12px; color: var(--bb-muted,#6c6656); }
+.bb-appearance-panel label { display: flex; align-items: center; gap: 12px; padding: 16px 12px; margin-bottom: 10px; border: 1px solid var(--bb-border,#d6c99f); border-radius: 12px; cursor: pointer; }
+.bb-appearance-panel label:has(input:checked) { border-color: var(--bb-accent-strong,#d99d20); background: var(--bb-surface-soft,#efe6c9); }
+.bb-appearance-panel input { width: 20px; height: 20px; flex: 0 0 auto; margin: 0; accent-color: #b38312; }
+.bb-appearance-panel strong, .bb-appearance-panel small { display: block; }
+.bb-appearance-panel strong { font-size: 16px; }
+.bb-appearance-panel small { color: var(--bb-muted,#6c6656); font-size: 13px; margin-top: 4px; }
+.bb-appearance-panel :focus-visible { outline: 3px solid var(--bb-accent-strong,#d99d20); outline-offset: 3px; }
+@media (max-width: 430px) { .experience-sound-button.bb-appearance-button { left: calc(max(10px,env(safe-area-inset-left)) + 54px); } }

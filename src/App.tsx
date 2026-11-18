@@ -30,6 +30,7 @@ import AppMenuLinks from "./AppMenuLinks";
 import CardBackdrop from "./CardBackdrop";
 import PlayingCardFace from "./PlayingCardFace";
 import NativeEndgameAd from "./ads/NativeEndgameAd";
+import { leaveWebAnchorPage } from "./ads/WebAdSense";
 import { prepareNativeInterstitial } from "./ads/AdManager";
 
 type Screen =
@@ -1541,6 +1542,9 @@ function App() {
   ]);
 
   function resetToHome() {
+    // An Auto ads anchor has no publisher-controlled hide API. Returning to
+    // the menu is a real navigation so it cannot linger on the join/setup UI.
+    if (leaveWebAnchorPage()) return;
     setRoomCode(
       ""
     );

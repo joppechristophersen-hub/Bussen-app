@@ -1,5 +1,5 @@
-import { useSyncExternalStore } from "react";
-import WebDisplayAd from "./WebDisplayAd";
+import { useEffect, useSyncExternalStore } from "react";
+import { initializeWebAdSense } from "./WebAdSense";
 
 function subscribe(listener: () => void) {
   window.addEventListener("busbaas-screen", listener);
@@ -13,5 +13,10 @@ function isPlaying() {
 const serverSnapshot = () => false;
 export default function GamePageAd() {
   const playing = useSyncExternalStore(subscribe, isPlaying, serverSnapshot);
-  return playing ? <WebDisplayAd placement="game-footer" banner /> : null;
+  useEffect(() => {
+    if (playing) initializeWebAdSense({ anchors: true });
+  }, [playing]);
+  // Google owns the anchor, including its dismissal and availability. Repeated
+  // turns/phases neither inject another script nor refresh an ad unit.
+  return null;
 }

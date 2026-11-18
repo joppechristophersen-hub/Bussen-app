@@ -20,8 +20,10 @@ export default function WebDisplayAd({ placement, banner = false }: { placement:
     if (!eligible || !slot || !container) return;
     let disposed = false;
     let nearby = false;
+    let bannerOnscreen = false;
     let script: HTMLScriptElement | null = null;
-    const hide = () => { container.hidden = true; };
+    const hide = () => { container.hidden = true; if (banner) document.documentElement.removeAttribute("data-bb-banner-visible"); };
+    const updateControls = () => { if (banner) document.documentElement.toggleAttribute("data-bb-banner-visible", bannerOnscreen && !container.hidden && slot.getAttribute("data-ad-status") === "filled"); };
     // React StrictMode can replay the effect after the initial request.
     if (requestedSlots.has(slot)) {
       script = document.getElementById("busbende-adsense") as HTMLScriptElement | null;
@@ -42,6 +44,12 @@ export default function WebDisplayAd({ placement, banner = false }: { placement:
         (adsWindow.adsbygoogle ??= []).push({});
       } catch { hide(); }
     }
+    // Floating sound/appearance controls must never overlap the banner as it scrolls past.
+    const visibility = banner ? new IntersectionObserver(entries => {
+      bannerOnscreen = entries.some(entry => entry.isIntersecting);
+      updateControls();
+    }) : null;
+    visibility?.observe(container);
     const intersection = new IntersectionObserver(entries => {
       nearby = entries.some(entry => entry.isIntersecting);
       request();
@@ -49,10 +57,10 @@ export default function WebDisplayAd({ placement, banner = false }: { placement:
     intersection.observe(container);
     const resize = new ResizeObserver(request);
     resize.observe(container);
-    const status = new MutationObserver(() => { if (slot.getAttribute("data-ad-status") === "unfilled") hide(); });
+    const status = new MutationObserver(() => { if (slot.getAttribute("data-ad-status") === "unfilled") hide(); else updateControls(); });
     status.observe(slot, { attributes: true, attributeFilter: ["data-ad-status"] });
     document.addEventListener("visibilitychange", request);
-    return () => { disposed = true; intersection.disconnect(); resize.disconnect(); status.disconnect(); script?.removeEventListener("error", hide); document.removeEventListener("visibilitychange", request); };
+    return () => { disposed = true; intersection.disconnect(); visibility?.disconnect(); resize.disconnect(); status.disconnect(); script?.removeEventListener("error", hide); document.removeEventListener("visibilitychange", request); if (banner) document.documentElement.removeAttribute("data-bb-banner-visible"); };
   }, [eligible, banner]);
   if (!eligible) return null;
   return <aside ref={containerRef} className={`bb-display-ad${banner ? " bb-display-ad-banner" : ""}`} aria-label="Advertentie" data-placement={placement}>
